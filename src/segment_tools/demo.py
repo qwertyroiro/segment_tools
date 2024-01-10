@@ -3,6 +3,8 @@ from .FastSAM.fastsam import FastSAM, FastSAMPrompt
 from transformers import CLIPSegProcessor, CLIPSegForImageSegmentation
 import torch
 
+import numpy as np
+
 # プロセッサとモデルの準備
 processor = CLIPSegProcessor.from_pretrained("CIDAS/clipseg-rd64-refined")
 model = CLIPSegForImageSegmentation.from_pretrained("CIDAS/clipseg-rd64-refined")
