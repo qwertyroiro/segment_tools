@@ -39,7 +39,7 @@ def fastsam(image_path, text=None, points=None, point_labels=None, bboxes=None, 
     # # point_label default [0] [1,0] 0:background, 1:foreground
     # ann = prompt_process.point_prompt(points=[[620, 360]], pointlabel=[1])
 
-    prompt_process.plot(annotations=ann,output_path='outputs/dog_out.jpg',)
+    return prompt_process.plot_to_result(annotations=ann)
     
 def clipseg(image, text):
 
