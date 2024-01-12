@@ -116,20 +116,15 @@ def draw_mask(mask, image, random_color=True):
 
     return np.array(Image.alpha_composite(annotated_frame_pil, mask_image_pil))
 
-
 def dino(image, text):
     image_source, image = load_image(image)
-    annotated_frame, detected_boxes = detect(image, text_prompt=text, model=groundingdino_model)
+    annotated_frame, detected_boxes = detect(image, image_source, text_prompt=text, model=groundingdino_model)
     return annotated_frame, detected_boxes
     
-
 def dino_seg(image, text):
     image_source, image = load_image(image)
-    annotated_frame, detected_boxes = detect(image, text_prompt=text, model=groundingdino_model)
+    annotated_frame, detected_boxes = detect(image, image_source, text_prompt=text, model=groundingdino_model)
     segmented_frame_masks = segment(image_source, sam_predictor, boxes=detected_boxes)
     annotated_frame_with_mask = draw_mask(segmented_frame_masks[0][0], annotated_frame)
     
     return segmented_frame_masks, annotated_frame_with_mask, detected_boxes
-
-
-     
