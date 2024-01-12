@@ -33,9 +33,8 @@ sd_pipe = StableDiffusionInpaintPipeline.from_pretrained(
 ckpt_repo_id = "ShilongLiu/GroundingDINO"
 ckpt_filenmae = "groundingdino_swinb_cogcoor.pth"
 ckpt_config_filename = "GroundingDINO_SwinB.cfg.py"
-sam_checkpoint = 'sam_vit_h_4b8939.pth'
+sam_checkpoint = 'weights/sam_vit_h_4b8939.pth'
 sam_predictor = SamPredictor(build_sam(checkpoint=sam_checkpoint).to(device))
-pre_check()
    
 # groundingdinoのモデルを返す
 def load_model_hf(repo_id, filename, ckpt_config_filename, device='cpu'):

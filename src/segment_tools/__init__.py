@@ -1,4 +1,14 @@
+# もしFastSAM/weights/FastSAM.ptが存在しない場合はdownload_weights.pyを実行
+import os
+if not os.path.exists('weights/FastSAM.pt'):
+    print("weights/FastSAM.pt not found. Downloading...")
+    from .download_weights import download_weights_FastSAM
+    download_weights_FastSAM('weights/FastSAM.pt')
+    
+if not os.path.exists("weights/sam_vit_h_4b8939.pth"):
+    print("weights/sam_vit_h_4b8939.pth not found. Downloading...")
+    from .download_weights import download_weights_DINO
+    download_weights_DINO("weights/sam_vit_h_4b8939.pth")
+
 from .demo import *
 from .demo_ground import *
-
-pre_check()
