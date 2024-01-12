@@ -43,6 +43,7 @@ def load_model_hf(repo_id, filename, ckpt_config_filename, device='cpu'):
     args = SLConfig.fromfile(cache_config_file) 
     args.device = device
     model = build_model(args)
+    model = model.to("cuda:0")
     
     cache_file = hf_hub_download(repo_id=repo_id, filename=filename)
     checkpoint = torch.load(cache_file, map_location=device)
