@@ -5,53 +5,70 @@ import torch
 
 import numpy as np
 
+device = "cuda:0" if torch.cuda.is_available() else "cpu"
+
 # プロセッサとモデルの準備
 processor = CLIPSegProcessor.from_pretrained("CIDAS/clipseg-rd64-refined")
-model = CLIPSegForImageSegmentation.from_pretrained("CIDAS/clipseg-rd64-refined")
-
-def pre_check():
-    # もしFastSAM/weights/FastSAM.ptが存在しない場合はdownload_weights.pyを実行
-    import os
-    if not os.path.exists('weights/FastSAM.pt'):
-        print("weights/FastSAM.pt not found. Downloading...")
-        from .download_weights import download_weights_FastSAM
-        download_weights_FastSAM('weights/FastSAM.pt')
-        
-    if not os.path.exists("weights/sam_vit_h_4b8939.pth"):
-        print("weights/sam_vit_h_4b8939.pth not found. Downloading...")
-        from .download_weights import download_weights_DINO
-        download_weights_DINO("weights/sam_vit_h_4b8939.pth")
+clip_model = CLIPSegForImageSegmentation.from_pretrained("CIDAS/clipseg-rd64-refined").to(device)
+fastsam_model = FastSAM('weights/FastSAM.pt')
 
 def fastsam(image_path, text=None, points=None, point_labels=None, bboxes=None, bbox_labels=None,):
-    pre_check()
-    model = FastSAM('weights/FastSAM.pt')
+    """ FastSAMを用いた画像のセグメンテーション
+    Args:
+        image_path: PILでもnumpyでもパスでも可
+        text: テキストプロンプト. Defaults to None.
+        points: ポイントプロンプト. points default [[0,0]] or [[x1,y1],[x2,y2]] など. Defaults to None.
+        point_labels: 背景か前景か. point_label default [0] or [1,0] or [1] 0:背景, 1:前景. Defaults to None.
+        bboxes: ボックスプロンプト.bbox default shape [0,0,0,0] -> [x1,y1,x2,y2].  Defaults to None.
+        bbox_labels (_type_, optional): _description_. Defaults to None.
+
+    Returns:
+        result_image: 結果の画像
+        ann: アノテーション
+    """
     IMAGE_PATH = image_path
-    DEVICE = 'cpu'
-    everything_results = model(IMAGE_PATH, device=DEVICE, retina_masks=True, imgsz=1024, conf=0.4, iou=0.9,)
-    prompt_process = FastSAMPrompt(IMAGE_PATH, everything_results, device=DEVICE)
+    everything_results = fastsam_model(IMAGE_PATH, device=device, retina_masks=True, imgsz=1024, conf=0.4, iou=0.9,)
+    prompt_process = FastSAMPrompt(IMAGE_PATH, everything_results, device=device)
 
     # everything prompt
     ann = prompt_process.everything_prompt()
 
-    # # bbox default shape [0,0,0,0] -> [x1,y1,x2,y2]
-    # ann = prompt_process.box_prompt(bboxes=[[200, 200, 300, 300]])
+    if bboxes is not None:
+        # # bbox default shape [0,0,0,0] -> [x1,y1,x2,y2]
+        ann = prompt_process.box_prompt(bboxes=bboxes, boxlabel=bbox_labels)
 
-    # # text prompt
-    # ann = prompt_process.text_prompt(text='a photo of a dog')
+    if text is not None:
+        # text prompt
+        ann = prompt_process.text_prompt(text=text)
 
-    # # point prompt
-    # # points default [[0,0]] [[x1,y1],[x2,y2]]
-    # # point_label default [0] [1,0] 0:background, 1:foreground
-    # ann = prompt_process.point_prompt(points=[[620, 360]], pointlabel=[1])
+    if points is not None:
+        # point prompt
+        # points default [[0,0]] [[x1,y1],[x2,y2]]
+        # point_label default [0] [1,0] 0:background, 1:foreground
+        ann = prompt_process.point_prompt(points=points, pointlabel=point_labels)
+    
+    result_image = prompt_process.plot_to_result(annotations=ann)
 
-    return prompt_process.plot_to_result(annotations=ann)
+    return result_image, ann
     
 def clipseg(image, text):
+    """clipsegを用いた画像のセグメンテーション
 
-    # image_pathがパスの場合は、PIL.Imageへ変換
+    Args:
+        image: PILでもnumpyでもパスでも可
+        text: テキストプロンプト
+
+    Returns:
+        output_np: セグメンテーション結果
+    """
+
+    # image_pathがパス or ndarrayの場合は、PIL.Imageへ変換
     if isinstance(image, str):
         from PIL import Image
         image = Image.open(image)
+    elif isinstance(image, np.ndarray):
+        from PIL import Image
+        image = Image.fromarray(image)
     else:
         image = image.copy()
         
@@ -69,16 +86,18 @@ def clipseg(image, text):
         return_tensors="pt")
     # 推論
     with torch.no_grad():
-        outputs = model(**inputs)
+        outputs = clip_model(**inputs)
     # 確率を取得(352x352)
     preds = outputs.logits
     # 確率をsigmoidにかける(正規化?)
     output = torch.sigmoid(preds)
     # torchからnumpyへ
-    output = output.cpu().numpy()
-    # numpyからPIL.Imageへ
-    output = Image.fromarray((output * 255).astype(np.uint8))
+    output_np = output.cpu().numpy()
+    # # numpyからPIL.Imageへ
+    # output_pil = Image.fromarray((output_np * 255).astype(np.uint8))
     # 元のサイズへリサイズ
-    output = output.resize(image_shape)
+    output_np = np.asarray(Image.fromarray(output_np[0][0]).resize(image_shape))
+    # # 元のサイズへリサイズ
+    # output_pil = output.resize(image_shape)
 
-    return output
+    return output_np

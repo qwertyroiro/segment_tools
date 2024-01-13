@@ -25,6 +25,9 @@ from io import BytesIO
 from diffusers import StableDiffusionInpaintPipeline
 from huggingface_hub import hf_hub_download
 
+import warnings
+warnings.filterwarnings('ignore')
+
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 sd_pipe = StableDiffusionInpaintPipeline.from_pretrained(
     "stabilityai/stable-diffusion-2-inpainting",
@@ -55,11 +58,14 @@ def load_model_hf(repo_id, filename, ckpt_config_filename, device='cpu'):
 groundingdino_model = load_model_hf(ckpt_repo_id, ckpt_filenmae, ckpt_config_filename, device)
 
 # groundingdino用の画像の前処理
-def load_image(image):
-    # image_pathがパスの場合は、PIL.Imageへ変換
+def __load_image(image):
+    # image_pathがパス or ndarrayの場合は、PIL.Imageへ変換
     if isinstance(image, str):
         from PIL import Image
         image_source = Image.open(image).convert("RGB")
+    elif isinstance(image, np.ndarray):
+        from PIL import Image
+        image_source = Image.fromarray(image).convert("RGB")
     else:
         image_source = image.copy()
     
@@ -76,7 +82,7 @@ def load_image(image):
 
 
 # detect object using grounding DINO
-def detect(image, image_source, text_prompt, model, box_threshold = 0.3, text_threshold = 0.25):
+def __detect(image, image_source, text_prompt, model, box_threshold = 0.3, text_threshold = 0.25):
   boxes, logits, phrases = predict(
       model=model, 
       image=image, 
@@ -90,7 +96,7 @@ def detect(image, image_source, text_prompt, model, box_threshold = 0.3, text_th
   return annotated_frame, boxes 
 
 # segment object using segment anything
-def segment(image, sam_model, boxes):
+def __segment(image, sam_model, boxes):
   sam_model.set_image(image)
   H, W, _ = image.shape
   boxes_xyxy = box_ops.box_cxcywh_to_xyxy(boxes) * torch.Tensor([W, H, W, H])
@@ -105,7 +111,7 @@ def segment(image, sam_model, boxes):
   return masks.cpu()
 
 # draw mask from segment anything
-def draw_mask(mask, image, random_color=True):
+def __draw_mask(mask, image, random_color=True):
     if random_color:
         color = np.concatenate([np.random.random(3), np.array([0.8])], axis=0)
     else:
@@ -119,14 +125,35 @@ def draw_mask(mask, image, random_color=True):
     return np.array(Image.alpha_composite(annotated_frame_pil, mask_image_pil))
 
 def dino(image, text):
-    image_source, image = load_image(image)
-    annotated_frame, detected_boxes = detect(image, image_source, text_prompt=text, model=groundingdino_model)
+    """DINOを用いた画像のゼロショット物体検出
+
+    Args:
+        image: PILでもnumpyでもパスでも可
+        text: テキストプロンプト
+
+    Returns:
+        annotated_frame: 物体検出結果
+        detected_boxes: 物体検出結果のバウンディングボックス
+    """
+    image_source, image = __load_image(image)
+    annotated_frame, detected_boxes = __detect(image, image_source, text_prompt=text, model=groundingdino_model)
     return annotated_frame, detected_boxes
     
 def dino_seg(image, text):
-    image_source, image = load_image(image)
-    annotated_frame, detected_boxes = detect(image, image_source, text_prompt=text, model=groundingdino_model)
-    segmented_frame_masks = segment(image_source, sam_predictor, boxes=detected_boxes)
-    annotated_frame_with_mask = draw_mask(segmented_frame_masks[0][0], annotated_frame)
+    """dinoを用いた画像のセグメンテーション
+
+    Args:
+        image: PILでもnumpyでもパスでも可
+        text: テキストプロンプト
+
+    Returns:
+        segmented_frame_masks: セグメンテーション結果
+        annotated_frame_with_mask: セグメンテーション結果を重ねた画像
+        detected_boxes: 物体検出結果のバウンディングボックス
+    """
+    image_source, image = __load_image(image)
+    annotated_frame, detected_boxes = __detect(image, image_source, text_prompt=text, model=groundingdino_model)
+    segmented_frame_masks = __segment(image_source, sam_predictor, boxes=detected_boxes)
+    annotated_frame_with_mask = __draw_mask(segmented_frame_masks[0][0], annotated_frame)
     
     return segmented_frame_masks, annotated_frame_with_mask, detected_boxes
