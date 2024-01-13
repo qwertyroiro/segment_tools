@@ -42,7 +42,8 @@ dependencies = [
     "yapf",
     "nltk",
     "fairscale",
-    "litellm"
+    "litellm",
+    "accelerate",
 ]
 
 [tool.setuptools]
