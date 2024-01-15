@@ -139,7 +139,7 @@ def dino(image, text):
     annotated_frame, detected_boxes = __detect(image, image_source, text_prompt=text, model=groundingdino_model)
     return annotated_frame, detected_boxes
     
-def dino_seg(image, text):
+def dinoseg(image, text):
     """dinoを用いた画像のセグメンテーション
 
     Args:
