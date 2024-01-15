@@ -35,6 +35,7 @@ def fastsam(image_path, text=None, points=None, point_labels=None, bboxes=None, 
 
     # everything prompt
     ann = prompt_process.everything_prompt()
+    ann = ann.cpu().numpy()
 
     if bboxes is not None:
         # # bbox default shape [0,0,0,0] -> [x1,y1,x2,y2]
@@ -51,8 +52,6 @@ def fastsam(image_path, text=None, points=None, point_labels=None, bboxes=None, 
         ann = prompt_process.point_prompt(points=points, pointlabel=point_labels)
     
     result_image = prompt_process.plot_to_result(annotations=ann)
-    
-    ann = ann.cpu().numpy()
 
     return result_image, ann
     
