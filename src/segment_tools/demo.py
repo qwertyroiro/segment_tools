@@ -8,7 +8,7 @@ import numpy as np
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 # プロセッサとモデルの準備
-processor = CLIPSegProcessor.from_pretrained("CIDAS/clipseg-rd64-refined")
+processor = CLIPSegProcessor.from_pretrained("CIDAS/clipseg-rd64-refined").to(device)
 clip_model = CLIPSegForImageSegmentation.from_pretrained("CIDAS/clipseg-rd64-refined").to(device)
 fastsam_model = FastSAM('weights/FastSAM.pt')
 
@@ -84,6 +84,7 @@ def clipseg(image, text):
         images=[image_] * len(prompts),
         padding="max_length",
         return_tensors="pt")
+    inputs = inputs.to(device)
     # 推論
     with torch.no_grad():
         outputs = clip_model(**inputs)

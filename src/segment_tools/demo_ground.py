@@ -137,6 +137,8 @@ def dino(image, text):
     """
     image_source, image = __load_image(image)
     annotated_frame, detected_boxes = __detect(image, image_source, text_prompt=text, model=groundingdino_model)
+    # detected_boxesをtensorからndarrayに変換
+    detected_boxes = detected_boxes.cpu().numpy()
     return annotated_frame, detected_boxes
     
 def dinoseg(image, text):
@@ -156,4 +158,6 @@ def dinoseg(image, text):
     segmented_frame_masks = __segment(image_source, sam_predictor, boxes=detected_boxes)
     annotated_frame_with_mask = __draw_mask(segmented_frame_masks[0][0], annotated_frame)
     
+    segmented_frame_masks = segmented_frame_masks.cpu().numpy()
+    detected_boxes = detected_boxes.cpu().numpy()
     return segmented_frame_masks, annotated_frame_with_mask, detected_boxes
