@@ -21,7 +21,7 @@ dependencies = [
     "tqdm>=4.64.0",
     "pandas>=1.1.4",
     "seaborn>=0.11.0",
-    "gradio==3.35.2",
+    # "gradio==3.35.2",
     "ultralytics == 8.0.120",
     "GroundingDINO @ git+https://github.com/qwertyroiro/GroundingDINO_segtools.git",
     "clip @ git+https://github.com/openai/CLIP.git",
