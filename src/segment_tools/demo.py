@@ -5,6 +5,7 @@ import torch
 
 import numpy as np
 import warnings
+from PIL import Image
 warnings.filterwarnings('ignore')
 
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
@@ -68,10 +69,8 @@ def clipseg(image, text):
 
     # image_pathがパス or ndarrayの場合は、PIL.Imageへ変換
     if isinstance(image, str):
-        from PIL import Image
         image = Image.open(image)
     elif isinstance(image, np.ndarray):
-        from PIL import Image
         image = Image.fromarray(image)
     else:
         image = image.copy()
@@ -98,11 +97,11 @@ def clipseg(image, text):
     output = torch.sigmoid(preds)
     # torchからnumpyへ
     output_np = output.cpu().numpy()
-    # # numpyからPIL.Imageへ
-    # output_pil = Image.fromarray((output_np * 255).astype(np.uint8))
-    # 元のサイズへリサイズ
-    output_np = np.asarray(Image.fromarray(output_np).resize(image_shape))
-    # # 元のサイズへリサイズ
-    # output_pil = output.resize(image_shape)
+    # 0-255へ
+    output_np = Image.fromarray((output_np * 255).astype(np.uint8))
+    # 元の画像サイズへ
+    output_np = output_np.resize(image_shape)
+    # PILからnumpyへ
+    output_np = np.array(output_np)
 
     return output_np
