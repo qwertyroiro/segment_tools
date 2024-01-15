@@ -8,7 +8,7 @@ import numpy as np
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 # プロセッサとモデルの準備
-processor = CLIPSegProcessor.from_pretrained("CIDAS/clipseg-rd64-refined").to(device)
+processor = CLIPSegProcessor.from_pretrained("CIDAS/clipseg-rd64-refined")
 clip_model = CLIPSegForImageSegmentation.from_pretrained("CIDAS/clipseg-rd64-refined").to(device)
 fastsam_model = FastSAM('weights/FastSAM.pt')
 
