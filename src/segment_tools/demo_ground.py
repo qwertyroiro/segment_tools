@@ -29,10 +29,10 @@ import warnings
 warnings.filterwarnings('ignore')
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-sd_pipe = StableDiffusionInpaintPipeline.from_pretrained(
-    "stabilityai/stable-diffusion-2-inpainting",
-    torch_dtype=torch.float16,
-).to(device)
+# sd_pipe = StableDiffusionInpaintPipeline.from_pretrained(
+#     "stabilityai/stable-diffusion-2-inpainting",
+#     torch_dtype=torch.float16,
+# ).to(device)
 ckpt_repo_id = "ShilongLiu/GroundingDINO"
 ckpt_filenmae = "groundingdino_swinb_cogcoor.pth"
 ckpt_config_filename = "GroundingDINO_SwinB.cfg.py"
