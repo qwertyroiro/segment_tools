@@ -4,6 +4,8 @@ from transformers import CLIPSegProcessor, CLIPSegForImageSegmentation
 import torch
 
 import numpy as np
+import warnings
+warnings.filterwarnings('ignore')
 
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
@@ -48,6 +50,8 @@ def fastsam(image_path, text=None, points=None, point_labels=None, bboxes=None, 
         ann = prompt_process.point_prompt(points=points, pointlabel=point_labels)
     
     result_image = prompt_process.plot_to_result(annotations=ann)
+    
+    ann = ann.cpu().numpy()
 
     return result_image, ann
     
@@ -97,7 +101,7 @@ def clipseg(image, text):
     # # numpyからPIL.Imageへ
     # output_pil = Image.fromarray((output_np * 255).astype(np.uint8))
     # 元のサイズへリサイズ
-    output_np = np.asarray(Image.fromarray(output_np[0][0]).resize(image_shape))
+    output_np = np.asarray(Image.fromarray(output_np).resize(image_shape))
     # # 元のサイズへリサイズ
     # output_pil = output.resize(image_shape)
 
