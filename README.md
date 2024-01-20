@@ -1,5 +1,8 @@
 ## Usage
+```bash
 pip install git+https://github.com/qwertyroiro/segment_tools.git
+pip install natten==0.14.4 -f https://shi-labs.com/natten/wheels/cu113/torch1.10.1/index.html
+``````
 
 #### read image
 ```python
