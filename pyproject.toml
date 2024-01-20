@@ -65,3 +65,9 @@ package-dir = {"" = "src"}
 
 [tool.hatch.metadata]
 allow-direct-references = true
+
+[tool.hatch.build.targets]
+wheel = { script = "build_wheel" }
+
+[tool.hatch.scripts.build_wheel]
+script = "scripts/build_wheel.py"
