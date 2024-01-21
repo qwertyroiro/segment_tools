@@ -20,7 +20,7 @@ from detectron2.projects.deeplab import add_deeplab_config
 from detectron2.data import MetadataCatalog
 
 import sys
-sys.path.append("../OneFormer_colab_segtools")
+sys.path.append(os.path.join(os.path.dirname(__file__), "OneFormer_colab_segtools"))
 from demo.defaults import DefaultPredictor
 from demo.visualizer import Visualizer, ColorMode
 
