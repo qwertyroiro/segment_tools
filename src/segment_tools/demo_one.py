@@ -36,13 +36,13 @@ from oneformer import (
 )
 cpu_device = torch.device("cpu")
 config_dir = os.path.join(os.path.dirname(__file__), "OneFormer_colab_segtools/configs")
-SWIN_CFG_DICT = {"cityscapes": "configs/cityscapes/oneformer_swin_large_IN21k_384_bs16_90k.yaml",
-            "coco": "configs/coco/oneformer_swin_large_IN21k_384_bs16_100ep.yaml",
-            "ade20k": "configs/ade20k/oneformer_swin_large_IN21k_384_bs16_160k.yaml",}
+SWIN_CFG_DICT = {"cityscapes": "cityscapes/oneformer_swin_large_IN21k_384_bs16_90k.yaml",
+            "coco": "coco/oneformer_swin_large_IN21k_384_bs16_100ep.yaml",
+            "ade20k": "ade20k/oneformer_swin_large_IN21k_384_bs16_160k.yaml",}
 
-DINAT_CFG_DICT = {"cityscapes": "configs/cityscapes/oneformer_dinat_large_bs16_90k.yaml",
-            "coco": "configs/coco/oneformer_dinat_large_bs16_100ep.yaml",
-            "ade20k": "configs/ade20k/oneformer_dinat_large_IN21k_384_bs16_160k.yaml",}
+DINAT_CFG_DICT = {"cityscapes": "cityscapes/oneformer_dinat_large_bs16_90k.yaml",
+            "coco": "coco/oneformer_dinat_large_bs16_100ep.yaml",
+            "ade20k": "ade20k/oneformer_dinat_large_IN21k_384_bs16_160k.yaml",}
 
 SWIN_CFG_DICT = {k: os.path.join(config_dir, v) for k, v in SWIN_CFG_DICT.items()}
 DINAT_CFG_DICT = {k: os.path.join(config_dir, v) for k, v in DINAT_CFG_DICT.items()}
