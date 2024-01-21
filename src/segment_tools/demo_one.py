@@ -1,4 +1,4 @@
-from .OneFormer_segtools.demo.demo import process_image
+from .OneFormer_colab_segtools.test import process_image
 
 def cityscape_test(image):
     """cityscapeのセグメンテーションを行う
