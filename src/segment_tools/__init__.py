@@ -10,6 +10,6 @@ if not os.path.exists("weights/sam_vit_h_4b8939.pth"):
     from .download_weights import download_weights_DINO
     download_weights_DINO("weights/sam_vit_h_4b8939.pth")
 
-from .demo import *
+from .demo_seg import *
 from .demo_ground import *
 from .demo_one import *
