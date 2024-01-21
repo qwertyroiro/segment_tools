@@ -59,7 +59,8 @@ dependencies = [
     "pytorch_lightning == 1.6.4",
     "mmcv == 1.6.2",
     "detectron2 @ git+https://github.com/facebookresearch/detectron2.git",
-    "natten == 0.14.4"
+    "natten == 0.14.4",
+    "imutils"
 ]
 
 [tool.setuptools]
