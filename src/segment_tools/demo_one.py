@@ -19,6 +19,7 @@ from detectron2.config import get_cfg
 from detectron2.projects.deeplab import add_deeplab_config
 from detectron2.data import MetadataCatalog
 
+import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), "OneFormer_colab_segtools"))
 from demo.defaults import DefaultPredictor
