@@ -157,7 +157,7 @@ else:
     )
 
 
-def process_image(image):
+def process_panoptic(image):
     # task = "panoptic"  # @param
     # out = TASK_INFER[task](image, predictor, metadata).get_image()
     out, panoptic_seg, segments_info = panoptic_run(image, predictor, metadata)
@@ -178,7 +178,7 @@ def cityscape_test(image):
     Returns:
         result_image: セグメンテーション結果
     """
-    return process_image(image)
+    return process_panoptic(image)
 
 image = cv2.imread("cityscapes.png")
-out = process_image(image)
+out = process_panoptic(image)
