@@ -2,3 +2,5 @@
 weights/
 outputs/
 test.py
+250_16_dinat_l_oneformer_cityscapes_90k.pth
+__pycache__/
