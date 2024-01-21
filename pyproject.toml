@@ -58,6 +58,8 @@ dependencies = [
     "diffdist == 0.1",
     "pytorch_lightning == 1.6.4",
     "mmcv == 1.6.2",
+    "detectron2 @ git+https://github.com/facebookresearch/detectron2.git",
+    "natten == 0.14.4"
 ]
 
 [tool.setuptools]
@@ -65,9 +67,3 @@ package-dir = {"" = "src"}
 
 [tool.hatch.metadata]
 allow-direct-references = true
-
-[tool.hatch.build.targets]
-wheel = { script = "build_wheel" }
-
-[tool.hatch.scripts.build_wheel]
-script = "scripts/build_wheel.py"
