@@ -18,12 +18,15 @@ import imutils
 from detectron2.config import get_cfg
 from detectron2.projects.deeplab import add_deeplab_config
 from detectron2.data import MetadataCatalog
-from .demo.defaults import DefaultPredictor
-from .demo.visualizer import Visualizer, ColorMode
+
+import sys
+sys.path.append("../OneFormer_colab_segtools")
+from demo.defaults import DefaultPredictor
+from demo.visualizer import Visualizer, ColorMode
 
 
 # import OneFormer Project
-from .oneformer import (
+from oneformer import (
     add_oneformer_config,
     add_common_config,
     add_swin_config,
