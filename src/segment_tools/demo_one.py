@@ -35,6 +35,7 @@ from oneformer import (
     add_convnext_config,
 )
 cpu_device = torch.device("cpu")
+config_dir = os.path.join(os.path.dirname(__file__), "OneFormer_colab_segtools/configs")
 SWIN_CFG_DICT = {"cityscapes": "configs/cityscapes/oneformer_swin_large_IN21k_384_bs16_90k.yaml",
             "coco": "configs/coco/oneformer_swin_large_IN21k_384_bs16_100ep.yaml",
             "ade20k": "configs/ade20k/oneformer_swin_large_IN21k_384_bs16_160k.yaml",}
@@ -42,6 +43,9 @@ SWIN_CFG_DICT = {"cityscapes": "configs/cityscapes/oneformer_swin_large_IN21k_38
 DINAT_CFG_DICT = {"cityscapes": "configs/cityscapes/oneformer_dinat_large_bs16_90k.yaml",
             "coco": "configs/coco/oneformer_dinat_large_bs16_100ep.yaml",
             "ade20k": "configs/ade20k/oneformer_dinat_large_IN21k_384_bs16_160k.yaml",}
+
+SWIN_CFG_DICT = {k: os.path.join(config_dir, v) for k, v in SWIN_CFG_DICT.items()}
+DINAT_CFG_DICT = {k: os.path.join(config_dir, v) for k, v in DINAT_CFG_DICT.items()}
 
 def setup_cfg(dataset, model_path, use_swin):
     # load config from file and command-line arguments
