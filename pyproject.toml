@@ -30,7 +30,7 @@ dependencies = [
     "addict",
     "diffusers",
     "huggingface_hub",
-    "numpy",
+    "numpy == 1.23.5",
     "onnxruntime",
     "pycocotools",
     "requests",
