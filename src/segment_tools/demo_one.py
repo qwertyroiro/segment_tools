@@ -23,6 +23,7 @@ from detectron2.data import MetadataCatalog
 
 import os
 import sys
+import PIL
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "OneFormer_colab_segtools"))
 from demo.defaults import DefaultPredictor
@@ -170,7 +171,7 @@ def process_panoptic(image):
     return out[:, :, ::-1]
 
 
-def cityscape_test(image):
+def one_pano(image):
     """cityscapeのセグメンテーションを行う
 
     Args:
@@ -179,6 +180,16 @@ def cityscape_test(image):
     Returns:
         result_image: セグメンテーション結果
     """
+    
+    if isinstance(image, str):
+        image = cv2.imread(image)
+    elif isinstance(image, PIL.Image.Image):
+        image = np.array(image)
+    elif isinstance(image, np.ndarray):
+        image = image.copy()
+    else:
+        raise ValueError("image type is not supported")
+    
     return process_panoptic(image)
 
 image = cv2.imread("cityscapes.png")
