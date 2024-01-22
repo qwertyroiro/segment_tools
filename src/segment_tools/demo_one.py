@@ -166,9 +166,9 @@ def process_panoptic(image):
     # task = "panoptic"  # @param
     # out = TASK_INFER[task](image, predictor, metadata).get_image()
     out, panoptic_seg, segments_info = panoptic_run(image, predictor, metadata)
-    out = out.get_image()
-    cv2.imwrite("result.png", out[:, :, ::-1])
-    return out[:, :, ::-1]
+    out_img = out.get_image()[:, :, ::-1]
+    cv2.imwrite("result.png", out_img)
+    return out_img
 
 
 def one_pano(image):
