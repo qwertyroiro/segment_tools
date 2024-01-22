@@ -98,9 +98,13 @@ def panoptic_run(img, predictor, metadata):
     )
     predictions = predictor(img, "panoptic")
     panoptic_seg, segments_info = predictions["panoptic_seg"]
-    out = visualizer.draw_panoptic_seg_predictions(
+    out, classes = visualizer.draw_panoptic_seg_predictions(
         panoptic_seg.to(cpu_device), segments_info, alpha=0.5
     )
+
+    # add class name
+    for idx, segment_info in enumerate(segments_info):
+        segments_info[idx].update({"class": classes[segment_info["category_id"]]})
     return out, panoptic_seg, segments_info
 
 
@@ -161,10 +165,7 @@ def process_panoptic(image):
     # task = "panoptic"  # @param
     # out = TASK_INFER[task](image, predictor, metadata).get_image()
     out, panoptic_seg, segments_info = panoptic_run(image, predictor, metadata)
-    print(type(out))
-    print(type(panoptic_seg))
-    print(type(segments_info), len(segments_info))
-    print(segments_info)
+    out = out.get_image()
     cv2.imwrite("result.png", out[:, :, ::-1])
     return out[:, :, ::-1]
 
