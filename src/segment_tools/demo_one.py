@@ -191,6 +191,3 @@ def one_pano(image):
         raise ValueError("image type is not supported")
     
     return process_panoptic(image)
-
-image = cv2.imread("cityscapes.png")
-out = process_panoptic(image)
