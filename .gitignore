@@ -5,3 +5,5 @@ test.py
 250_16_dinat_l_oneformer_cityscapes_90k.pth
 __pycache__/
 result.png
+dist/segment_tools-1.0.0-py3-none-any.whl
+dist/segment_tools-1.0.0.tar.gz
