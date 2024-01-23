@@ -6,6 +6,7 @@ import torch
 import numpy as np
 import warnings
 from PIL import Image
+import cv2
 warnings.filterwarnings('ignore')
 
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
@@ -15,7 +16,7 @@ processor = CLIPSegProcessor.from_pretrained("CIDAS/clipseg-rd64-refined")
 clip_model = CLIPSegForImageSegmentation.from_pretrained("CIDAS/clipseg-rd64-refined").to(device)
 fastsam_model = FastSAM('weights/FastSAM.pt')
 
-def fastsam(image_path, text=None, points=None, point_labels=None, bboxes=None, bbox_labels=None,):
+def fastsam(image_path, text=None, require_image=True, points=None, point_labels=None, bboxes=None, bbox_labels=None):
     """ FastSAMを用いた画像のセグメンテーション
     Args:
         image_path: PILでもnumpyでもパスでも可
@@ -26,7 +27,7 @@ def fastsam(image_path, text=None, points=None, point_labels=None, bboxes=None, 
         bbox_labels (_type_, optional): _description_. Defaults to None.
 
     Returns:
-        result_image: 結果の画像
+        image: 結果の画像
         ann: アノテーション
     """
     IMAGE_PATH = image_path
@@ -51,11 +52,14 @@ def fastsam(image_path, text=None, points=None, point_labels=None, bboxes=None, 
         # point_label default [0] [1,0] 0:background, 1:foreground
         ann = prompt_process.point_prompt(points=points, pointlabel=point_labels)
     
-    result_image = prompt_process.plot_to_result(annotations=ann)
-
-    return result_image, ann
+    output_image = prompt_process.plot_to_result(annotations=ann)
     
-def clipseg(image, text):
+    if require_image:
+        return output_image, ann
+    else:
+        return ann
+    
+def clipseg(image, text, threshold=100, require_image=True):
     """clipsegを用いた画像のセグメンテーション
 
     Args:
@@ -102,5 +106,11 @@ def clipseg(image, text):
     output_np = output_np.resize(image_shape)
     # PILからnumpyへ
     output_np = np.array(output_np)
+    
+    output_image = cv2.threshold(output_np, threshold, 255, cv2.THRESH_BINARY)[1]
+    ann = output_np.copy()
 
-    return output_np
+    if require_image:
+        return output_image, ann
+    else:
+        return ann

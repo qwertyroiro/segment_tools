@@ -39,6 +39,8 @@ from oneformer import (
     add_convnext_config,
 )
 
+from .download_weights import *
+
 cpu_device = torch.device("cpu")
 config_dir = os.path.join(os.path.dirname(__file__), "OneFormer_colab_segtools/configs")
 SWIN_CFG_DICT = {
@@ -103,7 +105,7 @@ def panoptic_run(img, predictor, metadata):
         panoptic_seg.to(cpu_device), segments_info, alpha=0.5
     )
 
-    # add class name
+    # クラス名も追加
     for idx, segment_info in enumerate(segments_info):
         segments_info[idx].update({"class": classes[segment_info["category_id"]]})
     return out, panoptic_seg, segments_info
@@ -136,43 +138,41 @@ TASK_INFER = {
     "semantic": semantic_run,
 }
 
-use_swin = False
+ade20k_predictor_swin, ade20k_metadata_swin = setup_modules(
+    "ade20k", "weights/250_16_swin_l_oneformer_ade20k_160k.pth", True
+)
 
-# download model checkpoint
-import os
-import subprocess
+cityscapes_predictor_swin, cityscapes_metadata_swin = setup_modules(
+    "cityscapes", "weights/250_16_swin_l_oneformer_cityscapes_90k.pth", True
+)
 
-if not use_swin:
-    if not os.path.exists("250_16_dinat_l_oneformer_cityscapes_90k.pth"):
-        subprocess.run(
-            "wget https://shi-labs.com/projects/oneformer/cityscapes/250_16_dinat_l_oneformer_cityscapes_90k.pth",
-            shell=True,
-        )
-    predictor, metadata = setup_modules(
-        "cityscapes", "250_16_dinat_l_oneformer_cityscapes_90k.pth", use_swin
-    )
-else:
-    if not os.path.exists("250_16_swin_l_oneformer_cityscapes_90k.pth"):
-        subprocess.run(
-            "wget https://shi-labs.com/projects/oneformer/cityscapes/250_16_swin_l_oneformer_cityscapes_90k.pth",
-            shell=True,
-        )
-    predictor, metadata = setup_modules(
-        "cityscapes", "250_16_swin_l_oneformer_cityscapes_90k.pth", use_swin
-    )
+coco_predictor_swin, coco_metadata_swin = setup_modules(
+    "coco", "weights/150_16_swin_l_oneformer_coco_100ep.pth", True
+)
+
+ade20k_predictor_dinat, ade20k_metadata_dinat = setup_modules(
+    "ade20k", "weights/250_16_dinat_l_oneformer_ade20k_160k.pth", False
+)
+
+cityscapes_predictor_dinat, cityscapes_metadata_dinat = setup_modules(
+    "cityscapes", "weights/250_16_dinat_l_oneformer_cityscapes_90k.pth", False
+)
+
+coco_predictor_dinat, coco_metadata_dinat = setup_modules(
+    "coco", "weights/150_16_dinat_l_oneformer_coco_100ep.pth", False
+)
 
 
-def process_panoptic(image):
+def process_panoptic(image, predictor, metadata):
     # task = "panoptic"  # @param
     # out = TASK_INFER[task](image, predictor, metadata).get_image()
     out, panoptic_seg, segments_info = panoptic_run(image, predictor, metadata)
-    out_img = out.get_image()[:, :, ::-1]
-    cv2.imwrite("result.png", out_img)
-    return out_img
+    output_image = out.get_image()[:, :, ::-1]
+    return output_image
 
 
-def one_pano(image):
-    """cityscapeのセグメンテーションを行う
+def one_ade20k(image, use_swin=False):
+    """ade20kのセグメンテーションを行う
 
     Args:
         image: PILでもnumpyでもパスでも可
@@ -180,7 +180,12 @@ def one_pano(image):
     Returns:
         result_image: セグメンテーション結果
     """
-    
+
+    if use_swin:
+        predictor, metadata = ade20k_predictor_swin, ade20k_metadata_swin
+    else:
+        predictor, metadata = ade20k_predictor_dinat, ade20k_metadata_dinat
+
     if isinstance(image, str):
         image = cv2.imread(image)
     elif isinstance(image, PIL.Image.Image):
@@ -189,5 +194,59 @@ def one_pano(image):
         image = image.copy()
     else:
         raise ValueError("image type is not supported")
-    
-    return process_panoptic(image)
+
+    return process_panoptic(image, predictor, metadata)
+
+
+def one_cityscapes(image, use_swin=False):
+    """cityscapeのセグメンテーションを行う
+
+    Args:
+        image: PILでもnumpyでもパスでも可
+
+    Returns:
+        result_image: セグメンテーション結果
+    """
+
+    if use_swin:
+        predictor, metadata = cityscapes_predictor_swin, cityscapes_metadata_swin
+    else:
+        predictor, metadata = cityscapes_predictor_dinat, cityscapes_metadata_dinat
+
+    if isinstance(image, str):
+        image = cv2.imread(image)
+    elif isinstance(image, PIL.Image.Image):
+        image = np.array(image)
+    elif isinstance(image, np.ndarray):
+        image = image.copy()
+    else:
+        raise ValueError("image type is not supported")
+
+    return process_panoptic(image, predictor, metadata)
+
+
+def one_coco(image, use_swin=False):
+    """cocoのセグメンテーションを行う
+
+    Args:
+        image: PILでもnumpyでもパスでも可
+
+    Returns:
+        result_image: セグメンテーション結果
+    """
+
+    if use_swin:
+        predictor, metadata = coco_predictor_swin, coco_metadata_swin
+    else:
+        predictor, metadata = coco_predictor_dinat, coco_metadata_dinat
+
+    if isinstance(image, str):
+        image = cv2.imread(image)
+    elif isinstance(image, PIL.Image.Image):
+        image = np.array(image)
+    elif isinstance(image, np.ndarray):
+        image = image.copy()
+    else:
+        raise ValueError("image type is not supported")
+
+    return process_panoptic(image, predictor, metadata)

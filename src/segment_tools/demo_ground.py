@@ -124,7 +124,7 @@ def __draw_mask(mask, image, random_color=True):
 
     return np.array(Image.alpha_composite(annotated_frame_pil, mask_image_pil))
 
-def dino(image, text):
+def dino(image, text, require_image=True):
     """DINOを用いた画像のゼロショット物体検出
 
     Args:
@@ -139,9 +139,16 @@ def dino(image, text):
     annotated_frame, detected_boxes = __detect(image, image_source, text_prompt=text, model=groundingdino_model)
     # detected_boxesをtensorからndarrayに変換
     detected_boxes = detected_boxes.cpu().numpy()
-    return annotated_frame, detected_boxes
     
-def dinoseg(image, text):
+    print(annotated_frame.shape, detected_boxes.shape)
+    print()
+    
+    if require_image:
+        return annotated_frame, detected_boxes
+    else:
+        return detected_boxes
+    
+def dinoseg(image, text, require_image=True):
     """dinoを用いた画像のセグメンテーション
 
     Args:
@@ -160,4 +167,5 @@ def dinoseg(image, text):
     
     segmented_frame_masks = segmented_frame_masks.cpu().numpy()
     detected_boxes = detected_boxes.cpu().numpy()
+    print(segmented_frame_masks.shape, annotated_frame_with_mask.shape, detected_boxes.shape)
     return segmented_frame_masks, annotated_frame_with_mask, detected_boxes
