@@ -101,9 +101,10 @@ def panoptic_run(img, predictor, metadata):
     )
     predictions = predictor(img, "panoptic")
     panoptic_seg, segments_info = predictions["panoptic_seg"]
-    out, classes = visualizer.draw_panoptic_seg_predictions(
+    out = visualizer.draw_panoptic_seg_predictions(
         panoptic_seg.to(cpu_device), segments_info, alpha=0.5
     )
+    classes = metadata.stuff_classes
 
     # クラス名も追加
     for idx, segment_info in enumerate(segments_info):
