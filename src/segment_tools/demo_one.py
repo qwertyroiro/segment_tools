@@ -133,121 +133,92 @@ def semantic_run(img, predictor, metadata):
     return out
 
 
+def check_image_type(image):
+    if isinstance(image, str):
+        image = cv2.imread(image)
+    elif isinstance(image, PIL.Image.Image):
+        image = np.array(image)
+    elif isinstance(image, np.ndarray):
+        image = image.copy()
+    else:
+        raise ValueError("image type is not supported")
+    return image
+
+
 TASK_INFER = {
     "panoptic": panoptic_run,
     "instance": instance_run,
     "semantic": semantic_run,
 }
 
-ade20k_predictor_swin, ade20k_metadata_swin = setup_modules(
-    "ade20k", "weights/250_16_swin_l_oneformer_ade20k_160k.pth", True
-)
 
-cityscapes_predictor_swin, cityscapes_metadata_swin = setup_modules(
-    "cityscapes", "weights/250_16_swin_l_oneformer_cityscapes_90k.pth", True
-)
+class Oneformer_ade20k:
+    def __init__(self, use_swin=False):
+        from .download_weights import download_weights_ade20k
 
-coco_predictor_swin, coco_metadata_swin = setup_modules(
-    "coco", "weights/150_16_swin_l_oneformer_coco_100ep.pth", True
-)
+        # fmt: off
+        if use_swin:
+            if not os.path.exists("weights/250_16_swin_l_oneformer_ade20k_160k.pth"):
+                print("weights/250_16_swin_l_oneformer_ade20k_160k.pth not found. Downloading...")
+                download_weights_ade20k("weights/250_16_swin_l_oneformer_ade20k_160k.pth", True)
+            self.predictor, self.metadata = setup_modules("ade20k", "weights/250_16_swin_l_oneformer_ade20k_160k.pth", True)
+        else:
+            if not os.path.exists("weights/250_16_dinat_l_oneformer_ade20k_160k.pth"):
+                print("weights/250_16_dinat_l_oneformer_ade20k_160k.pth not found. Downloading...")
+                download_weights_ade20k("weights/250_16_dinat_l_oneformer_ade20k_160k.pth", False)
+            self.predictor, self.metadata = setup_modules("ade20k", "weights/250_16_dinat_l_oneformer_ade20k_160k.pth", False)
+        # fmt: on
 
-ade20k_predictor_dinat, ade20k_metadata_dinat = setup_modules(
-    "ade20k", "weights/250_16_dinat_l_oneformer_ade20k_160k.pth", False
-)
-
-cityscapes_predictor_dinat, cityscapes_metadata_dinat = setup_modules(
-    "cityscapes", "weights/250_16_dinat_l_oneformer_cityscapes_90k.pth", False
-)
-
-coco_predictor_dinat, coco_metadata_dinat = setup_modules(
-    "coco", "weights/150_16_dinat_l_oneformer_coco_100ep.pth", False
-)
-
-
-def process_panoptic(image, predictor, metadata):
-    # task = "panoptic"  # @param
-    # out = TASK_INFER[task](image, predictor, metadata).get_image()
-    out, panoptic_seg, segments_info = panoptic_run(image, predictor, metadata)
-    output_image = out.get_image()[:, :, ::-1]
-    return output_image
+    def run(self, image, task="panoptic"):
+        image = check_image_type(image)
+        out, panoptic_seg, segments_info = TASK_INFER[task](image, self.predictor, self.metadata)
+        output_image = out.get_image()[:, :, ::-1]
+        return output_image
 
 
-def one_ade20k(image, use_swin=False):
-    """ade20kのセグメンテーションを行う
-
-    Args:
-        image: PILでもnumpyでもパスでも可
-
-    Returns:
-        result_image: セグメンテーション結果
-    """
-
-    if use_swin:
-        predictor, metadata = ade20k_predictor_swin, ade20k_metadata_swin
-    else:
-        predictor, metadata = ade20k_predictor_dinat, ade20k_metadata_dinat
-
-    if isinstance(image, str):
-        image = cv2.imread(image)
-    elif isinstance(image, PIL.Image.Image):
-        image = np.array(image)
-    elif isinstance(image, np.ndarray):
-        image = image.copy()
-    else:
-        raise ValueError("image type is not supported")
-
-    return process_panoptic(image, predictor, metadata)
+class Oneformer_cityscapes:
+    def __init__(self, use_swin=False):
+        from .download_weights import download_weights_cityscapes
+        
+        # fmt: off
+        if use_swin:
+            if not os.path.exists("weights/250_16_swin_l_oneformer_cityscapes_90k.pth"):
+                print("weights/250_16_swin_l_oneformer_cityscapes_90k.pth not found. Downloading...")
+                download_weights_cityscapes("weights/250_16_swin_l_oneformer_cityscapes_90k.pth", True)
+            self.predictor, self.metadata = setup_modules("cityscapes", "weights/250_16_swin_l_oneformer_cityscapes_90k.pth", True)
+        else:
+            if not os.path.exists("weights/250_16_dinat_l_oneformer_cityscapes_90k.pth"):
+                print("weights/250_16_dinat_l_oneformer_cityscapes_90k.pth not found. Downloading...")
+                download_weights_cityscapes("weights/250_16_dinat_l_oneformer_cityscapes_90k.pth", False)
+            self.predictor, self.metadata = setup_modules("cityscapes", "weights/250_16_dinat_l_oneformer_cityscapes_90k.pth", False)
+        # fmt: on
+        
+    def run(self, image, task="panoptic"):
+        image = check_image_type(image)
+        out, panoptic_seg, segments_info = TASK_INFER[task](image, self.predictor, self.metadata)
+        output_image = out.get_image()[:, :, ::-1]
+        return output_image
 
 
-def one_cityscapes(image, use_swin=False):
-    """cityscapeのセグメンテーションを行う
-
-    Args:
-        image: PILでもnumpyでもパスでも可
-
-    Returns:
-        result_image: セグメンテーション結果
-    """
-
-    if use_swin:
-        predictor, metadata = cityscapes_predictor_swin, cityscapes_metadata_swin
-    else:
-        predictor, metadata = cityscapes_predictor_dinat, cityscapes_metadata_dinat
-
-    if isinstance(image, str):
-        image = cv2.imread(image)
-    elif isinstance(image, PIL.Image.Image):
-        image = np.array(image)
-    elif isinstance(image, np.ndarray):
-        image = image.copy()
-    else:
-        raise ValueError("image type is not supported")
-
-    return process_panoptic(image, predictor, metadata)
-
-
-def one_coco(image, use_swin=False):
-    """cocoのセグメンテーションを行う
-
-    Args:
-        image: PILでもnumpyでもパスでも可
-
-    Returns:
-        result_image: セグメンテーション結果
-    """
-
-    if use_swin:
-        predictor, metadata = coco_predictor_swin, coco_metadata_swin
-    else:
-        predictor, metadata = coco_predictor_dinat, coco_metadata_dinat
-
-    if isinstance(image, str):
-        image = cv2.imread(image)
-    elif isinstance(image, PIL.Image.Image):
-        image = np.array(image)
-    elif isinstance(image, np.ndarray):
-        image = image.copy()
-    else:
-        raise ValueError("image type is not supported")
-
-    return process_panoptic(image, predictor, metadata)
+class Oneformer_coco:
+    def __init__(self, use_swin=False):
+        from .download_weights import download_weights_coco
+        
+        # fmt: off
+        if use_swin:
+            if not os.path.exists("weights/150_16_swin_l_oneformer_coco_100ep.pth"):
+                print("weights/150_16_swin_l_oneformer_coco_100ep.pth not found. Downloading...")
+                download_weights_coco("weights/150_16_swin_l_oneformer_coco_100ep.pth", True)
+            self.predictor, self.metadata = setup_modules("coco", "weights/150_16_swin_l_oneformer_coco_100ep.pth", True)
+        else:
+            if not os.path.exists("weights/150_16_dinat_l_oneformer_coco_100ep.pth"):
+                print("weights/150_16_dinat_l_oneformer_coco_100ep.pth not found. Downloading...")
+                download_weights_coco("weights/150_16_dinat_l_oneformer_coco_100ep.pth", False)
+            self.predictor, self.metadata = setup_modules("coco", "weights/150_16_dinat_l_oneformer_coco_100ep.pth", False)
+        # fmt: on
+        
+    def run(self, image, task="panoptic"):
+        image = check_image_type(image)
+        out, panoptic_seg, segments_info = TASK_INFER[task](image, self.predictor, self.metadata)
+        output_image = out.get_image()[:, :, ::-1]
+        return output_image
