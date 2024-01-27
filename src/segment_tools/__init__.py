@@ -13,3 +13,4 @@ if not os.path.exists("weights/sam_vit_h_4b8939.pth"):
 from .demo_seg import *
 from .demo_ground import *
 from .demo_one import *
+from .utils import *

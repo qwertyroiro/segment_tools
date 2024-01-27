@@ -152,11 +152,11 @@ TASK_INFER = {
 }
 
 
-class Oneformer_ade20k:
+# fmt: off
+class OneFormer_ade20k:
     def __init__(self, use_swin=False):
         from .download_weights import download_weights_ade20k
-
-        # fmt: off
+        
         if use_swin:
             if not os.path.exists("weights/250_16_swin_l_oneformer_ade20k_160k.pth"):
                 print("weights/250_16_swin_l_oneformer_ade20k_160k.pth not found. Downloading...")
@@ -167,20 +167,24 @@ class Oneformer_ade20k:
                 print("weights/250_16_dinat_l_oneformer_ade20k_160k.pth not found. Downloading...")
                 download_weights_ade20k("weights/250_16_dinat_l_oneformer_ade20k_160k.pth", False)
             self.predictor, self.metadata = setup_modules("ade20k", "weights/250_16_dinat_l_oneformer_ade20k_160k.pth", False)
-        # fmt: on
 
-    def run(self, image, task="panoptic"):
+    def run(self, image, require_image=True, task="panoptic"):
         image = check_image_type(image)
         out, panoptic_seg, segments_info = TASK_INFER[task](image, self.predictor, self.metadata)
+        panoptic_seg = panoptic_seg.cpu().numpy()
+        print(type(panoptic_seg))
         output_image = out.get_image()[:, :, ::-1]
-        return output_image
+        
+        if require_image:
+            return output_image, panoptic_seg, segments_info
+        else:
+            return panoptic_seg, segments_info
 
 
-class Oneformer_cityscapes:
+class OneFormer_cityscapes:
     def __init__(self, use_swin=False):
         from .download_weights import download_weights_cityscapes
         
-        # fmt: off
         if use_swin:
             if not os.path.exists("weights/250_16_swin_l_oneformer_cityscapes_90k.pth"):
                 print("weights/250_16_swin_l_oneformer_cityscapes_90k.pth not found. Downloading...")
@@ -191,20 +195,22 @@ class Oneformer_cityscapes:
                 print("weights/250_16_dinat_l_oneformer_cityscapes_90k.pth not found. Downloading...")
                 download_weights_cityscapes("weights/250_16_dinat_l_oneformer_cityscapes_90k.pth", False)
             self.predictor, self.metadata = setup_modules("cityscapes", "weights/250_16_dinat_l_oneformer_cityscapes_90k.pth", False)
-        # fmt: on
         
-    def run(self, image, task="panoptic"):
+    def run(self, image, require_image=True, task="panoptic"):
         image = check_image_type(image)
         out, panoptic_seg, segments_info = TASK_INFER[task](image, self.predictor, self.metadata)
         output_image = out.get_image()[:, :, ::-1]
-        return output_image
+        
+        if require_image:
+            return output_image, panoptic_seg, segments_info
+        else:
+            return panoptic_seg, segments_info
 
 
-class Oneformer_coco:
+class OneFormer_coco:
     def __init__(self, use_swin=False):
         from .download_weights import download_weights_coco
-        
-        # fmt: off
+
         if use_swin:
             if not os.path.exists("weights/150_16_swin_l_oneformer_coco_100ep.pth"):
                 print("weights/150_16_swin_l_oneformer_coco_100ep.pth not found. Downloading...")
@@ -215,10 +221,15 @@ class Oneformer_coco:
                 print("weights/150_16_dinat_l_oneformer_coco_100ep.pth not found. Downloading...")
                 download_weights_coco("weights/150_16_dinat_l_oneformer_coco_100ep.pth", False)
             self.predictor, self.metadata = setup_modules("coco", "weights/150_16_dinat_l_oneformer_coco_100ep.pth", False)
-        # fmt: on
         
-    def run(self, image, task="panoptic"):
+    def run(self, image, require_image=True, task="panoptic",):
         image = check_image_type(image)
         out, panoptic_seg, segments_info = TASK_INFER[task](image, self.predictor, self.metadata)
         output_image = out.get_image()[:, :, ::-1]
-        return output_image
+        
+        if require_image:
+            return output_image, panoptic_seg, segments_info
+        else:
+            return panoptic_seg, segments_info
+
+# fmt: on

@@ -57,7 +57,8 @@ dependencies = [
     "mmcv == 1.6.2",
     "detectron2 @ git+https://github.com/facebookresearch/detectron2.git",
     # "natten == 0.14.4",
-    "imutils"
+    "imutils",
+    "dinov2 @ git+https://github.com/qwertyroiro/dinov2_colab_segtools.git"
 ]
 
 [tool.setuptools]
