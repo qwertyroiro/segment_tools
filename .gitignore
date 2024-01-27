@@ -8,3 +8,4 @@ result.png
 dist/segment_tools-1.0.0-py3-none-any.whl
 dist/segment_tools-1.0.0.tar.gz
 test.ipynb
+image_dir/

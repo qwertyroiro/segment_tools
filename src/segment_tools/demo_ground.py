@@ -28,6 +28,8 @@ from huggingface_hub import hf_hub_download
 import warnings
 warnings.filterwarnings('ignore')
 
+from segment_tools.utils import draw_multi_mask
+
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 # sd_pipe = StableDiffusionInpaintPipeline.from_pretrained(
 #     "stabilityai/stable-diffusion-2-inpainting",
@@ -169,7 +171,7 @@ def dino(image, text, require_image=True):
     else:
         return detected_boxes
     
-def dinoseg(image, text, require_image=True):
+def dinoseg(image, text, require_image=True, require_boxes=False):
     """dinoを用いた画像のセグメンテーション
 
     Args:
@@ -184,8 +186,20 @@ def dinoseg(image, text, require_image=True):
     image_source, image = __load_image(image)
     annotated_frame, detected_boxes = __detect(image, image_source, text_prompt=text, model=groundingdino_model)
     segmented_frame_masks = __segment(image_source, sam_predictor, boxes=detected_boxes)
-    annotated_frame_with_mask = __draw_multi_mask(segmented_frame_masks, annotated_frame)
+    # annotated_frame_with_mask = __draw_multi_mask(segmented_frame_masks, annotated_frame)
+    annotated_frame_with_mask = draw_multi_mask(segmented_frame_masks, annotated_frame)
+    annotated_frame_with_mask = annotated_frame_with_mask[:, :, :3]
     
     segmented_frame_masks = segmented_frame_masks.cpu().numpy()
     detected_boxes = detected_boxes.cpu().numpy()
-    return segmented_frame_masks, annotated_frame_with_mask, detected_boxes
+    
+    if require_image:
+        if require_boxes:
+            return annotated_frame_with_mask, segmented_frame_masks, detected_boxes
+        else:
+            return annotated_frame_with_mask, segmented_frame_masks
+    else:
+        if require_boxes:
+            return segmented_frame_masks, detected_boxes
+        else:
+            return segmented_frame_masks

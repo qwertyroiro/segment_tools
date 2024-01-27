@@ -41,6 +41,8 @@ from oneformer import (
 
 from .download_weights import *
 
+from .utils import mask_class_objects
+
 cpu_device = torch.device("cpu")
 config_dir = os.path.join(os.path.dirname(__file__), "OneFormer_colab_segtools/configs")
 SWIN_CFG_DICT = {
@@ -109,6 +111,9 @@ def panoptic_run(img, predictor, metadata):
     # クラス名も追加
     for idx, segment_info in enumerate(segments_info):
         segments_info[idx].update({"class": classes[segment_info["category_id"]]})
+        
+    print(segments_info)
+    panoptic_seg = panoptic_seg.cpu().numpy()
     return out, panoptic_seg, segments_info
 
 
@@ -168,17 +173,25 @@ class OneFormer_ade20k:
                 download_weights_ade20k("weights/250_16_dinat_l_oneformer_ade20k_160k.pth", False)
             self.predictor, self.metadata = setup_modules("ade20k", "weights/250_16_dinat_l_oneformer_ade20k_160k.pth", False)
 
-    def run(self, image, require_image=True, task="panoptic"):
+    def run(self, image, prompt=None, require_image=True, require_info=False, task="panoptic"):
         image = check_image_type(image)
         out, panoptic_seg, segments_info = TASK_INFER[task](image, self.predictor, self.metadata)
-        panoptic_seg = panoptic_seg.cpu().numpy()
-        print(type(panoptic_seg))
         output_image = out.get_image()[:, :, ::-1]
         
+        if prompt is not None:
+            separate_mask = mask_class_objects(panoptic_seg, segments_info, prompt)
+            print(separate_mask.shape)
+        
         if require_image:
-            return output_image, panoptic_seg, segments_info
+            if require_info:
+                return output_image, panoptic_seg, segments_info
+            else:
+                return output_image, panoptic_seg
         else:
-            return panoptic_seg, segments_info
+            if require_info:
+                return panoptic_seg, segments_info
+            else:
+                return panoptic_seg
 
 
 class OneFormer_cityscapes:
@@ -196,15 +209,25 @@ class OneFormer_cityscapes:
                 download_weights_cityscapes("weights/250_16_dinat_l_oneformer_cityscapes_90k.pth", False)
             self.predictor, self.metadata = setup_modules("cityscapes", "weights/250_16_dinat_l_oneformer_cityscapes_90k.pth", False)
         
-    def run(self, image, require_image=True, task="panoptic"):
+    def run(self, image, prompt=None, require_image=True, require_info=False, task="panoptic"):
         image = check_image_type(image)
         out, panoptic_seg, segments_info = TASK_INFER[task](image, self.predictor, self.metadata)
         output_image = out.get_image()[:, :, ::-1]
         
+        if prompt is not None:
+            separate_mask = mask_class_objects(panoptic_seg, segments_info, prompt)
+            print(separate_mask.shape)
+        
         if require_image:
-            return output_image, panoptic_seg, segments_info
+            if require_info:
+                return output_image, panoptic_seg, segments_info
+            else:
+                return output_image, panoptic_seg
         else:
-            return panoptic_seg, segments_info
+            if require_info:
+                return panoptic_seg, segments_info
+            else:
+                return panoptic_seg
 
 
 class OneFormer_coco:
@@ -222,14 +245,24 @@ class OneFormer_coco:
                 download_weights_coco("weights/150_16_dinat_l_oneformer_coco_100ep.pth", False)
             self.predictor, self.metadata = setup_modules("coco", "weights/150_16_dinat_l_oneformer_coco_100ep.pth", False)
         
-    def run(self, image, require_image=True, task="panoptic",):
+    def run(self, image, prompt=None, require_image=True, require_info=False, task="panoptic"):
         image = check_image_type(image)
         out, panoptic_seg, segments_info = TASK_INFER[task](image, self.predictor, self.metadata)
         output_image = out.get_image()[:, :, ::-1]
         
+        if prompt is not None:
+            separate_mask = mask_class_objects(panoptic_seg, segments_info, prompt)
+            print(separate_mask.shape)
+        
         if require_image:
-            return output_image, panoptic_seg, segments_info
+            if require_info:
+                return output_image, panoptic_seg, segments_info
+            else:
+                return output_image, panoptic_seg
         else:
-            return panoptic_seg, segments_info
+            if require_info:
+                return panoptic_seg, segments_info
+            else:
+                return panoptic_seg
 
 # fmt: on
