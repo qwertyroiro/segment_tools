@@ -112,7 +112,6 @@ def panoptic_run(img, predictor, metadata):
     for idx, segment_info in enumerate(segments_info):
         segments_info[idx].update({"class": classes[segment_info["category_id"]]})
         
-    print(segments_info)
     panoptic_seg = panoptic_seg.cpu().numpy()
     return out, panoptic_seg, segments_info
 
@@ -179,8 +178,7 @@ class OneFormer_ade20k:
         output_image = out.get_image()[:, :, ::-1]
         
         if prompt is not None:
-            separate_mask = mask_class_objects(panoptic_seg, segments_info, prompt)
-            print(separate_mask.shape)
+            panoptic_seg = mask_class_objects(panoptic_seg, segments_info, prompt)
         
         if require_image:
             if require_info:
@@ -215,8 +213,7 @@ class OneFormer_cityscapes:
         output_image = out.get_image()[:, :, ::-1]
         
         if prompt is not None:
-            separate_mask = mask_class_objects(panoptic_seg, segments_info, prompt)
-            print(separate_mask.shape)
+            panoptic_seg = mask_class_objects(panoptic_seg, segments_info, prompt)
         
         if require_image:
             if require_info:
@@ -251,8 +248,7 @@ class OneFormer_coco:
         output_image = out.get_image()[:, :, ::-1]
         
         if prompt is not None:
-            separate_mask = mask_class_objects(panoptic_seg, segments_info, prompt)
-            print(separate_mask.shape)
+            panoptic_seg = mask_class_objects(panoptic_seg, segments_info, prompt)
         
         if require_image:
             if require_info:

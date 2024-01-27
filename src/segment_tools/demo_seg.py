@@ -7,6 +7,7 @@ import numpy as np
 import warnings
 from PIL import Image
 import cv2
+from .utils import separate_masks, draw_multi_mask
 warnings.filterwarnings('ignore')
 
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
@@ -106,11 +107,18 @@ def clipseg(image, text, threshold=100, require_image=True):
     output_np = output_np.resize(image_shape)
     # PILからnumpyへ
     output_np = np.array(output_np)
-    
+    # 二値化
     output_image = cv2.threshold(output_np, threshold, 255, cv2.THRESH_BINARY)[1]
-    ann = output_np.copy()
+    
+    # マスクの分離
+    masks = separate_masks(output_image)
+    image = np.array(image)
+    # マスクの描画
+    drawed_mask = draw_multi_mask(masks, image)
+    
+    drawed_mask = drawed_mask[:, :, :3]
 
     if require_image:
-        return output_image, ann
+        return drawed_mask, masks
     else:
-        return ann
+        return masks

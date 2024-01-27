@@ -186,12 +186,13 @@ def dinoseg(image, text, require_image=True, require_boxes=False):
     image_source, image = __load_image(image)
     annotated_frame, detected_boxes = __detect(image, image_source, text_prompt=text, model=groundingdino_model)
     segmented_frame_masks = __segment(image_source, sam_predictor, boxes=detected_boxes)
-    # annotated_frame_with_mask = __draw_multi_mask(segmented_frame_masks, annotated_frame)
+    segmented_frame_masks = segmented_frame_masks.cpu().numpy()
     annotated_frame_with_mask = draw_multi_mask(segmented_frame_masks, annotated_frame)
     annotated_frame_with_mask = annotated_frame_with_mask[:, :, :3]
     
-    segmented_frame_masks = segmented_frame_masks.cpu().numpy()
+    
     detected_boxes = detected_boxes.cpu().numpy()
+    segmented_frame_masks = np.squeeze(segmented_frame_masks)
     
     if require_image:
         if require_boxes:
