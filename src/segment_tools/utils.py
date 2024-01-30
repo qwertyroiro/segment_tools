@@ -39,7 +39,11 @@ def draw_multi_mask(masks, image, label=None, random_color=True, alpha=0.5):
     
     return np.array(annotated_frame_pil)
 
-def mask_class_objects(seg: np.ndarray, ann: list, class_name: str) -> np.ndarray:
+def mask_class_objects(seg: np.ndarray, ann: list, class_name: str, stuff_classes) -> np.ndarray:
+    # ラベルがmetadata['stuff_classes']に含まれていない場合は警告を出す
+    if class_name not in stuff_classes:
+        print(f"警告: {class_name} はラベルに含まれていません。")
+    
     # 指定された'class'に対応する'id'を取得
     target_ids = [item['id'] for item in ann if item['class'] == class_name]
     separate_masks = []

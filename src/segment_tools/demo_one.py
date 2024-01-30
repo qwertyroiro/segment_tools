@@ -178,7 +178,7 @@ class OneFormer_ade20k:
         
         # promptがNoneでない、かつrequire_imageがTrueの場合のみ、draw_multi_maskを実行(多分重いので)
         if prompt is not None and require_image:
-            panoptic_seg = mask_class_objects(panoptic_seg, segments_info, prompt)
+            panoptic_seg = mask_class_objects(panoptic_seg, segments_info, prompt, self.metadata.stuff_classes)
             output_image = draw_multi_mask(panoptic_seg, image, prompt)
         elif require_image:
             # promptがNoneの場合でも、require_imageがTrueならば元の画像を出力画像とする
@@ -215,7 +215,7 @@ class OneFormer_cityscapes:
         
         # promptがNoneでない、かつrequire_imageがTrueの場合のみ、draw_multi_maskを実行(多分重いので)
         if prompt is not None and require_image:
-            panoptic_seg = mask_class_objects(panoptic_seg, segments_info, prompt)
+            panoptic_seg = mask_class_objects(panoptic_seg, segments_info, prompt, self.metadata.stuff_classes)
             output_image = draw_multi_mask(panoptic_seg, image, prompt)
         elif require_image:
             # promptがNoneの場合でも、require_imageがTrueならば元の画像を出力画像とする
@@ -252,7 +252,7 @@ class OneFormer_coco:
         
         # promptがNoneでない、かつrequire_imageがTrueの場合のみ、draw_multi_maskを実行(多分重いので)
         if prompt is not None and require_image:
-            panoptic_seg = mask_class_objects(panoptic_seg, segments_info, prompt)
+            panoptic_seg = mask_class_objects(panoptic_seg, segments_info, prompt, self.metadata.stuff_classes)
             output_image = draw_multi_mask(panoptic_seg, image, prompt)
         elif require_image:
             # promptがNoneの場合でも、require_imageがTrueならば元の画像を出力画像とする
