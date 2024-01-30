@@ -38,6 +38,7 @@ def fastsam(image_path, text=None, require_image=True, points=None, point_labels
     # everything prompt
     ann = prompt_process.everything_prompt()
     ann = ann.cpu().numpy()
+    ann = ann.astype(int)
 
     if bboxes is not None:
         # # bbox default shape [0,0,0,0] -> [x1,y1,x2,y2]
@@ -46,6 +47,7 @@ def fastsam(image_path, text=None, require_image=True, points=None, point_labels
     if text is not None:
         # text prompt
         ann = prompt_process.text_prompt(text=text)
+        ann = ann.astype(int)
 
     if points is not None:
         # point prompt
@@ -114,7 +116,7 @@ def clipseg(image, text, threshold=100, require_image=True):
     masks = separate_masks(output_image)
     image = np.array(image)
     # マスクの描画
-    drawed_mask = draw_multi_mask(masks, image)
+    drawed_mask = draw_multi_mask(masks, image, text)
     
     drawed_mask = drawed_mask[:, :, :3]
 

@@ -1,35 +1,47 @@
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 from scipy.ndimage import label
 
 # draw mask from segment anything
-def draw_multi_mask(masks, image, random_color=True):
-    if random_color:
-        color = np.concatenate([np.random.random(3), np.array([0.8])], axis=0)
-    else:
-        color = np.array([30/255, 144/255, 255/255, 0.6])
-    h, w = masks[0].shape[-2:]
-    mask_image = masks[0].reshape(h, w, 1) * color.reshape(1, 1, -1)
+def draw_multi_mask(masks, image, label=None, random_color=True, alpha=0.5):
+    def get_color(random_color):
+        if random_color:
+            return np.concatenate([np.random.random(3), np.array([alpha])], axis=0)
+        else:
+            return np.array([30/255, 144/255, 255/255, alpha])
     
+    def draw_label(draw, position, label, font):
+        text_size = draw.textsize(label, font=font)
+        text_position = (position[0] - text_size[0] // 2, position[1] - text_size[1] // 2)
+        # 黒背景を追加
+        draw.rectangle([text_position[0] - 2, text_position[1] - 2, text_position[0] + text_size[0] + 2, text_position[1] + text_size[1] + 2], fill=(0, 0, 0, 255))
+        draw.text(text_position, label, fill=(255, 255, 255, 255), font=font)
+    
+    h, w = masks.shape[1], masks.shape[2]
     annotated_frame_pil = Image.fromarray(image).convert("RGBA")
-    # mask_image_pil = Image.fromarray((mask_image.cpu().numpy() * 255).astype(np.uint8)).convert("RGBA") # tensor
-    mask_image_pil = Image.fromarray((mask_image * 255).astype(np.uint8)).convert("RGBA")
-
-    temp_mask = np.array(Image.alpha_composite(annotated_frame_pil, mask_image_pil))
     
-    for mask in masks[1:]:
-        color = np.concatenate([np.random.random(3), np.array([0.8])], axis=0)
-        mask_image = mask.reshape(h, w, 1) * color.reshape(1, 1, -1)
-        # mask_image_pil = Image.fromarray((mask_image.cpu().numpy() * 255).astype(np.uint8)).convert("RGBA") # tensor
+    # フォントの設定（フォントサイズを大きくし、フォントの太さを調整）
+    font = ImageFont.truetype("/usr/share/fonts/OTF/ipag.ttf", 24)  # フォントサイズを24に設定
+    
+    for mask in masks:
+        color = get_color(random_color)
+        mask_image = np.where(mask.reshape(h, w, 1) > 0, color.reshape(1, 1, -1), 0)
         mask_image_pil = Image.fromarray((mask_image * 255).astype(np.uint8)).convert("RGBA")
-        temp_mask = np.array(Image.alpha_composite(Image.fromarray(temp_mask), mask_image_pil))
         
-    return temp_mask
+        if label is not None:
+            y, x = np.where(mask > 0)
+            if len(x) > 0 and len(y) > 0:
+                center_x, center_y = np.mean(x), np.mean(y)
+                draw = ImageDraw.Draw(mask_image_pil)
+                draw_label(draw, (center_x, center_y), label, font)
+        
+        annotated_frame_pil = Image.alpha_composite(annotated_frame_pil, mask_image_pil)
+    
+    return np.array(annotated_frame_pil)
 
 def mask_class_objects(seg: np.ndarray, ann: list, class_name: str) -> np.ndarray:
     # 指定された'class'に対応する'id'を取得
     target_ids = [item['id'] for item in ann if item['class'] == class_name]
-    assert len(target_ids) > 0, "class_name is not found in ann"
     separate_masks = []
     # target_idsに含まれるidの位置を1に設定
     for target_id in target_ids:
@@ -70,3 +82,18 @@ def separate_masks(seg: np.ndarray) -> list:
     separate_masks = np.array(separate_masks)
     
     return separate_masks
+
+def combine_masks(masks: np.ndarray) -> np.ndarray:
+    """
+    複数のマスクを結合する関数。
+    
+    :param masks: 形状が(x, H, W)のNumPy配列。xはマスクの数、Hは縦のサイズ、Wは横のサイズ。
+    :return: 結合されたマスク(H, W)を返す。
+    """
+    # 論理和を使ってマスクを結合する
+    combined_mask = np.logical_or.reduce(masks, axis=0)
+    
+    # 結果をboolからintに変換する（必要に応じて）
+    combined_mask = combined_mask.astype(int)
+    
+    return combined_mask

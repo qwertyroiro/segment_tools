@@ -57,26 +57,24 @@ image, maskimage, bbox = st.dinoseg(image_pil, prompt)
 image, maskimage, bbox = st.dinoseg(image_np, prompt)
 ```
 
-#### OneFormer (ade20k)
+#### OneFormer (ade20k, backbone: DiNAT)
 ```python
 oneformer_ade20k = st.OneFormer_ade20k()
-image, ann, ann_info = oneformer_ade20k.run(image_path)
-image, ann, ann_info = oneformer_ade20k.run(image_pil)
-image, ann, ann_info = oneformer_ade20k.run(image_np)
+image, ann = oneformer_ade20k.run(image_np)
+image, ann = oneformer_ade20k.run()
+ann = oneformer_ade20k.run(image_np, require_image=False)
 ```
 
-#### OneFormer (cityscapes)
+#### OneFormer (cityscapes, backbone: DiNAT)
 ```python
 oneformer_city = st.OneFormer_cityscapes()
-image, ann, ann_info = oneformer_city.run(image_path)
-image, ann, ann_info = oneformer_city.run(image_pil)
-image, ann, ann_info = oneformer_city.run(image_np)
+image, ann = oneformer_city.run(image_np)
+ann = oneformer_city.run(image_np, require_image=False)
 ```
 
-#### OneFormer (coco)
+#### OneFormer (coco, backbone: DiNAT)
 ```python
 oneformer_coco = st.OneFormer_coco()
-image, ann, ann_info = oneformer_coco.run(image_path)
-image, ann, ann_info = oneformer_coco.run(image_pil)
-image, ann, ann_info = oneformer_coco.run(image_np)
+image, ann = oneformer_coco.run(image_np)
+ann = oneformer_coco.run(image_np, require_image=False)
 ```

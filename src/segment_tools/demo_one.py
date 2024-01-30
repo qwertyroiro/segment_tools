@@ -41,7 +41,7 @@ from oneformer import (
 
 from .download_weights import *
 
-from .utils import mask_class_objects
+from .utils import mask_class_objects, draw_multi_mask
 
 cpu_device = torch.device("cpu")
 config_dir = os.path.join(os.path.dirname(__file__), "OneFormer_colab_segtools/configs")
@@ -175,21 +175,23 @@ class OneFormer_ade20k:
     def run(self, image, prompt=None, require_image=True, require_info=False, task="panoptic"):
         image = check_image_type(image)
         out, panoptic_seg, segments_info = TASK_INFER[task](image, self.predictor, self.metadata)
-        output_image = out.get_image()[:, :, ::-1]
         
-        if prompt is not None:
+        # promptがNoneでない、かつrequire_imageがTrueの場合のみ、draw_multi_maskを実行(多分重いので)
+        if prompt is not None and require_image:
             panoptic_seg = mask_class_objects(panoptic_seg, segments_info, prompt)
+            output_image = draw_multi_mask(panoptic_seg, image, prompt)
+        elif require_image:
+            # promptがNoneの場合でも、require_imageがTrueならば元の画像を出力画像とする
+            output_image = out.get_image()[:, :, ::-1]
         
+        # 出力の組み立て
         if require_image:
-            if require_info:
-                return output_image, panoptic_seg, segments_info
-            else:
-                return output_image, panoptic_seg
+            return (output_image, panoptic_seg, segments_info) if require_info else (output_image, panoptic_seg)
         else:
-            if require_info:
-                return panoptic_seg, segments_info
-            else:
-                return panoptic_seg
+            return (panoptic_seg, segments_info) if require_info else panoptic_seg
+        
+    def get_labels(self):
+        return self.metadata.stuff_classes
 
 
 class OneFormer_cityscapes:
@@ -210,21 +212,23 @@ class OneFormer_cityscapes:
     def run(self, image, prompt=None, require_image=True, require_info=False, task="panoptic"):
         image = check_image_type(image)
         out, panoptic_seg, segments_info = TASK_INFER[task](image, self.predictor, self.metadata)
-        output_image = out.get_image()[:, :, ::-1]
         
-        if prompt is not None:
+        # promptがNoneでない、かつrequire_imageがTrueの場合のみ、draw_multi_maskを実行(多分重いので)
+        if prompt is not None and require_image:
             panoptic_seg = mask_class_objects(panoptic_seg, segments_info, prompt)
+            output_image = draw_multi_mask(panoptic_seg, image, prompt)
+        elif require_image:
+            # promptがNoneの場合でも、require_imageがTrueならば元の画像を出力画像とする
+            output_image = out.get_image()[:, :, ::-1]
         
+        # 出力の組み立て
         if require_image:
-            if require_info:
-                return output_image, panoptic_seg, segments_info
-            else:
-                return output_image, panoptic_seg
+            return (output_image, panoptic_seg, segments_info) if require_info else (output_image, panoptic_seg)
         else:
-            if require_info:
-                return panoptic_seg, segments_info
-            else:
-                return panoptic_seg
+            return (panoptic_seg, segments_info) if require_info else panoptic_seg
+        
+    def get_labels(self):
+        return self.metadata.stuff_classes
 
 
 class OneFormer_coco:
@@ -245,20 +249,22 @@ class OneFormer_coco:
     def run(self, image, prompt=None, require_image=True, require_info=False, task="panoptic"):
         image = check_image_type(image)
         out, panoptic_seg, segments_info = TASK_INFER[task](image, self.predictor, self.metadata)
-        output_image = out.get_image()[:, :, ::-1]
         
-        if prompt is not None:
+        # promptがNoneでない、かつrequire_imageがTrueの場合のみ、draw_multi_maskを実行(多分重いので)
+        if prompt is not None and require_image:
             panoptic_seg = mask_class_objects(panoptic_seg, segments_info, prompt)
+            output_image = draw_multi_mask(panoptic_seg, image, prompt)
+        elif require_image:
+            # promptがNoneの場合でも、require_imageがTrueならば元の画像を出力画像とする
+            output_image = out.get_image()[:, :, ::-1]
         
+        # 出力の組み立て
         if require_image:
-            if require_info:
-                return output_image, panoptic_seg, segments_info
-            else:
-                return output_image, panoptic_seg
+            return (output_image, panoptic_seg, segments_info) if require_info else (output_image, panoptic_seg)
         else:
-            if require_info:
-                return panoptic_seg, segments_info
-            else:
-                return panoptic_seg
+            return (panoptic_seg, segments_info) if require_info else panoptic_seg
+        
+    def get_labels(self):
+        return self.metadata.stuff_classes
 
 # fmt: on
