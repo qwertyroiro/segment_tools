@@ -43,10 +43,14 @@ def mask_class_objects(seg: np.ndarray, ann: list, class_name: str, stuff_classe
     # ラベルがmetadata['stuff_classes']に含まれていない場合は警告を出す
     if class_name not in stuff_classes:
         print(f"警告: {class_name} はラベルに含まれていません。")
-        return seg, True
+        return seg, True, False
     
     # 指定された'class'に対応する'id'を取得
     target_ids = [item['id'] for item in ann if item['class'] == class_name]
+    if len(target_ids) == 0:
+        print(f"警告: {class_name} は検出結果に含まれていません。")
+        return seg, False, True
+    
     separate_masks = []
     # target_idsに含まれるidの位置を1に設定
     for target_id in target_ids:
@@ -55,7 +59,7 @@ def mask_class_objects(seg: np.ndarray, ann: list, class_name: str, stuff_classe
         separate_masks.append(mask)
     
     separate_masks = np.array(separate_masks)
-    return separate_masks, False
+    return separate_masks, False, False
 
 # def separate_class_masks(seg: np.ndarray, ann: list, class_name: str) -> list:
 #     # 指定された'class'に対応する'id'を取得

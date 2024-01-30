@@ -178,9 +178,11 @@ class OneFormer_ade20k:
         
         # promptがNoneでない、かつrequire_imageがTrueの場合のみ、draw_multi_maskを実行(多分重いので)
         if prompt is not None and require_image:
-            panoptic_seg, nolabel = mask_class_objects(panoptic_seg, segments_info, prompt, self.metadata.stuff_classes)
+            panoptic_seg, nolabel, nodetect = mask_class_objects(panoptic_seg, segments_info, prompt, self.metadata.stuff_classes)
             if nolabel:
                 output_image = out.get_image()[:, :, ::-1]
+            elif nodetect:
+                output_image = image
             else:
                 output_image = draw_multi_mask(panoptic_seg, image, prompt)
         elif require_image:
@@ -218,9 +220,11 @@ class OneFormer_cityscapes:
         
         # promptがNoneでない、かつrequire_imageがTrueの場合のみ、draw_multi_maskを実行(多分重いので)
         if prompt is not None and require_image:
-            panoptic_seg, nolabel = mask_class_objects(panoptic_seg, segments_info, prompt, self.metadata.stuff_classes)
+            panoptic_seg, nolabel, nodetect = mask_class_objects(panoptic_seg, segments_info, prompt, self.metadata.stuff_classes)
             if nolabel:
                 output_image = out.get_image()[:, :, ::-1]
+            elif nodetect:
+                output_image = image
             else:
                 output_image = draw_multi_mask(panoptic_seg, image, prompt)
         elif require_image:
@@ -258,9 +262,11 @@ class OneFormer_coco:
         
         # promptがNoneでない、かつrequire_imageがTrueの場合のみ、draw_multi_maskを実行(多分重いので)
         if prompt is not None and require_image:
-            panoptic_seg, nolabel = mask_class_objects(panoptic_seg, segments_info, prompt, self.metadata.stuff_classes)
+            panoptic_seg, nolabel, nodetect = mask_class_objects(panoptic_seg, segments_info, prompt, self.metadata.stuff_classes)
             if nolabel:
                 output_image = out.get_image()[:, :, ::-1]
+            elif nodetect:
+                output_image = image
             else:
                 output_image = draw_multi_mask(panoptic_seg, image, prompt)
         elif require_image:

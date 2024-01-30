@@ -172,4 +172,4 @@ with suppress_output():
         ann = ann * 255
         cv2.imwrite("image_dir/OneFormer_cityscapes(dinat)(prompt)(combine).png", ann)
 
-print("テスト完了")
+print("\nテスト完了")
