@@ -17,7 +17,7 @@ processor = CLIPSegProcessor.from_pretrained("CIDAS/clipseg-rd64-refined")
 clip_model = CLIPSegForImageSegmentation.from_pretrained("CIDAS/clipseg-rd64-refined").to(device)
 fastsam_model = FastSAM('weights/FastSAM.pt')
 
-def fastsam(image_path, text=None, require_image=True, points=None, point_labels=None, bboxes=None, bbox_labels=None):
+def fastsam(image_path, text=None, points=None, point_labels=None, bboxes=None, bbox_labels=None):
     """ FastSAMを用いた画像のセグメンテーション
     Args:
         image_path: PILでもnumpyでもパスでも可
@@ -57,12 +57,12 @@ def fastsam(image_path, text=None, require_image=True, points=None, point_labels
     
     output_image = prompt_process.plot_to_result(annotations=ann)
     
-    if require_image:
-        return output_image, ann
-    else:
-        return ann
+    # RGB to BGR
+    output_image = output_image[:, :, ::-1]
     
-def clipseg(image, text, threshold=100, require_image=True):
+    return {"image": output_image, "mask": ann}
+    
+def clipseg(image, text, threshold=100):
     """clipsegを用いた画像のセグメンテーション
 
     Args:
@@ -116,11 +116,14 @@ def clipseg(image, text, threshold=100, require_image=True):
     masks = separate_masks(output_image)
     image = np.array(image)
     # マスクの描画
+    if masks.shape[0] == 0:
+        print("警告: 物体が検出されませんでした。")
+        return None
     drawed_mask = draw_multi_mask(masks, image, text)
     
     drawed_mask = drawed_mask[:, :, :3]
-
-    if require_image:
-        return drawed_mask, masks
-    else:
-        return masks
+    
+    # RGB to BGR
+    drawed_mask = drawed_mask[:, :, ::-1]
+    
+    return {"image": drawed_mask, "mask": masks}

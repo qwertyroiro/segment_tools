@@ -150,7 +150,7 @@ def __draw_multi_mask(masks, image, random_color=True):
 
     
 
-def dino(image, text, require_image=True):
+def dino(image, text):
     """DINOを用いた画像のゼロショット物体検出
 
     Args:
@@ -166,12 +166,12 @@ def dino(image, text, require_image=True):
     # detected_boxesをtensorからndarrayに変換
     detected_boxes = detected_boxes.cpu().numpy()
     
-    if require_image:
-        return annotated_frame, detected_boxes
-    else:
-        return detected_boxes
+    # RGB to BGR
+    annotated_frame = annotated_frame[:, :, ::-1]
     
-def dinoseg(image, text, require_image=True, require_boxes=False):
+    return {"image": annotated_frame, "bbox": detected_boxes}
+    
+def dinoseg(image, text):
     """dinoを用いた画像のセグメンテーション
 
     Args:
@@ -185,9 +185,12 @@ def dinoseg(image, text, require_image=True, require_boxes=False):
     """
     image_source, image = __load_image(image)
     annotated_frame, detected_boxes = __detect(image, image_source, text_prompt=text, model=groundingdino_model)
+    if len(detected_boxes) == 0:
+        print("警告: 物体が検出されませんでした。")
+        return None
     segmented_frame_masks = __segment(image_source, sam_predictor, boxes=detected_boxes)
     segmented_frame_masks = segmented_frame_masks.cpu().numpy()
-    segmented_frame_masks = np.squeeze(segmented_frame_masks)
+    segmented_frame_masks = segmented_frame_masks[:, 0, :, :]
     annotated_frame_with_mask = draw_multi_mask(segmented_frame_masks, annotated_frame)
     annotated_frame_with_mask = annotated_frame_with_mask[:, :, :3]
     
@@ -195,13 +198,7 @@ def dinoseg(image, text, require_image=True, require_boxes=False):
     detected_boxes = detected_boxes.cpu().numpy()
     segmented_frame_masks = segmented_frame_masks.astype(int)
     
-    if require_image:
-        if require_boxes:
-            return annotated_frame_with_mask, segmented_frame_masks, detected_boxes
-        else:
-            return annotated_frame_with_mask, segmented_frame_masks
-    else:
-        if require_boxes:
-            return segmented_frame_masks, detected_boxes
-        else:
-            return segmented_frame_masks
+    # RGB to BGR
+    annotated_frame_with_mask = annotated_frame_with_mask[:, :, ::-1]
+    
+    return {"image": annotated_frame_with_mask, "mask": segmented_frame_masks, "bbox": detected_boxes}

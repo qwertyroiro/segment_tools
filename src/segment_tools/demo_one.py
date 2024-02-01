@@ -172,28 +172,27 @@ class OneFormer_ade20k:
                 download_weights_ade20k("weights/250_16_dinat_l_oneformer_ade20k_160k.pth", False)
             self.predictor, self.metadata = setup_modules("ade20k", "weights/250_16_dinat_l_oneformer_ade20k_160k.pth", False)
 
-    def run(self, image, prompt=None, require_image=True, require_info=False, task="panoptic"):
+    def run(self, image, prompt=None, task="panoptic"):
         image = check_image_type(image)
         out, panoptic_seg, segments_info = TASK_INFER[task](image, self.predictor, self.metadata)
-        
+        try:
+            if len(out) == 2:
+                return None
+        except:
+            pass
         # promptがNoneでない、かつrequire_imageがTrueの場合のみ、draw_multi_maskを実行(多分重いので)
-        if prompt is not None and require_image:
+        if prompt is not None:
             panoptic_seg, nolabel, nodetect = mask_class_objects(panoptic_seg, segments_info, prompt, self.metadata.stuff_classes)
             if nolabel:
-                output_image = out.get_image()[:, :, ::-1]
+                return None
             elif nodetect:
-                output_image = image
+                return None
             else:
-                output_image = draw_multi_mask(panoptic_seg, image, prompt)
-        elif require_image:
-            # promptがNoneの場合でも、require_imageがTrueならば元の画像を出力画像とする
+                output_image = draw_multi_mask(panoptic_seg, image, prompt)[:, :, :3]
+        else:
             output_image = out.get_image()[:, :, ::-1]
         
-        # 出力の組み立て
-        if require_image:
-            return (output_image, panoptic_seg, segments_info) if require_info else (output_image, panoptic_seg)
-        else:
-            return (panoptic_seg, segments_info) if require_info else panoptic_seg
+        return {"image": output_image, "mask": panoptic_seg, "info": segments_info}
         
     def get_labels(self):
         return self.metadata.stuff_classes
@@ -214,28 +213,27 @@ class OneFormer_cityscapes:
                 download_weights_cityscapes("weights/250_16_dinat_l_oneformer_cityscapes_90k.pth", False)
             self.predictor, self.metadata = setup_modules("cityscapes", "weights/250_16_dinat_l_oneformer_cityscapes_90k.pth", False)
         
-    def run(self, image, prompt=None, require_image=True, require_info=False, task="panoptic"):
+    def run(self, image, prompt=None, task="panoptic"):
         image = check_image_type(image)
         out, panoptic_seg, segments_info = TASK_INFER[task](image, self.predictor, self.metadata)
-        
+        try:
+            if len(out) == 2:
+                return None
+        except:
+            pass
         # promptがNoneでない、かつrequire_imageがTrueの場合のみ、draw_multi_maskを実行(多分重いので)
-        if prompt is not None and require_image:
+        if prompt is not None:
             panoptic_seg, nolabel, nodetect = mask_class_objects(panoptic_seg, segments_info, prompt, self.metadata.stuff_classes)
             if nolabel:
-                output_image = out.get_image()[:, :, ::-1]
+                return None
             elif nodetect:
-                output_image = image
+                return None
             else:
-                output_image = draw_multi_mask(panoptic_seg, image, prompt)
-        elif require_image:
-            # promptがNoneの場合でも、require_imageがTrueならば元の画像を出力画像とする
+                output_image = draw_multi_mask(panoptic_seg, image, prompt)[:, :, :3]
+        else:
             output_image = out.get_image()[:, :, ::-1]
         
-        # 出力の組み立て
-        if require_image:
-            return (output_image, panoptic_seg, segments_info) if require_info else (output_image, panoptic_seg)
-        else:
-            return (panoptic_seg, segments_info) if require_info else panoptic_seg
+        return {"image": output_image, "mask": panoptic_seg, "info": segments_info}
         
     def get_labels(self):
         return self.metadata.stuff_classes
@@ -256,28 +254,27 @@ class OneFormer_coco:
                 download_weights_coco("weights/150_16_dinat_l_oneformer_coco_100ep.pth", False)
             self.predictor, self.metadata = setup_modules("coco", "weights/150_16_dinat_l_oneformer_coco_100ep.pth", False)
         
-    def run(self, image, prompt=None, require_image=True, require_info=False, task="panoptic"):
+    def run(self, image, prompt=None, task="panoptic"):
         image = check_image_type(image)
         out, panoptic_seg, segments_info = TASK_INFER[task](image, self.predictor, self.metadata)
-        
+        try:
+            if len(out) == 2:
+                return None
+        except:
+            pass
         # promptがNoneでない、かつrequire_imageがTrueの場合のみ、draw_multi_maskを実行(多分重いので)
-        if prompt is not None and require_image:
+        if prompt is not None:
             panoptic_seg, nolabel, nodetect = mask_class_objects(panoptic_seg, segments_info, prompt, self.metadata.stuff_classes)
             if nolabel:
-                output_image = out.get_image()[:, :, ::-1]
+                return None
             elif nodetect:
-                output_image = image
+                return None
             else:
-                output_image = draw_multi_mask(panoptic_seg, image, prompt)
-        elif require_image:
-            # promptがNoneの場合でも、require_imageがTrueならば元の画像を出力画像とする
+                output_image = draw_multi_mask(panoptic_seg, image, prompt)[:, :, :3]
+        else:
             output_image = out.get_image()[:, :, ::-1]
         
-        # 出力の組み立て
-        if require_image:
-            return (output_image, panoptic_seg, segments_info) if require_info else (output_image, panoptic_seg)
-        else:
-            return (panoptic_seg, segments_info) if require_info else panoptic_seg
+        return {"image": output_image, "mask": panoptic_seg, "info": segments_info}
         
     def get_labels(self):
         return self.metadata.stuff_classes

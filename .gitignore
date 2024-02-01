@@ -1,8 +1,11 @@
 .venv/
 weights/
-test.py
 __pycache__/
-result.png
-test.ipynb
 image_dir/
+
+test.py
+test.ipynb
 backup.txt
+
+*.jpg
+*.png
