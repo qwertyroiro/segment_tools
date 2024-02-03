@@ -7,74 +7,132 @@ pip install git+https://github.com/qwertyroiro/segment_tools.git
 pip install natten==0.14.4 -f https://shi-labs.com/natten/wheels/cu113/torch1.10.1/index.html
 ``````
 ## Usage
-#### Read Image
+
+### Image Preparation
 ```python
 from PIL import Image
 import numpy as np
-import segment_tools as st
 
 image_path = "dogs.jpg"
-image_pil = Image.open(image_path) # Pillow
-image_np = np.array(image_pil) # ndarray
+image_pil = Image.open(image_path)  # Open image with Pillow
+image_np = np.array(image_pil)      # Convert to numpy array
 ```
 
-#### define prompt
+### Define Prompt
 ```python
-prompt = "dog"
+prompt = "dog"  # Define your prompt
 ```
+
+### Segment Tools Usage
 
 #### FastSAM
 ```python
-# segment anything
-image, ann = st.fastsam(image_path)
-image, ann = st.fastsam(image_pil)
-image, ann = st.fastsam(image_np)
+import segment_tools as st
 
-# Use prompt
-image, ann = st.fastsam(image_path, prompt)
-image, ann = st.fastsam(image_pil, prompt)
-image, ann = st.fastsam(image_np, prompt)
+# Segment without prompt
+result = st.fastsam(image_np)
+if result is not None:
+    image, ann = result["image"], result["mask"]
+
+# Segment with prompt
+result = st.fastsam(image_np, prompt)
+if result is not None:
+    image, ann = result["image"], result["mask"]
 ```
 
 #### CLIPSeg
 ```python
-image, ann = st.clipseg(image_path, prompt)
-image, ann = st.clipseg(image_pil, prompt)
-image, ann = st.clipseg(image_np, prompt)
+result = st.clipseg(image_np, prompt)
+if result is not None:
+    image, ann = result["image"], result["mask"]
 ```
 
 #### DINO
 ```python
-image, bbox = st.dino(image_path, prompt)
-image, bbox = st.dino(image_pil, prompt)
-image, bbox = st.dino(image_np, prompt)
+result = st.dino(image_path, prompt)
+if result is not None:
+    image, bbox = result["image"], result["bbox"]
 ```
 
 #### DINOSeg
 ```python
-image, maskimage, bbox = st.dinoseg(image_path, prompt)
-image, maskimage, bbox = st.dinoseg(image_pil, prompt)
-image, maskimage, bbox = st.dinoseg(image_np, prompt)
+result = st.dinoseg(image_path, prompt)
+if result is not None:
+    image, maskimage, bbox = result["image"], result["mask"], result["bbox"]
 ```
 
-#### OneFormer (ade20k, backbone: DiNAT)
+### OneFormer Variants
+
+#### OneFormer (ADE20K Dataset)
 ```python
 oneformer_ade20k = st.OneFormer_ade20k()
-image, ann = oneformer_ade20k.run(image_np)
-image, ann = oneformer_ade20k.run()
-ann = oneformer_ade20k.run(image_np, require_image=False)
+result = oneformer_ade20k.run(image_np)
+if result is not None:
+    image, ann = result["image"], result["mask"]
+
+# With SWIN Transformer
+oneformer_ade20k_swin = st.OneFormer_ade20k(use_swin=True)
+result = oneformer_ade20k_swin.run(image_np)
+if result is not None:
+    image, ann = result["image"], result["mask"]
+
+# Using prompt
+result = oneformer_ade20k.run(image_np, prompt)
+if result is not None:
+    image, ann = result["image"], result["mask"]
+result = oneformer_ade20k_swin.run(image_np, prompt)
+if result is not None:
+    image, ann = result["image"], result["mask"]
 ```
 
-#### OneFormer (cityscapes, backbone: DiNAT)
+#### OneFormer (Cityscapes Dataset)
 ```python
 oneformer_city = st.OneFormer_cityscapes()
-image, ann = oneformer_city.run(image_np)
-ann = oneformer_city.run(image_np, require_image=False)
+result = oneformer_city.run(image_np)
+if result is not None:
+    image, ann = result["image"], result["mask"]
+
+# With SWIN Transformer
+oneformer_city_swin = st.OneFormer_cityscapes(use_swin=True)
+result = oneformer_city_swin.run(image_np)
+if result is not None:
+    image, ann = result["image"], result["mask"]
+
+# Using prompt
+result = oneformer_city.run(image_np, prompt)
+if result is not None:
+    image, ann = result["image"], result["mask"]
+result = oneformer_city_swin.run(image_np, prompt)
+if result is not None:
+    image, ann = result["image"], result["mask"]
 ```
 
-#### OneFormer (coco, backbone: DiNAT)
+#### OneFormer (COCO Dataset)
 ```python
 oneformer_coco = st.OneFormer_coco()
-image, ann = oneformer_coco.run(image_np)
-ann = oneformer_coco.run(image_np, require_image=False)
+result = oneformer_coco.run(image_np)
+if result is not None:
+    image, ann = result["image"], result["mask"]
+
+# With SWIN Transformer
+oneformer_coco_swin = st.OneFormer_coco(use_swin=True)
+result = oneformer_coco_swin.run(image_np)
+if result is not None:
+    image, ann = result["image"], result["mask"]
+
+# Using prompt
+result = oneformer_coco.run(image_np, prompt)
+if result is not None:
+    image, ann = result["image"], result["mask"]
+result = oneformer_coco_swin.run(image_np, prompt)
+if result is not None:
+    image, ann = result["image"], result["mask"]
+```
+
+### Additional Notes
+- The `run` method can be called with or without a prompt for all OneFormer variants.
+- The `use_swin=True` parameter enables the use of the SWIN Transformer as the backbone for the OneFormer models.
+- The `image` and `ann` (annotations) are obtained from the `result` dictionary, which is the output from the segmentation models.
+- For DINO and DINOSeg, the outputs are `image`, `bbox` (bounding boxes), and `maskimage` (segmentation masks), respectively, also obtained from the `result` dictionary.
+- If `result` is `None`, it indicates that the segmentation process was not successful. This could be due to various reasons such as incorrect input data or model limitations. It is important to handle this case in your code to avoid errors.
 ```

@@ -4,6 +4,15 @@ from scipy.ndimage import label
 
 # draw mask from segment anything
 def draw_multi_mask(masks, image, label=None, random_color=True, alpha=0.5):
+    """マスクと画像を与えることで、すべてのマスクを画像に重ね合わせた画像を返す関数。
+
+    Args:
+        masks: 複数のマスクが含まれるNumPy配列。形状は(x, H, W)で、xはマスクの数、Hは縦のサイズ、Wは横のサイズ。
+        image: 画像のNumPy配列。形状は(H, W, C)で、Hは縦のサイズ、Wは横のサイズ、Cはチャンネル数。
+        label: マスクに付けるラベル。デフォルトはNone。
+        random_color: ランダムな色を使用するかどうか。デフォルトはTrue。
+        alpha: マスクの透明度。デフォルトは0.5。
+    """
     def get_color(random_color):
         if random_color:
             return np.concatenate([np.random.random(3), np.array([alpha])], axis=0)
@@ -40,6 +49,20 @@ def draw_multi_mask(masks, image, label=None, random_color=True, alpha=0.5):
     return np.array(annotated_frame_pil)
 
 def mask_class_objects(seg: np.ndarray, ann: list, class_name: str, stuff_classes) -> np.ndarray:
+    """
+    指定されたクラス(int)のオブジェクトをセグメンテーションマスクから分離し、そのマスクを返す関数。
+    複数のマスクが出力されず、単一のndarrayにすべてのクラス情報が入っているようなOneFormerなどで使用
+
+    Args:
+        seg (np.ndarray): セグメンテーションマスクの配列
+        ann (list): 検出結果のアノテーションリスト
+        class_name (str): 分離するオブジェクトのクラス名
+        stuff_classes: セグメンテーションマスクに含まれるクラスのリスト
+
+    Returns:
+        np.ndarray: 分離されたオブジェクトのマスク配列
+    """
+    
     # ラベルがmetadata['stuff_classes']に含まれていない場合は警告を出す
     if class_name not in stuff_classes:
         print(f"警告: {class_name} はラベルに含まれていません。")
@@ -61,29 +84,20 @@ def mask_class_objects(seg: np.ndarray, ann: list, class_name: str, stuff_classe
     separate_masks = np.array(separate_masks)
     return separate_masks, False, False
 
-# def separate_class_masks(seg: np.ndarray, ann: list, class_name: str) -> list:
-#     # 指定された'class'に対応する'id'を取得
-#     target_ids = [item['id'] for item in ann if item['class'] == class_name]
-    
-#     # target_idsに含まれるidの位置を1に設定し、それ以外を0に設定するマスクを作成
-#     mask = np.isin(seg, target_ids).astype(int)
-    
-#     # 連結成分のラベリングを使用して、個別のマスクを取得
-#     labeled_mask, num_features = label(mask)
-    
-#     # 個別のマスクをリストに格納
-#     separate_masks = []
-#     for i in range(1, num_features + 1):
-#         separate_masks.append((labeled_mask == i).astype(int))
-    
-#     separate_masks = np.array(separate_masks)
-#     return separate_masks
-
 def separate_masks(seg: np.ndarray) -> list:
-    # 連結成分のラベリングを使用して、個別のマスクを取得
+    """
+    連結成分のラベリングを使用して、個別のマスクを取得します。
+    clipsegのような単一のndarrayにクラス情報のないセグメンテーションマスクを分離するために使用します。
+
+    Parameters:
+        seg (np.ndarray): ラベリングされたセグメンテーションマスク
+
+    Returns:
+        list: 個別のマスクのリスト
+    """
+    
     labeled_mask, num_features = label(seg)
     
-    # 個別のマスクをリストに格納
     separate_masks = []
     for i in range(1, num_features + 1):
         separate_masks.append((labeled_mask == i).astype(int))
