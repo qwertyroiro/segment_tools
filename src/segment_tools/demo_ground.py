@@ -28,6 +28,8 @@ from huggingface_hub import hf_hub_download
 import warnings
 warnings.filterwarnings('ignore')
 
+from segment_tools.utils import draw_multi_mask
+
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 # sd_pipe = StableDiffusionInpaintPipeline.from_pretrained(
 #     "stabilityai/stable-diffusion-2-inpainting",
@@ -124,6 +126,30 @@ def __draw_mask(mask, image, random_color=True):
 
     return np.array(Image.alpha_composite(annotated_frame_pil, mask_image_pil))
 
+# draw mask from segment anything
+def __draw_multi_mask(masks, image, random_color=True):
+    if random_color:
+        color = np.concatenate([np.random.random(3), np.array([0.8])], axis=0)
+    else:
+        color = np.array([30/255, 144/255, 255/255, 0.6])
+    h, w = masks[0].shape[-2:]
+    mask_image = masks[0].reshape(h, w, 1) * color.reshape(1, 1, -1)
+    
+    annotated_frame_pil = Image.fromarray(image).convert("RGBA")
+    mask_image_pil = Image.fromarray((mask_image.cpu().numpy() * 255).astype(np.uint8)).convert("RGBA")
+
+    temp_mask = np.array(Image.alpha_composite(annotated_frame_pil, mask_image_pil))
+    
+    for mask in masks[1:]:
+        color = np.concatenate([np.random.random(3), np.array([0.8])], axis=0)
+        mask_image = mask.reshape(h, w, 1) * color.reshape(1, 1, -1)
+        mask_image_pil = Image.fromarray((mask_image.cpu().numpy() * 255).astype(np.uint8)).convert("RGBA")
+        temp_mask = np.array(Image.alpha_composite(Image.fromarray(temp_mask), mask_image_pil))
+        
+    return temp_mask
+
+    
+
 def dino(image, text):
     """DINOを用いた画像のゼロショット物体検出
 
@@ -139,7 +165,11 @@ def dino(image, text):
     annotated_frame, detected_boxes = __detect(image, image_source, text_prompt=text, model=groundingdino_model)
     # detected_boxesをtensorからndarrayに変換
     detected_boxes = detected_boxes.cpu().numpy()
-    return annotated_frame, detected_boxes
+    
+    # RGB to BGR
+    annotated_frame = annotated_frame[:, :, ::-1]
+    
+    return {"image": annotated_frame, "bbox": detected_boxes}
     
 def dinoseg(image, text):
     """dinoを用いた画像のセグメンテーション
@@ -155,9 +185,20 @@ def dinoseg(image, text):
     """
     image_source, image = __load_image(image)
     annotated_frame, detected_boxes = __detect(image, image_source, text_prompt=text, model=groundingdino_model)
+    if len(detected_boxes) == 0:
+        print("警告: 物体が検出されませんでした。")
+        return None
     segmented_frame_masks = __segment(image_source, sam_predictor, boxes=detected_boxes)
-    annotated_frame_with_mask = __draw_mask(segmented_frame_masks[0][0], annotated_frame)
-    
     segmented_frame_masks = segmented_frame_masks.cpu().numpy()
+    segmented_frame_masks = segmented_frame_masks[:, 0, :, :]
+    annotated_frame_with_mask = draw_multi_mask(segmented_frame_masks, annotated_frame)
+    annotated_frame_with_mask = annotated_frame_with_mask[:, :, :3]
+    
+    
     detected_boxes = detected_boxes.cpu().numpy()
-    return segmented_frame_masks, annotated_frame_with_mask, detected_boxes
+    segmented_frame_masks = segmented_frame_masks.astype(int)
+    
+    # RGB to BGR
+    annotated_frame_with_mask = annotated_frame_with_mask[:, :, ::-1]
+    
+    return {"image": annotated_frame_with_mask, "mask": segmented_frame_masks, "bbox": detected_boxes}
