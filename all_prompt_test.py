@@ -6,7 +6,7 @@ import sys
 import contextlib
 import logging
 
-image_path = "test.png"
+image_path = "cityscapes.png"
 image_pil = Image.open(image_path)
 image_np = np.array(image_pil)
 if image_np.shape[2] >= 4:
