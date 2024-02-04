@@ -1,4 +1,6 @@
 ## Prerequisites
+Python: 3.10
+CUDA: 11.8
 torch: 2.1.0  
 torchvison:  0.16.0  
 https://pytorch.org/get-started/previous-versions/#v210
