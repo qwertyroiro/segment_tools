@@ -1,13 +1,41 @@
 ## Prerequisites
-Python: 3.10
-CUDA: 11.8
-torch: 2.1.0  
-torchvison:  0.16.0  
-https://pytorch.org/get-started/previous-versions/#v210
+
+Before you begin, ensure you have met the following requirements:
+
+- **Operating System**: Linux
+- **Python Version**: 3.10
+- **CUDA Version**: 12.1
+
+Additionally, you will need the following packages:
+
+- **PyTorch**: 2.1.0
+- **Torchvision**: 0.16.0
+- **Wheel**: 0.42.0
+
+For detailed installation instructions for PyTorch and Torchvision, refer to the [PyTorch previous versions documentation](https://pytorch.org/get-started/previous-versions/#v210).
+
+### Installation Commands
+
+First, install the specific version of Wheel:
+
+```bash
+pip install wheel==0.42.0
+```
+
+Next, install PyTorch and Torchvision using the following commands:
+
+```bash
+pip install torch==2.1.0 torchvision==0.16.0 --index-url https://download.pytorch.org/whl/cu121
+```
+
+For additional tools and libraries, execute:
+
 ```bash
 pip install git+https://github.com/qwertyroiro/segment_tools.git
-pip install natten==0.14.4 -f https://shi-labs.com/natten/wheels/cu113/torch1.10.1/index.html
-``````
+pip install natten==0.15.1 -f https://shi-labs.com/natten/wheels/cu121/torch2.1.0/index.html
+```
+
+Ensure all the prerequisites are properly installed to avoid any compatibility issues during the setup process.
 ## Usage
 
 ### Image Preparation
