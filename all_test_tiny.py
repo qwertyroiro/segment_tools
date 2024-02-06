@@ -11,7 +11,7 @@ image_pil = Image.open(image_path)
 image_np = np.array(image_pil)
 if image_np.shape[2] >= 4:
     image_np = image_np[:, :, :3]
-prompt = "person"
+prompt = "car"
 
 image_dir = "image_dir"
 
