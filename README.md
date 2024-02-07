@@ -42,6 +42,7 @@ Ensure all the prerequisites are properly installed to avoid any compatibility i
 ```python
 from PIL import Image
 import numpy as np
+import segment_tools as st
 
 image_path = "cityscapes.jpg"
 image_pil = Image.open(image_path)  # Open image with Pillow
@@ -59,8 +60,6 @@ prompt = "car"  # Define your prompt
 ![fastsam](image_dir/fastsam.png)
 ![fastsam_prompt](image_dir/fastsam_prompt.png)
 ```python
-import segment_tools as st
-
 # Segment without prompt
 result = st.fastsam(image_np)
 if result is not None:
@@ -71,7 +70,6 @@ result = st.fastsam(image_np, prompt)
 if result is not None:
     image, ann = result["image"], result["mask"]
 ```
-
 
 ### CLIPSeg
 ![clipseg](image_dir/clipseg.png)
