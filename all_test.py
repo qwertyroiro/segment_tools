@@ -189,6 +189,8 @@ with suppress_output():
             print("no result")
         else:
             image, bbox = result["image"], result["bbox"]
+            print(image.shape, bbox.shape)
+            print(f"最大値: {np.max(bbox)}, 最小値: {np.min(bbox)}")
             cv2.imwrite(f"{image_dir}/dino.png", image)
 
         print("\ndinosegのテスト")
