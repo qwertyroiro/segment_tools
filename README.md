@@ -175,6 +175,4 @@ if result is not None:
 - The `run` method can be called with or without a prompt for all OneFormer variants.
 - The `use_swin=True` parameter enables the use of the SWIN Transformer as the backbone for the OneFormer models.
 - The `image` and `ann` (annotations) are obtained from the `result` dictionary, which is the output from the segmentation models.
-- For DINO and DINOSeg, the outputs are `image`, `bbox` (bounding boxes), and `maskimage` (segmentation masks), respectively, also obtained from the `result` dictionary.
 - If `result` is `None`, it indicates that the segmentation process was not successful. This could be due to various reasons such as incorrect input data or model limitations. It is important to handle this case in your code to avoid errors.
-```
