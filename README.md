@@ -43,19 +43,21 @@ Ensure all the prerequisites are properly installed to avoid any compatibility i
 from PIL import Image
 import numpy as np
 
-image_path = "dogs.jpg"
+image_path = "cityscapes.jpg"
 image_pil = Image.open(image_path)  # Open image with Pillow
 image_np = np.array(image_pil)      # Convert to numpy array
 ```
 
 ### Define Prompt
 ```python
-prompt = "dog"  # Define your prompt
+prompt = "car"  # Define your prompt
 ```
 
 ### Segment Tools Usage
 
 #### FastSAM
+![fastsam](image_dir/fastsam.png)
+![fastsam_prompt](image_dir/fastsam_prompt.png)
 ```python
 import segment_tools as st
 
@@ -70,7 +72,9 @@ if result is not None:
     image, ann = result["image"], result["mask"]
 ```
 
+
 #### CLIPSeg
+![clipseg](image_dir/clipseg.png)
 ```python
 result = st.clipseg(image_np, prompt)
 if result is not None:
@@ -78,6 +82,7 @@ if result is not None:
 ```
 
 #### DINO
+![DINO](image_dir/dino.png)
 ```python
 result = st.dino(image_path, prompt)
 if result is not None:
@@ -85,6 +90,7 @@ if result is not None:
 ```
 
 #### DINOSeg
+![DINOSeg](image_dir/dinoseg.png)
 ```python
 result = st.dinoseg(image_path, prompt)
 if result is not None:
@@ -94,6 +100,8 @@ if result is not None:
 ### OneFormer Variants
 
 #### OneFormer (ADE20K Dataset)
+![ade20k](image_dir/OneFormer_ade20k(dinat).png)
+![ade20k_prompt](image_dir/OneFormer_ade20k(dinat)(prompt).png)
 ```python
 oneformer_ade20k = st.OneFormer_ade20k()
 result = oneformer_ade20k.run(image_np)
@@ -116,6 +124,8 @@ if result is not None:
 ```
 
 #### OneFormer (Cityscapes Dataset)
+![cityscapes](image_dir/OneFormer_cityscapes(dinat).png)
+![cityscapes_prompt](image_dir/OneFormer_cityscapes(dinat)(prompt).png)
 ```python
 oneformer_city = st.OneFormer_cityscapes()
 result = oneformer_city.run(image_np)
@@ -138,6 +148,8 @@ if result is not None:
 ```
 
 #### OneFormer (COCO Dataset)
+![coco](image_dir/OneFormer_coco(dinat).png)
+![coco_prompt](image_dir/OneFormer_coco(dinat)(prompt).png)
 ```python
 oneformer_coco = st.OneFormer_coco()
 result = oneformer_coco.run(image_np)
