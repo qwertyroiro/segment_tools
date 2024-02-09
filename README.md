@@ -49,6 +49,14 @@ image_pil = Image.open(image_path)  # Open image with Pillow
 image_np = np.array(image_pil)      # Convert to numpy array
 ```
 
+### Managing Log Verbosity(Optional)
+```python
+import logging
+logging.getLogger("fvcore").setLevel(logging.ERROR)
+logging.getLogger("detectron2").setLevel(logging.ERROR)
+logging.getLogger("ultralytics").setLevel(logging.ERROR)
+```
+
 ### Define Prompt
 ```python
 prompt = "car"  # Define your prompt
