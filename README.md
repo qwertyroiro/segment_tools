@@ -61,12 +61,12 @@ prompt = "car"  # Define your prompt
 ![fastsam_prompt](image_dir/fastsam_prompt.png)
 ```python
 # Segment without prompt
-result = st.fastsam(image_np)
+result = st.FastSAM(image_np)
 if result is not None:
     image, ann = result["image"], result["mask"]
 
 # Segment with prompt
-result = st.fastsam(image_np, prompt)
+result = st.FastSAM(image_np, prompt)
 if result is not None:
     image, ann = result["image"], result["mask"]
 ```
@@ -74,7 +74,7 @@ if result is not None:
 ### CLIPSeg
 ![clipseg](image_dir/clipseg.png)
 ```python
-result = st.clipseg(image_np, prompt)
+result = st.CLIPSeg(image_np, prompt)
 if result is not None:
     image, ann = result["image"], result["mask"]
 ```
@@ -82,7 +82,7 @@ if result is not None:
 ### DINO
 ![DINO](image_dir/dino.png)
 ```python
-result = st.dino(image_path, prompt)
+result = st.DINO(image_path, prompt)
 if result is not None:
     image, bbox = result["image"], result["bbox"]
 ```
@@ -90,7 +90,7 @@ if result is not None:
 ### DINOSeg
 ![DINOSeg](image_dir/dinoseg.png)
 ```python
-result = st.dinoseg(image_path, prompt)
+result = st.DINOSeg(image_path, prompt)
 if result is not None:
     image, maskimage, bbox = result["image"], result["mask"], result["bbox"]
 ```
