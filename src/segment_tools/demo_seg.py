@@ -17,7 +17,7 @@ processor = CLIPSegProcessor.from_pretrained("CIDAS/clipseg-rd64-refined")
 clip_model = CLIPSegForImageSegmentation.from_pretrained("CIDAS/clipseg-rd64-refined").to(device)
 fastsam_model = FastSAM('weights/FastSAM.pt')
 
-def fastsam(image_path, text=None, points=None, point_labels=None, bboxes=None, bbox_labels=None):
+def FastSAM(image_path, text=None, points=None, point_labels=None, bboxes=None, bbox_labels=None):
     """ FastSAMを用いた画像のセグメンテーション
     Args:
         image_path: PILでもnumpyでもパスでも可
@@ -62,7 +62,7 @@ def fastsam(image_path, text=None, points=None, point_labels=None, bboxes=None, 
     
     return {"image": output_image, "mask": ann}
     
-def clipseg(image, text, threshold=100):
+def CLIPSeg(image, text, threshold=100):
     """clipsegを用いた画像のセグメンテーション
 
     Args:

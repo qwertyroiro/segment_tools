@@ -150,7 +150,7 @@ def __draw_multi_mask(masks, image, random_color=True):
 
     
 
-def dino(image, text):
+def DINO(image, text):
     """DINOを用いた画像のゼロショット物体検出
 
     Args:
@@ -171,7 +171,7 @@ def dino(image, text):
     
     return {"image": annotated_frame, "bbox": detected_boxes}
     
-def dinoseg(image, text):
+def DINOSeg(image, text):
     """dinoを用いた画像のセグメンテーション
 
     Args:

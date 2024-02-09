@@ -115,14 +115,14 @@ with suppress_output():
         print(f"最大値: {np.max(ann)}, 最小値: {np.min(ann)}")
         cv2.imwrite(f"{image_dir}/OneFormer_coco(swin).png", image)
         
-    print("\nfastsam(プロンプトなし)のテスト")
-    result = st.fastsam(image_np)
+    print("\nFastSAM(プロンプトなし)のテスト")
+    result = st.FastSAM(image_np)
     if result is None:
         print("no result")
     else:
         image, ann = result["image"], result["mask"]
         print(image.shape, ann.shape)
         print(f"最大値: {np.max(ann)}, 最小値: {np.min(ann)}")
-        cv2.imwrite(f"{image_dir}/fastsam.png", image)
+        cv2.imwrite(f"{image_dir}/FastSAM.png", image)
 
 print("\nテスト完了")

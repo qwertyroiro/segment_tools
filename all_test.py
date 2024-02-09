@@ -49,7 +49,8 @@ with suppress_output():
 
 os.makedirs(f"{image_dir}", exist_ok=True)
 
-with suppress_output():
+# with suppress_output():
+if True:
     print("\nOneFormer_ade20k(dinat)のテスト")
     oneformer_ade20k = st.OneFormer(dataset="ade20k")
     result = oneformer_ade20k.run(image_np)
@@ -116,15 +117,15 @@ with suppress_output():
         print(f"最大値: {np.max(ann)}, 最小値: {np.min(ann)}")
         cv2.imwrite(f"{image_dir}/OneFormer_coco(swin).png", image)
         
-    print("\nfastsam(プロンプトなし)のテスト")
-    result = st.fastsam(image_np)
+    print("\nFastSAM(プロンプトなし)のテスト")
+    result = st.FastSAM(image_np)
     if result is None:
         print("no result")
     else:
         image, ann = result["image"], result["mask"]
         print(image.shape, ann.shape)
         print(f"最大値: {np.max(ann)}, 最小値: {np.min(ann)}")
-        cv2.imwrite(f"{image_dir}/fastsam.png", image)
+        cv2.imwrite(f"{image_dir}/FastSAM.png", image)
 
 
     if prompt is not None:
@@ -195,7 +196,7 @@ with suppress_output():
             cv2.imwrite(f"{image_dir}/OneFormer_coco(swin)(prompt).png", image)
 
         print("\ndinoのテスト")
-        result = st.dino(image_path, prompt)
+        result = st.DINO(image_path, prompt)
         if result is None:
             print("no result")
         else:
@@ -204,35 +205,35 @@ with suppress_output():
             print(f"最大値: {np.max(bbox)}, 最小値: {np.min(bbox)}")
             cv2.imwrite(f"{image_dir}/dino.png", image)
 
-        print("\ndinosegのテスト")
-        result = st.dinoseg(image_path, prompt)
+        print("\nDINOSegのテスト")
+        result = st.DINOSeg(image_path, prompt)
         if result is None:
             print("no result")
         else:
             image, ann = result["image"], result["mask"]
             print(image.shape, ann.shape)
             print(f"最大値: {np.max(ann)}, 最小値: {np.min(ann)}")
-            cv2.imwrite(f"{image_dir}/dinoseg.png", image)
+            cv2.imwrite(f"{image_dir}/DINOSeg.png", image)
             
-        print("\nfastsam(プロンプトあり)のテスト")
-        result = st.fastsam(image_np, prompt)
+        print("\nFastSAM(プロンプトあり)のテスト")
+        result = st.FastSAM(image_np, prompt)
         if result is None:
             print("no result")
         else:
             image, ann = result["image"], result["mask"]
             print(image.shape, ann.shape)
             print(f"最大値: {np.max(ann)}, 最小値: {np.min(ann)}")
-            cv2.imwrite(f"{image_dir}/fastsam_prompt.png", image)
+            cv2.imwrite(f"{image_dir}/FastSAM_prompt.png", image)
 
-        print("\nclipsegのテスト")
-        result = st.clipseg(image_np, prompt)
+        print("\nCLIPSegのテスト")
+        result = st.CLIPSeg(image_np, prompt)
         if result is None:
             print("no result")
         else:
             image, ann = result["image"], result["mask"]
             print(image.shape, ann.shape)
             print(f"最大値: {np.max(ann)}, 最小値: {np.min(ann)}")
-            cv2.imwrite(f"{image_dir}/clipseg.png", image)
+            cv2.imwrite(f"{image_dir}/CLIPSeg.png", image)
 
         print("\nOneFormer_cityscapes(dinat)(prompt)(combine)のテスト")
         oneformer_city = st.OneFormer(dataset="cityscapes")

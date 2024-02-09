@@ -43,6 +43,9 @@ from .download_weights import *
 
 from .utils import mask_class_objects, draw_multi_mask
 
+import logging
+logging.disable(logging.CRITICAL)
+
 cpu_device = torch.device("cpu")
 config_dir = os.path.join(os.path.dirname(__file__), "OneFormer_colab_segtools/configs")
 SWIN_CFG_DICT = {
