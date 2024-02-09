@@ -50,7 +50,7 @@ os.makedirs(f"{image_dir}", exist_ok=True)
 
 with suppress_output():
     print("\nOneFormer_ade20k(dinat)のテスト")
-    oneformer_ade20k = st.OneFormer_ade20k()
+    oneformer_ade20k = st.OneFormer(dataset="ade20k")
     result = oneformer_ade20k.run(image_np)
     if result is None:
         print("no result")
@@ -61,7 +61,7 @@ with suppress_output():
         cv2.imwrite(f"{image_dir}/OneFormer_ade20k(dinat).png", image)
 
     print("\nOneFormer_ade20k(swin)のテスト")
-    oneformer_ade20k = st.OneFormer_ade20k(use_swin=True)
+    oneformer_ade20k = st.OneFormer(dataset="ade20k", use_swin=True)
     result = oneformer_ade20k.run(image_np)
     if result is None:
         print("no result")
@@ -72,7 +72,7 @@ with suppress_output():
         cv2.imwrite(f"{image_dir}/OneFormer_ade20k(swin).png", image)
 
     print("\nOneFormer_cityscapes(dinat)のテスト")
-    oneformer_city = st.OneFormer_cityscapes()
+    oneformer_city = st.OneFormer(dataset="cityscapes")
     result = oneformer_city.run(image_np)
     if result is None:
         print("no result")
@@ -83,7 +83,7 @@ with suppress_output():
         cv2.imwrite(f"{image_dir}/OneFormer_cityscapes(dinat).png", image)
 
     print("\nOneFormer_cityscapes(swin)のテスト")
-    oneformer_city = st.OneFormer_cityscapes(use_swin=True)
+    oneformer_city = st.OneFormer(dataset="cityscapes", use_swin=True)
     result = oneformer_city.run(image_np)
     if result is None:
         print("no result")
@@ -94,7 +94,7 @@ with suppress_output():
         cv2.imwrite(f"{image_dir}/OneFormer_cityscapes(swin).png", image)
 
     print("\nOneFormer_coco(dinat)のテスト")
-    oneformer_coco = st.OneFormer_coco()
+    oneformer_coco = st.OneFormer(dataset="coco")
     result = oneformer_coco.run(image_np)
     if result is None:
         print("no result")
@@ -105,7 +105,7 @@ with suppress_output():
         cv2.imwrite(f"{image_dir}/OneFormer_coco(dinat).png", image)
 
     print("\nOneFormer_coco(swin)のテスト")
-    oneformer_coco = st.OneFormer_coco(use_swin=True)
+    oneformer_coco = st.OneFormer(dataset="coco", use_swin=True)
     result = oneformer_coco.run(image_np)
     if result is None:
         print("no result")
@@ -114,7 +114,7 @@ with suppress_output():
         print(image.shape, ann.shape)
         print(f"最大値: {np.max(ann)}, 最小値: {np.min(ann)}")
         cv2.imwrite(f"{image_dir}/OneFormer_coco(swin).png", image)
-
+        
     print("\nfastsam(プロンプトなし)のテスト")
     result = st.fastsam(image_np)
     if result is None:

@@ -101,13 +101,13 @@ if result is not None:
 ![ade20k](image_dir/OneFormer_ade20k(dinat).png)
 ![ade20k_prompt](image_dir/OneFormer_ade20k(dinat)(prompt).png)
 ```python
-oneformer_ade20k = st.OneFormer_ade20k()
+oneformer_ade20k = st.OneFormer(dataset="ade20k")
 result = oneformer_ade20k.run(image_np)
 if result is not None:
     image, ann = result["image"], result["mask"]
 
 # With SWIN Transformer
-oneformer_ade20k_swin = st.OneFormer_ade20k(use_swin=True)
+oneformer_ade20k_swin = st.OneFormer(dataset="ade20k", use_swin=True)
 result = oneformer_ade20k_swin.run(image_np)
 if result is not None:
     image, ann = result["image"], result["mask"]
@@ -125,13 +125,13 @@ if result is not None:
 ![cityscapes](image_dir/OneFormer_cityscapes(dinat).png)
 ![cityscapes_prompt](image_dir/OneFormer_cityscapes(dinat)(prompt).png)
 ```python
-oneformer_city = st.OneFormer_cityscapes()
+oneformer_city = st.OneFormer(dataset="cityscapes")
 result = oneformer_city.run(image_np)
 if result is not None:
     image, ann = result["image"], result["mask"]
 
 # With SWIN Transformer
-oneformer_city_swin = st.OneFormer_cityscapes(use_swin=True)
+oneformer_city_swin = st.OneFormer(dataset="cityscapes", use_swin=True)
 result = oneformer_city_swin.run(image_np)
 if result is not None:
     image, ann = result["image"], result["mask"]
@@ -149,13 +149,13 @@ if result is not None:
 ![coco](image_dir/OneFormer_coco(dinat).png)
 ![coco_prompt](image_dir/OneFormer_coco(dinat)(prompt).png)
 ```python
-oneformer_coco = st.OneFormer_coco()
+oneformer_coco = st.OneFormer(dataset="coco")
 result = oneformer_coco.run(image_np)
 if result is not None:
     image, ann = result["image"], result["mask"]
 
 # With SWIN Transformer
-oneformer_coco_swin = st.OneFormer_coco(use_swin=True)
+oneformer_coco_swin = st.OneFormer(dataset="coco", use_swin=True)
 result = oneformer_coco_swin.run(image_np)
 if result is not None:
     image, ann = result["image"], result["mask"]

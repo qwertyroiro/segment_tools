@@ -155,23 +155,50 @@ TASK_INFER = {
     "semantic": semantic_run,
 }
 
-
-# fmt: off
-class OneFormer_ade20k:
-    def __init__(self, use_swin=False):
-        from .download_weights import download_weights_ade20k
-        
-        if use_swin:
-            if not os.path.exists("weights/250_16_swin_l_oneformer_ade20k_160k.pth"):
-                print("weights/250_16_swin_l_oneformer_ade20k_160k.pth not found. Downloading...")
-                download_weights_ade20k("weights/250_16_swin_l_oneformer_ade20k_160k.pth", True)
-            self.predictor, self.metadata = setup_modules("ade20k", "weights/250_16_swin_l_oneformer_ade20k_160k.pth", True)
+class OneFormer:
+    def __init__(self, dataset="ade20k", use_swin=False):
+        if dataset == "ade20k":
+            from .download_weights import download_weights_ade20k
+            
+            if use_swin:
+                if not os.path.exists("weights/250_16_swin_l_oneformer_ade20k_160k.pth"):
+                    print("weights/250_16_swin_l_oneformer_ade20k_160k.pth not found. Downloading...")
+                    download_weights_ade20k("weights/250_16_swin_l_oneformer_ade20k_160k.pth", True)
+                self.predictor, self.metadata = setup_modules("ade20k", "weights/250_16_swin_l_oneformer_ade20k_160k.pth", True)
+            else:
+                if not os.path.exists("weights/250_16_dinat_l_oneformer_ade20k_160k.pth"):
+                    print("weights/250_16_dinat_l_oneformer_ade20k_160k.pth not found. Downloading...")
+                    download_weights_ade20k("weights/250_16_dinat_l_oneformer_ade20k_160k.pth", False)
+                self.predictor, self.metadata = setup_modules("ade20k", "weights/250_16_dinat_l_oneformer_ade20k_160k.pth", False)
+        elif dataset == "cityscapes":
+            from .download_weights import download_weights_cityscapes
+            
+            if use_swin:
+                if not os.path.exists("weights/250_16_swin_l_oneformer_cityscapes_90k.pth"):
+                    print("weights/250_16_swin_l_oneformer_cityscapes_90k.pth not found. Downloading...")
+                    download_weights_cityscapes("weights/250_16_swin_l_oneformer_cityscapes_90k.pth", True)
+                self.predictor, self.metadata = setup_modules("cityscapes", "weights/250_16_swin_l_oneformer_cityscapes_90k.pth", True)
+            else:
+                if not os.path.exists("weights/250_16_dinat_l_oneformer_cityscapes_90k.pth"):
+                    print("weights/250_16_dinat_l_oneformer_cityscapes_90k.pth not found. Downloading...")
+                    download_weights_cityscapes("weights/250_16_dinat_l_oneformer_cityscapes_90k.pth", False)
+                self.predictor, self.metadata = setup_modules("cityscapes", "weights/250_16_dinat_l_oneformer_cityscapes_90k.pth", False)
+        elif dataset == "coco":
+            from .download_weights import download_weights_coco
+            
+            if use_swin:
+                if not os.path.exists("weights/150_16_swin_l_oneformer_coco_100ep.pth"):
+                    print("weights/150_16_swin_l_oneformer_coco_100ep.pth not found. Downloading...")
+                    download_weights_coco("weights/150_16_swin_l_oneformer_coco_100ep.pth", True)
+                self.predictor, self.metadata = setup_modules("coco", "weights/150_16_swin_l_oneformer_coco_100ep.pth", True)
+            else:
+                if not os.path.exists("weights/150_16_dinat_l_oneformer_coco_100ep.pth"):
+                    print("weights/150_16_dinat_l_oneformer_coco_100ep.pth not found. Downloading...")
+                    download_weights_coco("weights/150_16_dinat_l_oneformer_coco_100ep.pth", False)
+                self.predictor, self.metadata = setup_modules("coco", "weights/150_16_dinat_l_oneformer_coco_100ep.pth", False)
         else:
-            if not os.path.exists("weights/250_16_dinat_l_oneformer_ade20k_160k.pth"):
-                print("weights/250_16_dinat_l_oneformer_ade20k_160k.pth not found. Downloading...")
-                download_weights_ade20k("weights/250_16_dinat_l_oneformer_ade20k_160k.pth", False)
-            self.predictor, self.metadata = setup_modules("ade20k", "weights/250_16_dinat_l_oneformer_ade20k_160k.pth", False)
-
+            raise ValueError("dataset is not supported")
+                
     def run(self, image, prompt=None, task="panoptic"):
         image = check_image_type(image)
         out, panoptic_seg, segments_info = TASK_INFER[task](image, self.predictor, self.metadata)
@@ -193,90 +220,131 @@ class OneFormer_ade20k:
             output_image = out.get_image()[:, :, ::-1]
         
         return {"image": output_image, "mask": panoptic_seg, "info": segments_info}
-        
+                
     def get_labels(self):
         return self.metadata.stuff_classes
 
+# # fmt: off
+# class OneFormer_ade20k:
+#     def __init__(self, use_swin=False):
+#         from .download_weights import download_weights_ade20k
+        
+#         if use_swin:
+#             if not os.path.exists("weights/250_16_swin_l_oneformer_ade20k_160k.pth"):
+#                 print("weights/250_16_swin_l_oneformer_ade20k_160k.pth not found. Downloading...")
+#                 download_weights_ade20k("weights/250_16_swin_l_oneformer_ade20k_160k.pth", True)
+#             self.predictor, self.metadata = setup_modules("ade20k", "weights/250_16_swin_l_oneformer_ade20k_160k.pth", True)
+#         else:
+#             if not os.path.exists("weights/250_16_dinat_l_oneformer_ade20k_160k.pth"):
+#                 print("weights/250_16_dinat_l_oneformer_ade20k_160k.pth not found. Downloading...")
+#                 download_weights_ade20k("weights/250_16_dinat_l_oneformer_ade20k_160k.pth", False)
+#             self.predictor, self.metadata = setup_modules("ade20k", "weights/250_16_dinat_l_oneformer_ade20k_160k.pth", False)
 
-class OneFormer_cityscapes:
-    def __init__(self, use_swin=False):
-        from .download_weights import download_weights_cityscapes
+#     def run(self, image, prompt=None, task="panoptic"):
+#         image = check_image_type(image)
+#         out, panoptic_seg, segments_info = TASK_INFER[task](image, self.predictor, self.metadata)
+#         try:
+#             if len(out) == 2:
+#                 return None
+#         except:
+#             pass
+#         # promptがNoneでない、かつrequire_imageがTrueの場合のみ、draw_multi_maskを実行(多分重いので)
+#         if prompt is not None:
+#             panoptic_seg, nolabel, nodetect = mask_class_objects(panoptic_seg, segments_info, prompt, self.metadata.stuff_classes)
+#             if nolabel:
+#                 return None
+#             elif nodetect:
+#                 return None
+#             else:
+#                 output_image = draw_multi_mask(panoptic_seg, image, prompt)[:, :, :3]
+#         else:
+#             output_image = out.get_image()[:, :, ::-1]
         
-        if use_swin:
-            if not os.path.exists("weights/250_16_swin_l_oneformer_cityscapes_90k.pth"):
-                print("weights/250_16_swin_l_oneformer_cityscapes_90k.pth not found. Downloading...")
-                download_weights_cityscapes("weights/250_16_swin_l_oneformer_cityscapes_90k.pth", True)
-            self.predictor, self.metadata = setup_modules("cityscapes", "weights/250_16_swin_l_oneformer_cityscapes_90k.pth", True)
-        else:
-            if not os.path.exists("weights/250_16_dinat_l_oneformer_cityscapes_90k.pth"):
-                print("weights/250_16_dinat_l_oneformer_cityscapes_90k.pth not found. Downloading...")
-                download_weights_cityscapes("weights/250_16_dinat_l_oneformer_cityscapes_90k.pth", False)
-            self.predictor, self.metadata = setup_modules("cityscapes", "weights/250_16_dinat_l_oneformer_cityscapes_90k.pth", False)
+#         return {"image": output_image, "mask": panoptic_seg, "info": segments_info}
         
-    def run(self, image, prompt=None, task="panoptic"):
-        image = check_image_type(image)
-        out, panoptic_seg, segments_info = TASK_INFER[task](image, self.predictor, self.metadata)
-        try:
-            if len(out) == 2:
-                return None
-        except:
-            pass
-        # promptがNoneでない、かつrequire_imageがTrueの場合のみ、draw_multi_maskを実行(多分重いので)
-        if prompt is not None:
-            panoptic_seg, nolabel, nodetect = mask_class_objects(panoptic_seg, segments_info, prompt, self.metadata.stuff_classes)
-            if nolabel:
-                return None
-            elif nodetect:
-                return None
-            else:
-                output_image = draw_multi_mask(panoptic_seg, image, prompt)[:, :, :3]
-        else:
-            output_image = out.get_image()[:, :, ::-1]
-        
-        return {"image": output_image, "mask": panoptic_seg, "info": segments_info}
-        
-    def get_labels(self):
-        return self.metadata.stuff_classes
+#     def get_labels(self):
+#         return self.metadata.stuff_classes
 
 
-class OneFormer_coco:
-    def __init__(self, use_swin=False):
-        from .download_weights import download_weights_coco
+# class OneFormer_cityscapes:
+#     def __init__(self, use_swin=False):
+#         from .download_weights import download_weights_cityscapes
+        
+#         if use_swin:
+#             if not os.path.exists("weights/250_16_swin_l_oneformer_cityscapes_90k.pth"):
+#                 print("weights/250_16_swin_l_oneformer_cityscapes_90k.pth not found. Downloading...")
+#                 download_weights_cityscapes("weights/250_16_swin_l_oneformer_cityscapes_90k.pth", True)
+#             self.predictor, self.metadata = setup_modules("cityscapes", "weights/250_16_swin_l_oneformer_cityscapes_90k.pth", True)
+#         else:
+#             if not os.path.exists("weights/250_16_dinat_l_oneformer_cityscapes_90k.pth"):
+#                 print("weights/250_16_dinat_l_oneformer_cityscapes_90k.pth not found. Downloading...")
+#                 download_weights_cityscapes("weights/250_16_dinat_l_oneformer_cityscapes_90k.pth", False)
+#             self.predictor, self.metadata = setup_modules("cityscapes", "weights/250_16_dinat_l_oneformer_cityscapes_90k.pth", False)
+        
+#     def run(self, image, prompt=None, task="panoptic"):
+#         image = check_image_type(image)
+#         out, panoptic_seg, segments_info = TASK_INFER[task](image, self.predictor, self.metadata)
+#         try:
+#             if len(out) == 2:
+#                 return None
+#         except:
+#             pass
+#         # promptがNoneでない、かつrequire_imageがTrueの場合のみ、draw_multi_maskを実行(多分重いので)
+#         if prompt is not None:
+#             panoptic_seg, nolabel, nodetect = mask_class_objects(panoptic_seg, segments_info, prompt, self.metadata.stuff_classes)
+#             if nolabel:
+#                 return None
+#             elif nodetect:
+#                 return None
+#             else:
+#                 output_image = draw_multi_mask(panoptic_seg, image, prompt)[:, :, :3]
+#         else:
+#             output_image = out.get_image()[:, :, ::-1]
+        
+#         return {"image": output_image, "mask": panoptic_seg, "info": segments_info}
+        
+#     def get_labels(self):
+#         return self.metadata.stuff_classes
 
-        if use_swin:
-            if not os.path.exists("weights/150_16_swin_l_oneformer_coco_100ep.pth"):
-                print("weights/150_16_swin_l_oneformer_coco_100ep.pth not found. Downloading...")
-                download_weights_coco("weights/150_16_swin_l_oneformer_coco_100ep.pth", True)
-            self.predictor, self.metadata = setup_modules("coco", "weights/150_16_swin_l_oneformer_coco_100ep.pth", True)
-        else:
-            if not os.path.exists("weights/150_16_dinat_l_oneformer_coco_100ep.pth"):
-                print("weights/150_16_dinat_l_oneformer_coco_100ep.pth not found. Downloading...")
-                download_weights_coco("weights/150_16_dinat_l_oneformer_coco_100ep.pth", False)
-            self.predictor, self.metadata = setup_modules("coco", "weights/150_16_dinat_l_oneformer_coco_100ep.pth", False)
+
+# class OneFormer_coco:
+#     def __init__(self, use_swin=False):
+#         from .download_weights import download_weights_coco
+
+#         if use_swin:
+#             if not os.path.exists("weights/150_16_swin_l_oneformer_coco_100ep.pth"):
+#                 print("weights/150_16_swin_l_oneformer_coco_100ep.pth not found. Downloading...")
+#                 download_weights_coco("weights/150_16_swin_l_oneformer_coco_100ep.pth", True)
+#             self.predictor, self.metadata = setup_modules("coco", "weights/150_16_swin_l_oneformer_coco_100ep.pth", True)
+#         else:
+#             if not os.path.exists("weights/150_16_dinat_l_oneformer_coco_100ep.pth"):
+#                 print("weights/150_16_dinat_l_oneformer_coco_100ep.pth not found. Downloading...")
+#                 download_weights_coco("weights/150_16_dinat_l_oneformer_coco_100ep.pth", False)
+#             self.predictor, self.metadata = setup_modules("coco", "weights/150_16_dinat_l_oneformer_coco_100ep.pth", False)
         
-    def run(self, image, prompt=None, task="panoptic"):
-        image = check_image_type(image)
-        out, panoptic_seg, segments_info = TASK_INFER[task](image, self.predictor, self.metadata)
-        try:
-            if len(out) == 2:
-                return None
-        except:
-            pass
-        # promptがNoneでない、かつrequire_imageがTrueの場合のみ、draw_multi_maskを実行(多分重いので)
-        if prompt is not None:
-            panoptic_seg, nolabel, nodetect = mask_class_objects(panoptic_seg, segments_info, prompt, self.metadata.stuff_classes)
-            if nolabel:
-                return None
-            elif nodetect:
-                return None
-            else:
-                output_image = draw_multi_mask(panoptic_seg, image, prompt)[:, :, :3]
-        else:
-            output_image = out.get_image()[:, :, ::-1]
+#     def run(self, image, prompt=None, task="panoptic"):
+#         image = check_image_type(image)
+#         out, panoptic_seg, segments_info = TASK_INFER[task](image, self.predictor, self.metadata)
+#         try:
+#             if len(out) == 2:
+#                 return None
+#         except:
+#             pass
+#         # promptがNoneでない、かつrequire_imageがTrueの場合のみ、draw_multi_maskを実行(多分重いので)
+#         if prompt is not None:
+#             panoptic_seg, nolabel, nodetect = mask_class_objects(panoptic_seg, segments_info, prompt, self.metadata.stuff_classes)
+#             if nolabel:
+#                 return None
+#             elif nodetect:
+#                 return None
+#             else:
+#                 output_image = draw_multi_mask(panoptic_seg, image, prompt)[:, :, :3]
+#         else:
+#             output_image = out.get_image()[:, :, ::-1]
         
-        return {"image": output_image, "mask": panoptic_seg, "info": segments_info}
+#         return {"image": output_image, "mask": panoptic_seg, "info": segments_info}
         
-    def get_labels(self):
-        return self.metadata.stuff_classes
+#     def get_labels(self):
+#         return self.metadata.stuff_classes
 
 # fmt: on

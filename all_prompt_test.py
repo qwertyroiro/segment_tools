@@ -51,7 +51,7 @@ os.makedirs(f"{image_dir}", exist_ok=True)
 
 with suppress_output():
     print("\nOneFormer_ade20k(dinat)(prompt)のテスト")
-    oneformer_ade20k = st.OneFormer_ade20k()
+    oneformer_ade20k = st.OneFormer(dataset="ade20k")
     result = oneformer_ade20k.run(image_np, prompt)
     if result is None:
         print("no result")
@@ -62,7 +62,7 @@ with suppress_output():
         cv2.imwrite(f"{image_dir}/OneFormer_ade20k(dinat)(prompt).png", image)
 
     print("\nOneFormer_ade20k(swin)(prompt)のテスト")
-    oneformer_ade20k = st.OneFormer_ade20k(use_swin=True)
+    oneformer_ade20k = st.OneFormer(dataset="ade20k", use_swin=True)
     result = oneformer_ade20k.run(image_np, prompt)
     if result is None:
         print("no result")
@@ -73,7 +73,7 @@ with suppress_output():
         cv2.imwrite(f"{image_dir}/OneFormer_ade20k(swin)(prompt).png", image)
 
     print("\nOneFormer_cityscapes(dinat)(prompt)のテスト")
-    oneformer_city = st.OneFormer_cityscapes()
+    oneformer_city = st.OneFormer(dataset="cityscapes")
     result = oneformer_city.run(image_np, prompt)
     if result is None:
         print("no result")
@@ -84,7 +84,7 @@ with suppress_output():
         cv2.imwrite(f"{image_dir}/OneFormer_cityscapes(dinat)(prompt).png", image)
     
     print("\nOneFormer_cityscapes(swin)(prompt)のテスト")
-    oneformer_city = st.OneFormer_cityscapes(use_swin=True)
+    oneformer_city = st.OneFormer(dataset="cityscapes", use_swin=True)
     result = oneformer_city.run(image_np, prompt)
     if result is None:
         print("no result")
@@ -95,7 +95,7 @@ with suppress_output():
         cv2.imwrite(f"{image_dir}/OneFormer_cityscapes(swin)(prompt).png", image)
 
     print("\nOneFormer_coco(dinat)(prompt)のテスト")
-    oneformer_coco = st.OneFormer_coco()
+    oneformer_coco = st.OneFormer(dataset="coco")
     result = oneformer_coco.run(image_np, prompt)
     if result is None:
         print("no result")
@@ -106,7 +106,7 @@ with suppress_output():
         cv2.imwrite(f"{image_dir}/OneFormer_coco(dinat)(prompt).png", image)
 
     print("\nOneFormer_coco(swin)(prompt)のテスト")
-    oneformer_coco = st.OneFormer_coco(use_swin=True)
+    oneformer_coco = st.OneFormer(dataset="coco", use_swin=True)
     result = oneformer_coco.run(image_np, prompt)
     if result is None:
         print("no result")
@@ -122,6 +122,8 @@ with suppress_output():
         print("no result")
     else:
         image, bbox = result["image"], result["bbox"]
+        print(image.shape, bbox.shape)
+        print(f"最大値: {np.max(bbox)}, 最小値: {np.min(bbox)}")
         cv2.imwrite(f"{image_dir}/dino.png", image)
 
     print("\ndinosegのテスト")
@@ -155,7 +157,7 @@ with suppress_output():
         cv2.imwrite(f"{image_dir}/clipseg.png", image)
 
     print("\nOneFormer_cityscapes(dinat)(prompt)(combine)のテスト")
-    oneformer_city = st.OneFormer_cityscapes()
+    oneformer_city = st.OneFormer(dataset="cityscapes")
     result = oneformer_city.run(image_np, prompt)
     if result is None:
         print("no result")
