@@ -11,6 +11,7 @@ from torchvision.transforms import Compose
 import matplotlib
 from PIL import Image
 import numpy as np
+from .utils import check_image_type
 
 def render_depth(values, colormap_name="magma_r"):
     min_value, max_value = values.min(), values.max()
@@ -19,10 +20,12 @@ def render_depth(values, colormap_name="magma_r"):
     colormap = matplotlib.colormaps[colormap_name]
     colors = colormap(normalized_values, bytes=True) # ((1)xhxwx4)
     colors = colors[:, :, :3] # Discard alpha component
-    return np.array(colors)
-    return Image.fromarray(colors)
+    return np.array(colors).convert('RGB')
+    # return Image.fromarray(colors)
 
-def Depth_Anything(image, encoder='vits'):
+def Depth_Anything(image, encoder='vitl'):
+    image = check_image_type(image)
+    image_height, image_width = image.shape[:2]
     depth_anything = DepthAnything.from_pretrained('LiheYoung/depth_anything_{:}14'.format(encoder)).eval()
 
     transform = Compose([
@@ -46,5 +49,7 @@ def Depth_Anything(image, encoder='vits'):
     # depth shape: 1xHxW
     depth = depth_anything(image)
     depth = depth.detach().cpu().numpy()
+    # resize depth to original image resolution
+    depth = cv2.resize(depth[0], (image_width, image_height), interpolation=cv2.INTER_NEAREST)
     depth_img = render_depth(depth)
-    return depth, depth_img
+    return {'image': depth_img, 'depth': depth}

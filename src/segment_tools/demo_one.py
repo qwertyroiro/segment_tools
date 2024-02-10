@@ -41,7 +41,7 @@ from oneformer import (
 
 from .download_weights import *
 
-from .utils import mask_class_objects, draw_multi_mask
+from .utils import mask_class_objects, draw_multi_mask, check_image_type
 
 cpu_device = torch.device("cpu")
 config_dir = os.path.join(os.path.dirname(__file__), "OneFormer_colab_segtools/configs")
@@ -135,18 +135,6 @@ def semantic_run(img, predictor, metadata):
         predictions["sem_seg"].argmax(dim=0).to(cpu_device), alpha=0.5
     )
     return out
-
-
-def check_image_type(image):
-    if isinstance(image, str):
-        image = cv2.imread(image)
-    elif isinstance(image, PIL.Image.Image):
-        image = np.array(image)
-    elif isinstance(image, np.ndarray):
-        image = image.copy()
-    else:
-        raise ValueError("image type is not supported")
-    return image
 
 
 TASK_INFER = {
