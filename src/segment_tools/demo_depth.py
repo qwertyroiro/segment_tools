@@ -8,6 +8,19 @@ from depth_anything.util.transform import Resize, NormalizeImage, PrepareForNet
 import cv2
 import torch
 from torchvision.transforms import Compose
+import matplotlib
+from PIL import Image
+import numpy as np
+
+def render_depth(values, colormap_name="magma_r"):
+    min_value, max_value = values.min(), values.max()
+    normalized_values = (values - min_value) / (max_value - min_value)
+
+    colormap = matplotlib.colormaps[colormap_name]
+    colors = colormap(normalized_values, bytes=True) # ((1)xhxwx4)
+    colors = colors[:, :, :3] # Discard alpha component
+    return np.array(colors)
+    return Image.fromarray(colors)
 
 def Depth_Anything(image, encoder='vits'):
     depth_anything = DepthAnything.from_pretrained('LiheYoung/depth_anything_{:}14'.format(encoder)).eval()
@@ -32,4 +45,6 @@ def Depth_Anything(image, encoder='vits'):
 
     # depth shape: 1xHxW
     depth = depth_anything(image)
-    return depth
+    depth = depth.squeeze(0).cpu().numpy()
+    depth_img = render_depth(depth)
+    return depth, depth_img
