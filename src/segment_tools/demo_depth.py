@@ -20,8 +20,7 @@ def render_depth(values, colormap_name="magma_r"):
     colormap = matplotlib.colormaps[colormap_name]
     colors = colormap(normalized_values, bytes=True) # ((1)xhxwx4)
     colors = colors[:, :, :3] # Discard alpha component
-    return np.array(colors).convert('RGB')
-    # return Image.fromarray(colors)
+    return cv2.cvtColor(np.array(colors), cv2.COLOR_BGR2RGB)
 
 def Depth_Anything(image, encoder='vitl'):
     image = check_image_type(image)
