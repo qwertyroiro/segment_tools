@@ -45,6 +45,6 @@ def Depth_Anything(image, encoder='vits'):
 
     # depth shape: 1xHxW
     depth = depth_anything(image)
-    depth = depth.squeeze(0).cpu().numpy()
+    depth = depth.detach().cpu().numpy()
     depth_img = render_depth(depth)
     return depth, depth_img
