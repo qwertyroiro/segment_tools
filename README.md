@@ -179,11 +179,19 @@ if result is not None:
 ```
 
 ### Depth Anything
-![depth](image_dir/depth.png)
+![depthany](image_dir/depth.png)
 ```python
 result = st.Depth_Anything(image_np)
 if result is not None:
     image, depth = result["image"], result["depth"]
+```
+
+### DINOv2 (depth estimation)
+![dinov2depth](image_dir/dinov2_depth.png)
+```python
+result = st.DINOv2_depth()
+if result is not None:
+    depth_img, depth = result["image"], result["depth"]
 ```
 
 ### Additional Notes

@@ -17,6 +17,8 @@ import urllib
 import mmcv
 from mmcv.runner import load_checkpoint
 
+import cv2
+import numpy as np
 
 class CenterPadding(torch.nn.Module):
     def __init__(self, multiple):
@@ -120,10 +122,10 @@ def render_depth(values, colormap_name="magma_r") -> Image:
     colormap = matplotlib.colormaps[colormap_name]
     colors = colormap(normalized_values, bytes=True) # ((1)xhxwx4)
     colors = colors[:, :, :3] # Discard alpha component
-    return Image.fromarray(colors)
+    return cv2.cvtColor(np.array(colors), cv2.COLOR_BGR2RGB)
 
 
-def demo():
+def DINOv2_depth():
     transform = make_depth_transform()
     image = Image.open("cityscapes.png").convert("RGB")
     scale_factor = 1
@@ -134,5 +136,6 @@ def demo():
     with torch.inference_mode():
         result = model.whole_inference(batch, img_meta=None, rescale=True)
 
-    depth_image = render_depth(result.squeeze().cpu())
-    return depth_image
+    depth = result.squeeze().cpu()
+    depth_image = render_depth(depth)
+    return {'image': depth_image, 'depth': depth.numpy()}
