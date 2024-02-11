@@ -14,4 +14,5 @@ from .demo_seg import *
 from .demo_ground import *
 from .demo_one import *
 from .demo_depth import *
+from .demo_dinov2 import *
 from .utils import *
