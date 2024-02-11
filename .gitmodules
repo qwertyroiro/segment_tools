@@ -9,3 +9,7 @@
 [submodule "src/segment_tools/Depth-Anything_segtools"]
 	path = src/segment_tools/Depth-Anything_segtools
 	url = https://github.com/qwertyroiro/Depth-Anything_segtools.git
+
+[submodule "src/segment_tools/dinov2"]
+	path = src/segment_tools/dinov2
+	url = https://github.com/facebookresearch/dinov2.git
