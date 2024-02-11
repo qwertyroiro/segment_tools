@@ -22,6 +22,7 @@ import logging
 logging.getLogger("fvcore").setLevel(logging.ERROR)
 logging.getLogger("detectron2").setLevel(logging.ERROR)
 logging.getLogger("ultralytics").setLevel(logging.ERROR)
+logging.getLogger("dinov2").setLevel(logging.ERROR)
 
 print("\nOneFormer_ade20k(dinat)のテスト")
 oneformer_ade20k = st.OneFormer(dataset="ade20k")

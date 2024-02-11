@@ -14,6 +14,12 @@ if image_np.shape[2] >= 4:
 
 image_dir = "image_dir"
 
+import logging
+logging.getLogger("fvcore").setLevel(logging.ERROR)
+logging.getLogger("detectron2").setLevel(logging.ERROR)
+logging.getLogger("ultralytics").setLevel(logging.ERROR)
+logging.getLogger("dinov2").setLevel(logging.ERROR)
+
 os.makedirs(f"{image_dir}", exist_ok=True)
 
 print("\nOneFormer_ade20k(dinat)のテスト")
@@ -91,5 +97,24 @@ else:
     print(image.shape, ann.shape)
     print(f"最大値: {np.max(ann)}, 最小値: {np.min(ann)}")
     cv2.imwrite(f"{image_dir}/FastSAM.png", image)
+    
+print("\nDINOv2のテスト")
+result = st.DINOv2_depth(image_np)
+if result is None:
+    print("no result")
+else:
+    image, ann = result["image"], result["depth"]
+    print(image.shape, ann.shape)
+    print(f"最大値: {np.max(ann)}, 最小値: {np.min(ann)}")
+    cv2.imwrite(f"{image_dir}/dinov2_depth.png", image)
 
+print("\nDepth Anythingのテスト")
+result = st.Depth_Anything(image_np)
+if result is None:
+    print("no result")
+else:
+    image, ann = result["image"], result["depth"]
+    print(image.shape, ann.shape)
+    print(f"最大値: {np.max(ann)}, 最小値: {np.min(ann)}")
+    cv2.imwrite(f"{image_dir}/depth.png", image)
 print("\nテスト完了")

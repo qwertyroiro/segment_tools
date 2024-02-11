@@ -1,9 +1,4 @@
-import os, sys
-import argparse
-import copy
-# from IPython.display import display
-from PIL import Image, ImageDraw, ImageFont
-from torchvision.ops import box_convert
+from PIL import Image
 # Grounding DINO
 import groundingdino.datasets.transforms as T
 from groundingdino.models import build_model
@@ -14,27 +9,15 @@ from groundingdino.util.inference import annotate, predict
 import supervision as sv
 # segment anything
 from segment_anything import build_sam, SamPredictor 
-import cv2
 import numpy as np
-import matplotlib.pyplot as plt
 # diffusers
-import PIL
-import requests
 import torch
-from io import BytesIO
-from diffusers import StableDiffusionInpaintPipeline
 from huggingface_hub import hf_hub_download
-
 import warnings
 warnings.filterwarnings('ignore')
-
 from segment_tools.utils import draw_multi_mask
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-# sd_pipe = StableDiffusionInpaintPipeline.from_pretrained(
-#     "stabilityai/stable-diffusion-2-inpainting",
-#     torch_dtype=torch.float16,
-# ).to(device)
 ckpt_repo_id = "ShilongLiu/GroundingDINO"
 ckpt_filenmae = "groundingdino_swinb_cogcoor.pth"
 ckpt_config_filename = "GroundingDINO_SwinB.cfg.py"

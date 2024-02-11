@@ -124,10 +124,21 @@ def render_depth(values, colormap_name="magma_r") -> Image:
     colors = colors[:, :, :3] # Discard alpha component
     return cv2.cvtColor(np.array(colors), cv2.COLOR_BGR2RGB)
 
+def check_image_type(image):
+    if isinstance(image, str):
+        from PIL import Image
+        image_source = Image.open(image).convert("RGB")
+    elif isinstance(image, np.ndarray):
+        from PIL import Image
+        image_source = Image.fromarray(image).convert("RGB")
+    else:
+        image_source = image.copy()
+    return image_source
 
-def DINOv2_depth():
+
+def DINOv2_depth(image):
+    image = check_image_type(image)
     transform = make_depth_transform()
-    image = Image.open("cityscapes.png").convert("RGB")
     scale_factor = 1
     rescaled_image = image.resize((scale_factor * image.width, scale_factor * image.height))
     transformed_image = transform(rescaled_image)
