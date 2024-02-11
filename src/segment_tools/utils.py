@@ -1,3 +1,4 @@
+import PIL
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 from scipy.ndimage import label
@@ -160,3 +161,14 @@ def combine_masks(masks: np.ndarray) -> np.ndarray:
     combined_mask = combined_mask.astype(int)
 
     return combined_mask
+
+def check_image_type(image):
+    if isinstance(image, str):
+        image = cv2.imread(image)
+    elif isinstance(image, PIL.Image.Image):
+        image = np.array(image)
+    elif isinstance(image, np.ndarray):
+        image = image.copy()
+    else:
+        raise ValueError("image type is not supported")
+    return image
