@@ -55,6 +55,7 @@ import logging
 logging.getLogger("fvcore").setLevel(logging.ERROR)
 logging.getLogger("detectron2").setLevel(logging.ERROR)
 logging.getLogger("ultralytics").setLevel(logging.ERROR)
+logging.getLogger("dinov2").setLevel(logging.ERROR)
 ```
 
 ### Define Prompt
@@ -175,6 +176,14 @@ if result is not None:
 result = oneformer_coco_swin.run(image_np, prompt)
 if result is not None:
     image, ann = result["image"], result["mask"]
+```
+
+### Depth Anything
+![depth](image_dir/depth.png)
+```python
+result = st.Depth_Anything(image_np)
+if result is not None:
+    image, depth = result["image"], result["depth"]
 ```
 
 ### Additional Notes
