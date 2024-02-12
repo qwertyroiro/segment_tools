@@ -38,7 +38,10 @@ pip install natten==0.15.1 -f https://shi-labs.com/natten/wheels/cu121/torch2.1.
 Ensure all the prerequisites are properly installed to avoid any compatibility issues during the setup process.
 ## Usage
 ### Note
-- Plan to modify all function calls in the future to be like those of OneFormer.
+- [ ] Modify all function calls to be the same as OneFormer
+- [ ] Add SAM and HQ-SAM
+- [ ] Support DINOSeg with FastSAM and HQ-SAM
+- [ ] Create a Colab demo
 
 ### Image Preparation
 ```python
