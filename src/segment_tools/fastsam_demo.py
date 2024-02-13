@@ -1,29 +1,51 @@
 from .FastSAM.fastsam import FastSAM, FastSAMPrompt
 import torch
 import cv2
+import os
 
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
-class FastSAM:
-    """ FastSAMを用いた画像のセグメンテーション
-    Args:
-        image_path: PILでもnumpyでもパスでも可
-        text: テキストプロンプト. Defaults to None.
-        points: ポイントプロンプト. points default [[0,0]] or [[x1,y1],[x2,y2]] など. Defaults to None.
-        point_labels: 背景か前景か. point_label default [0] or [1,0] or [1] 0:背景, 1:前景. Defaults to None.
-        bboxes: ボックスプロンプト.bbox default shape [0,0,0,0] -> [x1,y1,x2,y2].  Defaults to None.
-        bbox_labels (_type_, optional): _description_. Defaults to None.
 
-    Returns:
-        image: 結果の画像
-        ann: アノテーション
-    """
-    def __init__(self, model_path="weights/FastSAM.pt"):
+class FastSAM:
+    def __init__(self):
+        model_path="weights/FastSAM.pt"
+        if not os.path.exists(model_path):
+            print("weights/FastSAM.pt not found. Downloading...")
+            from .download_weights import download_weights_FastSAM
+            download_weights_FastSAM(model_path)
         self.model = FastSAM(model_path)
-    
-    def run(self, image_path, text=None, points=None, point_labels=None, bboxes=None, bbox_labels=None):
+
+    def run(
+        self,
+        image_path,
+        text=None,
+        points=None,
+        point_labels=None,
+        bboxes=None,
+        bbox_labels=None,
+    ):
+        """FastSAMを用いた画像のセグメンテーション
+        Args:
+            image_path: PILでもnumpyでもパスでも可
+            text: テキストプロンプト. Defaults to None.
+            points: ポイントプロンプト. points default [[0,0]] or [[x1,y1],[x2,y2]] など. Defaults to None.
+            point_labels: 背景か前景か. point_label default [0] or [1,0] or [1] 0:背景, 1:前景. Defaults to None.
+            bboxes: ボックスプロンプト.bbox default shape [0,0,0,0] -> [x1,y1,x2,y2].  Defaults to None.
+            bbox_labels (_type_, optional): _description_. Defaults to None.
+
+        Returns:
+            image: 結果の画像
+            mask: セグメンテーション結果のマスク
+        """
         IMAGE_PATH = image_path
-        everything_results = self.model(IMAGE_PATH, device=device, retina_masks=True, imgsz=1024, conf=0.4, iou=0.9,)
+        everything_results = self.model(
+            IMAGE_PATH,
+            device=device,
+            retina_masks=True,
+            imgsz=1024,
+            conf=0.4,
+            iou=0.9,
+        )
         prompt_process = FastSAMPrompt(IMAGE_PATH, everything_results, device=device)
 
         # everything prompt

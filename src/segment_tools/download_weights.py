@@ -1,7 +1,7 @@
 import os
 import subprocess
 
-def download_weights_FastSAM(weight_path):
+def download_weights_FastSAM(weight_path): # onpath
     url = "https://huggingface.co/spaces/An-619/FastSAM/resolve/main/weights/FastSAM.pt"
     output_directory = os.path.dirname(weight_path)
     output_path = weight_path
@@ -13,8 +13,9 @@ def download_weights_FastSAM(weight_path):
     # wgetコマンドを使用してファイルをダウンロード
     subprocess.run(["wget", url, "-O", output_path])
     
-def download_weights_DINO(weight_path):
-    url = "https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth"
+def download_weights_SAM(weight_path):
+    weight_path_model = weight_path.split("/")[-1]
+    url = f"https://dl.fbaipublicfiles.com/segment_anything/{weight_path_model}"
     output_directory = os.path.dirname(weight_path)
     output_path = weight_path
     

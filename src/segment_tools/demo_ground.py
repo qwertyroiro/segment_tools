@@ -6,7 +6,6 @@ from groundingdino.util import box_ops
 from groundingdino.util.slconfig import SLConfig
 from groundingdino.util.utils import clean_state_dict, get_phrases_from_posmap
 from groundingdino.util.inference import annotate, predict
-import supervision as sv
 # segment anything
 from segment_anything import build_sam, SamPredictor 
 import numpy as np
