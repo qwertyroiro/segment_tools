@@ -162,13 +162,36 @@ def combine_masks(masks: np.ndarray) -> np.ndarray:
 
     return combined_mask
 
-def check_image_type(image):
-    if isinstance(image, str):
-        image = cv2.imread(image)
-    elif isinstance(image, PIL.Image.Image):
-        image = np.array(image)
-    elif isinstance(image, np.ndarray):
-        image = image.copy()
+def check_image_type(image, type="numpy"):
+    """path, PIL, numpyのいずれかの形式で与えられた画像をtype(numpy or pil)形式に変換する関数。
+
+    Args:
+        image (_type_): path, PIL, numpyのいずれかの形式で与えられた画像
+        type (str, optional): numpy or pil. Defaults to "numpy".
+
+    Raises:
+        ValueError: image type is not supported
+
+    Returns:
+        _type_: type(numpy or pil)形式に変換された画像
+    """
+    if type == "numpy":
+        if isinstance(image, str):
+            image = cv2.imread(image)
+        elif isinstance(image, PIL.Image.Image):
+            image = np.array(image)
+        elif isinstance(image, np.ndarray):
+            image = image.copy()
+        else:
+            raise ValueError("image type is not supported")
+    elif type == "pil":
+        if isinstance(image, str):
+            image = Image.open(image)
+        elif isinstance(image, np.ndarray):
+            image = Image.fromarray(image)
+        elif isinstance(image, PIL.Image.Image):
+            image = image.copy()
+        else:
+            raise ValueError("image type is not supported")
     else:
-        raise ValueError("image type is not supported")
-    return image
+        raise ValueError("type is not supported")
