@@ -3,6 +3,7 @@
 - [ ] Add SAM and HQ-SAM
 - [ ] Support DINOSeg with FastSAM and HQ-SAM
 - [ ] Create a Colab demo
+- [ ] Add a function to utils for obtaining bbox from mask
 
 ## Prerequisites
 
