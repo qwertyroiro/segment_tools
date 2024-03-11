@@ -186,15 +186,16 @@ if result is not None:
 ```
 
 ### Depth Anything
-![depthany](image_dir/depth.png)
+![depthany](image_dir2/depth.png)
 ```python
-result = st.Depth_Anything(image_np)
+depth_model = st.DepthAnything()
+result = depth_model.run(image)
 if result is not None:
     image, depth = result["image"], result["depth"]
 ```
 
 ### DINOv2 (depth estimation)
-![dinov2depth](image_dir/dinov2_depth.png)
+![dinov2depth](image_dir2/dinov2_depth.png)
 ```python
 result = st.DINOv2_depth()
 if result is not None:
