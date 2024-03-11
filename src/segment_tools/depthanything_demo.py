@@ -12,7 +12,7 @@ import matplotlib
 import numpy as np
 from .utils import check_image_type
 
-class DepthAnything:
+class Depth_Anything:
     def __init__(self, encoder="vitl"): # vits or vitb or vitl
         self.depth_anything = DepthAnything.from_pretrained(
             "LiheYoung/depth_anything_{:}14".format(encoder)
