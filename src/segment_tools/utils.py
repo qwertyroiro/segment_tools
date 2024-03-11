@@ -195,3 +195,5 @@ def check_image_type(image, type="numpy"):
             raise ValueError("image type is not supported")
     else:
         raise ValueError("type is not supported")
+    
+    return image

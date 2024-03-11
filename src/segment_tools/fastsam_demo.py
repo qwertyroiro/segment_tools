@@ -1,19 +1,18 @@
-from .FastSAM.fastsam import FastSAM, FastSAMPrompt
+from .FastSAM.fastsam import FastSAM as fs, FastSAMPrompt
 import torch
 import cv2
 import os
 
-device = "cuda:0" if torch.cuda.is_available() else "cpu"
-
 
 class FastSAM:
     def __init__(self):
+        self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
         model_path="weights/FastSAM.pt"
         if not os.path.exists(model_path):
             print("weights/FastSAM.pt not found. Downloading...")
             from .download_weights import download_weights_FastSAM
             download_weights_FastSAM(model_path)
-        self.model = FastSAM(model_path)
+        self.model = fs(model_path)
 
     def run(
         self,
@@ -40,13 +39,13 @@ class FastSAM:
         IMAGE_PATH = image_path
         everything_results = self.model(
             IMAGE_PATH,
-            device=device,
+            device=self.device,
             retina_masks=True,
             imgsz=1024,
             conf=0.4,
             iou=0.9,
         )
-        prompt_process = FastSAMPrompt(IMAGE_PATH, everything_results, device=device)
+        prompt_process = FastSAMPrompt(IMAGE_PATH, everything_results, device=self.device)
 
         # everything prompt
         ann = prompt_process.everything_prompt()

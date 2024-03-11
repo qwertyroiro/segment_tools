@@ -12,19 +12,8 @@ import matplotlib
 import numpy as np
 from .utils import check_image_type
 
-
-def render_depth(values, colormap_name="magma_r"):
-    min_value, max_value = values.min(), values.max()
-    normalized_values = (values - min_value) / (max_value - min_value)
-
-    colormap = matplotlib.colormaps[colormap_name]
-    colors = colormap(normalized_values, bytes=True)  # ((1)xhxwx4)
-    colors = colors[:, :, :3]  # Discard alpha component
-    return cv2.cvtColor(np.array(colors), cv2.COLOR_BGR2RGB)
-
-
 class DepthAnything:
-    def __init__(self, encoder="vitl"):
+    def __init__(self, encoder="vitl"): # vits or vitb or vitl
         self.depth_anything = DepthAnything.from_pretrained(
             "LiheYoung/depth_anything_{:}14".format(encoder)
         ).eval()
@@ -69,5 +58,14 @@ class DepthAnything:
         depth = cv2.resize(
             depth[0], (image_width, image_height), interpolation=cv2.INTER_NEAREST
         )
-        depth_img = render_depth(depth)
+        depth_img = self.__render_depth(depth)
         return {"image": depth_img, "depth": depth}
+
+    def __render_depth(self, values, colormap_name="magma_r"):
+        min_value, max_value = values.min(), values.max()
+        normalized_values = (values - min_value) / (max_value - min_value)
+
+        colormap = matplotlib.colormaps[colormap_name]
+        colors = colormap(normalized_values, bytes=True)  # ((1)xhxwx4)
+        colors = colors[:, :, :3]  # Discard alpha component
+        return cv2.cvtColor(np.array(colors), cv2.COLOR_BGR2RGB)

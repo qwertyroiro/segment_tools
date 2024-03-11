@@ -189,6 +189,7 @@ class OneFormer:
                 
     def run(self, image, prompt=None, task="panoptic"):
         image = check_image_type(image)
+        
         out, panoptic_seg, segments_info = TASK_INFER[task](image, self.predictor, self.metadata)
         try:
             if len(out) == 2:

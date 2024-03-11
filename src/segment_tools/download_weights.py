@@ -1,30 +1,25 @@
 import os
 import subprocess
 
+def make_dir(path):
+    os.makedirs(path, exist_ok=True)
+
 def download_weights_FastSAM(weight_path): # onpath
     url = "https://huggingface.co/spaces/An-619/FastSAM/resolve/main/weights/FastSAM.pt"
-    output_directory = os.path.dirname(weight_path)
-    output_path = weight_path
 
-    # ディレクトリが存在しない場合は作成
-    if not os.path.exists(output_directory):
-        os.makedirs(output_directory)
+    make_dir("weights")
 
     # wgetコマンドを使用してファイルをダウンロード
-    subprocess.run(["wget", url, "-O", output_path])
+    subprocess.run(["wget", url, "-O", weight_path])
     
 def download_weights_SAM(weight_path):
-    weight_path_model = weight_path.split("/")[-1]
+    weight_path_model = os.path.basename(weight_path)
     url = f"https://dl.fbaipublicfiles.com/segment_anything/{weight_path_model}"
-    output_directory = os.path.dirname(weight_path)
-    output_path = weight_path
     
-    # ディレクトリが存在しない場合は作成
-    if not os.path.exists(output_directory):
-        os.makedirs(output_directory)
-        
+    make_dir("weights")
+    
     # wgetコマンドを使用してファイルをダウンロード
-    subprocess.run(["wget", url, "-O", output_path])
+    subprocess.run(["wget", url, "-O", weight_path])
 
 def download_weights_ade20k(weight_path, use_swin):
     if use_swin:
@@ -32,15 +27,10 @@ def download_weights_ade20k(weight_path, use_swin):
     else:
         url = "https://shi-labs.com/projects/oneformer/ade20k/250_16_dinat_l_oneformer_ade20k_160k.pth"
     
-    output_directory = os.path.dirname(weight_path)
-    output_path = weight_path
+    make_dir("weights")
     
-    # ディレクトリが存在しない場合は作成
-    if not os.path.exists(output_directory):
-        os.makedirs(output_directory)
-        
     # wgetコマンドを使用してファイルをダウンロード
-    subprocess.run(["wget", url, "-O", output_path])
+    subprocess.run(["wget", url, "-O", weight_path])
     
 def download_weights_cityscapes(weight_path, use_swin):
     if use_swin:
@@ -48,15 +38,10 @@ def download_weights_cityscapes(weight_path, use_swin):
     else:
         url = "https://shi-labs.com/projects/oneformer/cityscapes/250_16_dinat_l_oneformer_cityscapes_90k.pth"
     
-    output_directory = os.path.dirname(weight_path)
-    output_path = weight_path
+    make_dir("weights")
     
-    # ディレクトリが存在しない場合は作成
-    if not os.path.exists(output_directory):
-        os.makedirs(output_directory)
-        
     # wgetコマンドを使用してファイルをダウンロード
-    subprocess.run(["wget", url, "-O", output_path])
+    subprocess.run(["wget", url, "-O", weight_path])
     
 def download_weights_coco(weight_path, use_swin):
     if use_swin:
@@ -64,12 +49,7 @@ def download_weights_coco(weight_path, use_swin):
     else:
         url = "https://shi-labs.com/projects/oneformer/coco/150_16_dinat_l_oneformer_coco_100ep.pth"
     
-    output_directory = os.path.dirname(weight_path)
-    output_path = weight_path
+    make_dir("weights")
     
-    # ディレクトリが存在しない場合は作成
-    if not os.path.exists(output_directory):
-        os.makedirs(output_directory)
-        
     # wgetコマンドを使用してファイルをダウンロード
-    subprocess.run(["wget", url, "-O", output_path])
+    subprocess.run(["wget", url, "-O", weight_path])

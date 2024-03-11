@@ -2,20 +2,16 @@ from transformers import CLIPSegProcessor, CLIPSegForImageSegmentation
 import torch
 
 import numpy as np
-import warnings
 from PIL import Image
 import cv2
 from .utils import separate_masks, draw_multi_mask, check_image_type
 
-warnings.filterwarnings("ignore")
-
-device = "cuda:0" if torch.cuda.is_available() else "cpu"
-
 
 class CLIPSeg:
     def __init__(self, model_name="CIDAS/clipseg-rd64-refined"):
+        self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
         self.processor = CLIPSegProcessor.from_pretrained(model_name)
-        self.model = CLIPSegForImageSegmentation.from_pretrained(model_name).to(device)
+        self.model = CLIPSegForImageSegmentation.from_pretrained(model_name).to(self.device)
 
     def run(self, image, text, threshold=100):
         """clipsegを用いた画像のセグメンテーション
@@ -43,7 +39,7 @@ class CLIPSeg:
             padding="max_length",
             return_tensors="pt",
         )
-        inputs = inputs.to(device)
+        inputs = inputs.to(self.device)
         # 推論
         with torch.no_grad():
             outputs = self.model(**inputs)
