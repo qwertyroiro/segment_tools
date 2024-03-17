@@ -50,7 +50,7 @@ class Depth_Anything:
 
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB) / 255.0
         image = transform({"image": image})["image"]
-        image = torch.from_numpy(image).unsqueeze(0)
+        image = torch.from_numpy(image).unsqueeze(0).to("cuda" if torch.cuda.is_available() else "cpu")
 
         # depth shape: 1xHxW
         depth = self.depth_anything(image)
