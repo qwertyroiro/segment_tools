@@ -13,11 +13,14 @@ import numpy as np
 from .utils import check_image_type
 
 class Depth_Anything:
-    def __init__(self, encoder="vitl"): # vits or vitb or vitl
+    def __init__(self, encoder="vitl", device=None): # vits or vitb or vitl
+        if device is None:
+            self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        else:
+            self.device = device
         self.depth_anything = DepthAnything.from_pretrained(
             "LiheYoung/depth_anything_{:}14".format(encoder)
-        ).to("cuda" if torch.cuda.is_available() else "cpu").eval()
-        print(f"cuda: {torch.cuda.is_available()}")
+        ).to(self.device).eval()
 
     def run(self, image):
         """画像から深度マップを生成する
@@ -50,7 +53,7 @@ class Depth_Anything:
 
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB) / 255.0
         image = transform({"image": image})["image"]
-        image = torch.from_numpy(image).unsqueeze(0).to("cuda" if torch.cuda.is_available() else "cpu")
+        image = torch.from_numpy(image).unsqueeze(0).to(self.device)
 
         # depth shape: 1xHxW
         depth = self.depth_anything(image)
