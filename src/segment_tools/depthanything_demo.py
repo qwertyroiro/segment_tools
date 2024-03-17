@@ -16,7 +16,8 @@ class Depth_Anything:
     def __init__(self, encoder="vitl"): # vits or vitb or vitl
         self.depth_anything = DepthAnything.from_pretrained(
             "LiheYoung/depth_anything_{:}14".format(encoder)
-        ).eval()
+        ).to("cuda" if torch.cuda.is_available() else "cpu").eval()
+        print(f"cuda: {torch.cuda.is_available()}")
 
     def run(self, image):
         """画像から深度マップを生成する
