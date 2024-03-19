@@ -77,12 +77,14 @@ prompt = "car"  # Define your prompt
 ![fastsam_prompt](image_dir/FastSAM_prompt.png)
 ```python
 # Segment without prompt
-result = st.FastSAM(image_np)
+fastsam = st.FastSAM()
+result = fastsam.run(image_np)
 if result is not None:
     image, ann = result["image"], result["mask"]
 
 # Segment with prompt
-result = st.FastSAM(image_np, prompt)
+fastsam = st.FastSAM()
+result = fastsam.run(image_np, prompt)
 if result is not None:
     image, ann = result["image"], result["mask"]
 ```
@@ -90,7 +92,8 @@ if result is not None:
 ### CLIPSeg
 ![clipseg](image_dir/CLIPSeg.png)
 ```python
-result = st.CLIPSeg(image_np, prompt)
+clipseg = st.CLIPSeg()
+result = clipseg.run(image_np, prompt)
 if result is not None:
     image, ann = result["image"], result["mask"]
 ```
@@ -98,7 +101,8 @@ if result is not None:
 ### DINO
 ![DINO](image_dir/dino.png)
 ```python
-result = st.DINO(image_path, prompt)
+dino = st.DINO()
+result = dino.run(image_np, prompt)
 if result is not None:
     image, bbox = result["image"], result["bbox"]
 ```
@@ -106,9 +110,10 @@ if result is not None:
 ### DINOSeg
 ![DINOSeg](image_dir/DINOSeg.png)
 ```python
-result = st.DINOSeg(image_path, prompt)
+dinoseg = st.DINOSeg(sam_checkpoint="vit_h")
+result = dinoseg.run(image_np, prompt)
 if result is not None:
-    image, maskimage, bbox = result["image"], result["mask"], result["bbox"]
+    image, ann = result["image"], result["mask"]
 ```
 
 ### OneFormer Variants
