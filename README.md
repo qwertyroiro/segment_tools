@@ -193,7 +193,7 @@ if result is not None:
 ### Depth Anything
 ![depthany](image_dir2/depth.png)
 ```python
-depth_model = st.Depth_Anything()
+depth_model = st.Depth_Anything(encoder="vitl") # vits or vitb or vitl
 result = depth_model.run(image)
 if result is not None:
     image, depth = result["image"], result["depth"]
