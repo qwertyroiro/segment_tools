@@ -193,7 +193,7 @@ class OneFormer:
         out, panoptic_seg, segments_info = TASK_INFER[task](image, self.predictor, self.metadata)
         try:
             if len(out) == 2:
-                return None
+                out = out[0]
         except:
             pass
         # promptがNoneでない、かつrequire_imageがTrueの場合のみ、draw_multi_maskを実行(多分重いので)
