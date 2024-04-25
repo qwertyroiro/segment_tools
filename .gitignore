@@ -6,3 +6,5 @@ test.py
 test.ipynb
 backup.txt
 test2.py
+flake.lock
+flake.nix

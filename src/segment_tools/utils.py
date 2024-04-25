@@ -86,7 +86,7 @@ def draw_multi_mask(
 
 
 def mask_class_objects(
-    seg: np.ndarray, ann: list, class_name: str, stuff_classes
+    seg: np.ndarray, ann: list, class_names: list, stuff_classes
 ) -> np.ndarray:
     """
     指定されたクラス(int)のオブジェクトをセグメンテーションマスクから分離し、そのマスクを返す関数。
@@ -101,27 +101,27 @@ def mask_class_objects(
     Returns:
         np.ndarray: 分離されたオブジェクトのマスク配列
     """
+    masks = []
+    for class_name in class_names:
+        # ラベルがstuff_classesに含まれていない場合は警告を出す
+        if class_name not in stuff_classes:
+            print(f"警告: {class_name} はラベルに含まれていません。")
+            continue
 
-    # ラベルがmetadata['stuff_classes']に含まれていない場合は警告を出す
-    if class_name not in stuff_classes:
-        print(f"警告: {class_name} はラベルに含まれていません。")
-        return seg, True, False
+        # 指定された'class'に対応する'id'を取得
+        target_ids = [item["id"] for item in ann if item["class"] == class_name]
+        if len(target_ids) == 0:
+            print(f"警告: {class_name} は検出結果に含まれていません。")
+            continue
 
-    # 指定された'class'に対応する'id'を取得
-    target_ids = [item["id"] for item in ann if item["class"] == class_name]
-    if len(target_ids) == 0:
-        print(f"警告: {class_name} は検出結果に含まれていません。")
-        return seg, False, True
+        # target_idsに含まれるidの位置を1に設定してマスクを作成
+        for target_id in target_ids:
+            mask = np.zeros_like(seg)
+            mask[seg == target_id] = 1
+            masks.append(mask)
 
-    separate_masks = []
-    # target_idsに含まれるidの位置を1に設定
-    for target_id in target_ids:
-        mask = np.zeros_like(seg)
-        mask[seg == target_id] = 1
-        separate_masks.append(mask)
-
-    separate_masks = np.array(separate_masks)
-    return separate_masks, False, False
+    masks = np.array(masks)
+    return masks, False, False
 
 
 def separate_masks(seg: np.ndarray) -> list:

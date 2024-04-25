@@ -189,6 +189,8 @@ class OneFormer:
                 
     def run(self, image, prompt=None, task="panoptic"):
         image = check_image_type(image)
+        if type(prompt) == str:
+            prompt = [prompt]
         
         out, panoptic_seg, segments_info = TASK_INFER[task](image, self.predictor, self.metadata)
         try:
