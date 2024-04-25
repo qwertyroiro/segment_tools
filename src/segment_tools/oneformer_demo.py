@@ -189,7 +189,7 @@ class OneFormer:
                 
     def run(self, image, prompt=None, task="panoptic"):
         image = check_image_type(image)
-        if type(prompt) == str:
+        if isinstance(prompt, str):
             prompt = [prompt]
         
         out, panoptic_seg, segments_info = TASK_INFER[task](image, self.predictor, self.metadata)
@@ -198,9 +198,12 @@ class OneFormer:
                 out = out[0]
         except:
             pass
+
         # promptがNoneでない、かつrequire_imageがTrueの場合のみ、draw_multi_maskを実行(多分重いので)
         if prompt is not None:
             panoptic_seg, nolabel, nodetect = mask_class_objects(panoptic_seg, segments_info, prompt, self.metadata.stuff_classes)
+            # promptをカンマ区切りのstrに変換
+            prompt = ",".join(prompt)
             if nolabel:
                 return None
             elif nodetect:
