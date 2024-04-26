@@ -199,13 +199,16 @@ class OneFormer:
         except:
             pass
 
+        if color == "random":
+            color = ["random" for _ in range(len(prompt))]
+
         # promptがNoneでない、かつrequire_imageがTrueの場合のみ、draw_multi_maskを実行(多分重いので)
         if prompt is not None:
             # panoptic_seg, flag = mask_class_objects(panoptic_seg, segments_info, prompt, self.metadata.stuff_classes)
-            panoptic_seg, output_image = mask_class_objects_multi(panoptic_seg, segments_info, prompt, self.metadata.stuff_classes, image, color=color)
+            panoptic_seg, output_image = mask_class_objects_multi(panoptic_seg, segments_info, prompt, self.metadata.stuff_classes, image, colors=color)
             # promptをカンマ区切りのstrに変換
             prompt = ",".join(prompt)
-            output_image = draw_multi_mask(panoptic_seg, image, prompt, color=color)[:, :, :3]
+            # output_image = draw_multi_mask(panoptic_seg, image, prompt, color=color)[:, :, :3]
         else:
             output_image = out.get_image()[:, :, ::-1]
         

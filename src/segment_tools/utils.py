@@ -75,7 +75,7 @@ def draw_multi_mask(
 
         ## ラベルを描画
         if label is not None:
-            y, x = np.where(mask > 0)
+            y, x= np.where(mask > 0)
             if len(x) > 0 and len(y) > 0:
                 center_x, center_y = int(np.mean(x)), int(np.mean(y))
                 # テキストのサイズを取得
@@ -151,19 +151,19 @@ def mask_class_objects(
     return separate_masks, True
 
 def mask_class_objects_multi(
-    seg: np.ndarray, ann: list, class_names: list, stuff_classes, image: np.ndarray, color: str = "random"
+    seg: np.ndarray, ann: list, class_names: list, stuff_classes, image: np.ndarray, colors: list
 ) -> np.ndarray:
     
     masks = []
     annotated_frame = image.copy()
-    for class_name in class_names:
-        seg, execute_flag= mask_class_objects(seg, ann, class_name, stuff_classes)
+    for class_name, color in zip(class_names, colors):
+        separate_masks, execute_flag= mask_class_objects(seg, ann, class_name, stuff_classes)
 
         if execute_flag:
-            masks.append(seg)
-            annotated_frame = draw_multi_mask(seg, annotated_frame, label=class_name, color=color)
+            masks.append(separate_masks)
+            annotated_frame = draw_multi_mask(separate_masks, annotated_frame, label=class_name, color=color)
 
-    return masks, annotated_frame
+    return masks, annotated_frame[:, :, :3]
 
 
     
