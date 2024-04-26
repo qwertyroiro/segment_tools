@@ -5,6 +5,38 @@ from scipy.ndimage import label
 import cv2
 
 
+def get_color(color):
+    colors = {
+        "Red": [255, 0, 0],
+        "Green": [0, 128, 0],
+        "Blue": [0, 0, 255],
+        "White": [255, 255, 255],
+        "Black": [0, 0, 0],
+        "Yellow": [255, 255, 0],
+        "Cyan": [0, 255, 255],
+        "Magenta": [255, 0, 255],
+        "Silver": [192, 192, 192],
+        "Gray": [128, 128, 128],
+        "Maroon": [128, 0, 0],
+        "Olive": [128, 128, 0],
+        "Purple": [128, 0, 128],
+        "Teal": [0, 128, 128],
+        "Navy": [0, 0, 128],
+        "DodgerBlue": [30, 144, 255],
+        "Orange": [255, 165, 0],
+        "Pink": [255, 192, 203],
+        "Brown": [165, 42, 42],
+        "Gold": [255, 215, 0]
+    }
+    if color == "random":
+        return np.random.randint(0, 256, size=3).tolist()
+    elif color in colors:
+        return colors[color]
+    elif isinstance(color, list) and len(color) == 3:
+        return color
+    else:
+        return colors["DodgerBlue"] # 既定の色を返す
+
 # draw mask from segment anything
 def draw_multi_mask(
     masks,
@@ -28,44 +60,12 @@ def draw_multi_mask(
         thickness: テキストの太さ。デフォルトは2。
         padding: テキストの背景のパディング。デフォルトは3。
     """
-
-    def get_color(color):
-        colors = {
-            "Red": [255, 0, 0],
-            "Green": [0, 128, 0],
-            "Blue": [0, 0, 255],
-            "White": [255, 255, 255],
-            "Black": [0, 0, 0],
-            "Yellow": [255, 255, 0],
-            "Cyan": [0, 255, 255],
-            "Magenta": [255, 0, 255],
-            "Silver": [192, 192, 192],
-            "Gray": [128, 128, 128],
-            "Maroon": [128, 0, 0],
-            "Olive": [128, 128, 0],
-            "Purple": [128, 0, 128],
-            "Teal": [0, 128, 128],
-            "Navy": [0, 0, 128],
-            "DodgerBlue": [30, 144, 255],
-            "Orange": [255, 165, 0],
-            "Pink": [255, 192, 203],
-            "Brown": [165, 42, 42],
-            "Gold": [255, 215, 0]
-        }
-        if color == "random":
-            return np.random.randint(0, 256, size=3).tolist()
-        elif color in colors:
-            return colors[color]
-        elif isinstance(color, list) and len(color) == 3:
-            return color
-        else:
-            return colors["DodgerBlue"] # 既定の色を返す
-
     annotated_frame = image.copy()
 
+    color = get_color(color)
+
     for mask in masks:
-        color = get_color(color)
-        # マスクを画像に適用
+        # マスクを描画
         for c in range(3):
             annotated_frame[:, :, c] = np.where(
                 mask > 0,
@@ -73,6 +73,7 @@ def draw_multi_mask(
                 annotated_frame[:, :, c],
             )
 
+        ## ラベルを描画
         if label is not None:
             y, x = np.where(mask > 0)
             if len(x) > 0 and len(y) > 0:
@@ -111,7 +112,7 @@ def draw_multi_mask(
 
 
 def mask_class_objects(
-    seg: np.ndarray, ann: list, class_names: list, stuff_classes
+    seg: np.ndarray, ann: list, class_name: str, stuff_classes
 ) -> np.ndarray:
     """
     指定されたクラス(int)のオブジェクトをセグメンテーションマスクから分離し、そのマスクを返す関数。
@@ -126,27 +127,46 @@ def mask_class_objects(
     Returns:
         np.ndarray: 分離されたオブジェクトのマスク配列
     """
+
+    # ラベルがmetadata['stuff_classes']に含まれていない場合は警告を出す
+    if class_name not in stuff_classes:
+        print(f"警告: {class_name} はラベルに含まれていません。")
+        return seg, False
+
+    # 指定された'class'に対応する'id'を取得
+    target_ids = [item["id"] for item in ann if item["class"] == class_name]
+    if len(target_ids) == 0:
+        print(f"警告: {class_name} は検出結果に含まれていません。")
+        return seg, False
+
+    separate_masks = []
+    # target_idsに含まれるidの位置を1に設定
+    for target_id in target_ids:
+        mask = np.zeros_like(seg)
+        mask[seg == target_id] = 1
+        separate_masks.append(mask)
+
+    separate_masks = np.array(separate_masks)
+
+    return separate_masks, True
+
+def mask_class_objects_multi(
+    seg: np.ndarray, ann: list, class_names: list, stuff_classes, image: np.ndarray, color: str = "random"
+) -> np.ndarray:
+    
     masks = []
+    annotated_frame = image.copy()
     for class_name in class_names:
-        # ラベルがstuff_classesに含まれていない場合は警告を出す
-        if class_name not in stuff_classes:
-            print(f"警告: {class_name} はラベルに含まれていません。")
-            continue
+        seg, execute_flag= mask_class_objects(seg, ann, class_name, stuff_classes)
 
-        # 指定された'class'に対応する'id'を取得
-        target_ids = [item["id"] for item in ann if item["class"] == class_name]
-        if len(target_ids) == 0:
-            print(f"警告: {class_name} は検出結果に含まれていません。")
-            continue
+        if execute_flag:
+            masks.append(seg)
+            annotated_frame = draw_multi_mask(seg, annotated_frame, label=class_name, color=color)
 
-        # target_idsに含まれるidの位置を1に設定してマスクを作成
-        for target_id in target_ids:
-            mask = np.zeros_like(seg)
-            mask[seg == target_id] = 1
-            masks.append(mask)
+    return masks, annotated_frame
 
-    masks = np.array(masks)
-    return masks, False, False
+
+    
 
 
 def separate_masks(seg: np.ndarray) -> list:

@@ -41,7 +41,7 @@ from oneformer import (
 
 from .download_weights import *
 
-from .utils import mask_class_objects, draw_multi_mask, check_image_type
+from .utils import mask_class_objects, draw_multi_mask, check_image_type, mask_class_objects_multi
 
 cpu_device = torch.device("cpu")
 config_dir = os.path.join(os.path.dirname(__file__), "OneFormer_colab_segtools/configs")
@@ -187,7 +187,7 @@ class OneFormer:
         else:
             raise ValueError("dataset is not supported")
                 
-    def run(self, image, prompt=None, task="panoptic", color="random"):
+    def run(self, image, prompt=None, color="random", task="panoptic"):
         image = check_image_type(image)
         if isinstance(prompt, str):
             prompt = [prompt]
@@ -201,15 +201,11 @@ class OneFormer:
 
         # promptがNoneでない、かつrequire_imageがTrueの場合のみ、draw_multi_maskを実行(多分重いので)
         if prompt is not None:
-            panoptic_seg, nolabel, nodetect = mask_class_objects(panoptic_seg, segments_info, prompt, self.metadata.stuff_classes)
+            # panoptic_seg, flag = mask_class_objects(panoptic_seg, segments_info, prompt, self.metadata.stuff_classes)
+            panoptic_seg, output_image = mask_class_objects_multi(panoptic_seg, segments_info, prompt, self.metadata.stuff_classes, image, color=color)
             # promptをカンマ区切りのstrに変換
             prompt = ",".join(prompt)
-            if nolabel:
-                return None
-            elif nodetect:
-                return None
-            else:
-                output_image = draw_multi_mask(panoptic_seg, image, prompt, color=color)[:, :, :3]
+            output_image = draw_multi_mask(panoptic_seg, image, prompt, color=color)[:, :, :3]
         else:
             output_image = out.get_image()[:, :, ::-1]
         
