@@ -35,7 +35,6 @@ def draw_multi_mask(
         else:
             return [30, 144, 255]  # DodgerBlue
 
-    h, w = masks.shape[1], masks.shape[2]
     annotated_frame = image.copy()
 
     for mask in masks:

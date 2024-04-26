@@ -5,11 +5,11 @@
 # from .demo_dinov2 import *
 # from .utils import *
 
-from .clipseg_demo import *
-from .fastsam_demo import *
-from .dino_demo import *
-from .dinoseg_demo import *
-from .oneformer_demo import *
-from .depthanything_demo import *
-from .dinov2_demo import *
+from .clipseg_module import *
+from .fastsam_module import *
+from .dino_module import *
+from .dinoseg_module import *
+from .oneformer_module import *
+from .depthanything_module import *
+from .dinov2_module import *
 from .utils import *
