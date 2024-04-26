@@ -13,7 +13,7 @@ class CLIPSeg:
         self.processor = CLIPSegProcessor.from_pretrained(model_name)
         self.model = CLIPSegForImageSegmentation.from_pretrained(model_name).to(self.device)
 
-    def run(self, image, text, threshold=100):
+    def run(self, image, text, threshold=100, color="random"):
         """clipsegを用いた画像のセグメンテーション
 
         Args:
@@ -64,7 +64,7 @@ class CLIPSeg:
         # マスクの描画
         if masks.shape[0] == 0:
             return None
-        drawed_mask = draw_multi_mask(masks, image, text)
+        drawed_mask = draw_multi_mask(masks, image, text, color=color)
 
         drawed_mask = drawed_mask[:, :, :3]
 
