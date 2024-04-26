@@ -187,7 +187,7 @@ class OneFormer:
         else:
             raise ValueError("dataset is not supported")
                 
-    def run(self, image, prompt=None, task="panoptic"):
+    def run(self, image, prompt=None, task="panoptic", color="random"):
         image = check_image_type(image)
         if isinstance(prompt, str):
             prompt = [prompt]
@@ -209,7 +209,7 @@ class OneFormer:
             elif nodetect:
                 return None
             else:
-                output_image = draw_multi_mask(panoptic_seg, image, prompt)[:, :, :3]
+                output_image = draw_multi_mask(panoptic_seg, image, prompt, color=color)[:, :, :3]
         else:
             output_image = out.get_image()[:, :, ::-1]
         

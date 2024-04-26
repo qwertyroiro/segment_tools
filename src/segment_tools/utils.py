@@ -10,7 +10,7 @@ def draw_multi_mask(
     masks,
     image,
     label=None,
-    random_color=True,
+    color="random",
     alpha=0.5,
     font_scale=0.7,
     thickness=1,
@@ -22,23 +22,49 @@ def draw_multi_mask(
         masks: 複数のマスクが含まれるNumPy配列。形状は(x, H, W)で、xはマスクの数、Hは縦のサイズ、Wは横のサイズ。
         image: 画像のNumPy配列。形状は(H, W, C)で、Hは縦のサイズ、Wは横のサイズ、Cはチャンネル数。
         label: マスクに付けるラベル。デフォルトはNone。
-        random_color: ランダムな色を使用するかどうか。デフォルトはTrue。
+        color: どんな色を使用するかどうか。デフォルトはrandom。
         alpha: マスクの透明度。デフォルトは0.5。
         font_scale: テキストのフォントスケール。デフォルトは1。
         thickness: テキストの太さ。デフォルトは2。
         padding: テキストの背景のパディング。デフォルトは3。
     """
 
-    def get_color(random_color):
-        if random_color:
+    def get_color(color):
+        colors = {
+            "Red": [255, 0, 0],
+            "Green": [0, 128, 0],
+            "Blue": [0, 0, 255],
+            "White": [255, 255, 255],
+            "Black": [0, 0, 0],
+            "Yellow": [255, 255, 0],
+            "Cyan": [0, 255, 255],
+            "Magenta": [255, 0, 255],
+            "Silver": [192, 192, 192],
+            "Gray": [128, 128, 128],
+            "Maroon": [128, 0, 0],
+            "Olive": [128, 128, 0],
+            "Purple": [128, 0, 128],
+            "Teal": [0, 128, 128],
+            "Navy": [0, 0, 128],
+            "DodgerBlue": [30, 144, 255],
+            "Orange": [255, 165, 0],
+            "Pink": [255, 192, 203],
+            "Brown": [165, 42, 42],
+            "Gold": [255, 215, 0]
+        }
+        if color == "random":
             return np.random.randint(0, 256, size=3).tolist()
+        elif color in colors:
+            return colors[color]
+        elif isinstance(color, list) and len(color) == 3:
+            return color
         else:
-            return [30, 144, 255]  # DodgerBlue
+            return colors["DodgerBlue"] # 既定の色を返す
 
     annotated_frame = image.copy()
 
     for mask in masks:
-        color = get_color(random_color)
+        color = get_color(color)
         # マスクを画像に適用
         for c in range(3):
             annotated_frame[:, :, c] = np.where(
