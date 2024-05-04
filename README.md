@@ -1,8 +1,8 @@
 ## Todo
-- [ ] Modify all function calls to be the same as OneFormer
+- [x] Modify all function calls to be the same as OneFormer
 - [ ] Add SAM and HQ-SAM
 - [ ] Support DINOSeg with FastSAM and HQ-SAM
-- [ ] Create a Colab demo
+- [x] Create a Colab demo
 - [ ] Add a function to utils for obtaining bbox from mask
 
 ## Prerequisites
@@ -44,6 +44,8 @@ pip install natten==0.15.1 -f https://shi-labs.com/natten/wheels/cu121/torch2.1.
 
 Ensure all the prerequisites are properly installed to avoid any compatibility issues during the setup process.
 ## Usage
+
+[Colab Demo](segment_tools_demo.ipynb)
 
 ### Image Preparation
 ```python
