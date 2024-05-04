@@ -191,7 +191,7 @@ if result is not None:
 ```
 
 ### Depth Anything
-![depthany](image_dir2/depth.png)
+![depthany](image_dir/depth.png)
 ```python
 depth_model = st.Depth_Anything(encoder="vitl") # vits or vitb or vitl
 result = depth_model.run(image)
@@ -200,7 +200,7 @@ if result is not None:
 ```
 
 ### DINOv2 (depth estimation) (CPU is not supported)
-![dinov2depth](image_dir2/dinov2_depth.png)
+![dinov2depth](image_dir/dinov2_depth.png)
 ```python
 depth_model = st.DINOv2_depth(BACKBONE_SIZE="base") # small, base, large, giant
 result = depth_model.run(image)
