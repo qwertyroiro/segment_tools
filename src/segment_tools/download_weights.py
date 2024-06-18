@@ -10,7 +10,7 @@ def download_weights_FastSAM(weight_path): # onpath
     make_dir("weights")
 
     # wgetコマンドを使用してファイルをダウンロード
-    subprocess.run(["wget", url, "-O", weight_path])
+    subprocess.run(["wget", url, "-O", weight_path, "-q"])
     
 def download_weights_SAM(weight_path):
     weight_path_model = os.path.basename(weight_path)
@@ -19,7 +19,7 @@ def download_weights_SAM(weight_path):
     make_dir("weights")
     
     # wgetコマンドを使用してファイルをダウンロード
-    subprocess.run(["wget", url, "-O", weight_path])
+    subprocess.run(["wget", url, "-O", weight_path, "-q"])
 
 def download_weights_ade20k(weight_path, use_swin):
     if use_swin:
@@ -30,7 +30,7 @@ def download_weights_ade20k(weight_path, use_swin):
     make_dir("weights")
     
     # wgetコマンドを使用してファイルをダウンロード
-    subprocess.run(["wget", url, "-O", weight_path])
+    subprocess.run(["wget", url, "-O", weight_path, "-q"])
     
 def download_weights_cityscapes(weight_path, use_swin):
     if use_swin:
@@ -41,7 +41,7 @@ def download_weights_cityscapes(weight_path, use_swin):
     make_dir("weights")
     
     # wgetコマンドを使用してファイルをダウンロード
-    subprocess.run(["wget", url, "-O", weight_path])
+    subprocess.run(["wget", url, "-O", weight_path, "-q"])
     
 def download_weights_coco(weight_path, use_swin):
     if use_swin:
@@ -52,4 +52,4 @@ def download_weights_coco(weight_path, use_swin):
     make_dir("weights")
     
     # wgetコマンドを使用してファイルをダウンロード
-    subprocess.run(["wget", url, "-O", weight_path])
+    subprocess.run(["wget", url, "-O", weight_path, "-q"])

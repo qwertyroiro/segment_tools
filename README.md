@@ -91,6 +91,9 @@ if result is not None:
     image, ann = result["image"], result["mask"]
 ```
 
+#### Additional Notes
+- For FastSAM, the `ann` (annotation) format is such that non-mask areas are represented by 0 and mask areas are represented by 1.
+
 ### CLIPSeg
 ![clipseg](image_dir/CLIPSeg.png)
 ```python
@@ -99,6 +102,8 @@ result = clipseg.run(image_np, prompt)
 if result is not None:
     image, ann = result["image"], result["mask"]
 ```
+#### Additional Notes
+- For CLIPSeg, the `ann` (annotation) format is such that non-mask areas are represented by 0 and mask areas are represented by 1.
 
 ### DINO
 ![DINO](image_dir/dino.png)
@@ -117,6 +122,8 @@ result = dinoseg.run(image_np, prompt)
 if result is not None:
     image, ann = result["image"], result["mask"]
 ```
+#### Additional Notes
+- For DINOSeg, the `ann` (annotation) format is such that non-mask areas are represented by 0 and mask areas are represented by 1.
 
 ### OneFormer Variants
 
@@ -127,13 +134,13 @@ if result is not None:
 oneformer_ade20k = st.OneFormer(dataset="ade20k")
 result = oneformer_ade20k.run(image_np)
 if result is not None:
-    image, ann = result["image"], result["mask"]
+    image, ann, info = result["image"], result["mask"], result["info"]
 
 # With SWIN Transformer
 oneformer_ade20k_swin = st.OneFormer(dataset="ade20k", use_swin=True)
 result = oneformer_ade20k_swin.run(image_np)
 if result is not None:
-    image, ann = result["image"], result["mask"]
+    image, ann, info = result["image"], result["mask"], result["info"]
 
 # Using prompt
 result = oneformer_ade20k.run(image_np, prompt)
@@ -151,13 +158,13 @@ if result is not None:
 oneformer_city = st.OneFormer(dataset="cityscapes")
 result = oneformer_city.run(image_np)
 if result is not None:
-    image, ann = result["image"], result["mask"]
+    image, ann, info = result["image"], result["mask"], result["info"]
 
 # With SWIN Transformer
 oneformer_city_swin = st.OneFormer(dataset="cityscapes", use_swin=True)
 result = oneformer_city_swin.run(image_np)
 if result is not None:
-    image, ann = result["image"], result["mask"]
+    image, ann, info = result["image"], result["mask"], result["info"]
 
 # Using prompt
 result = oneformer_city.run(image_np, prompt)
@@ -175,13 +182,13 @@ if result is not None:
 oneformer_coco = st.OneFormer(dataset="coco")
 result = oneformer_coco.run(image_np)
 if result is not None:
-    image, ann = result["image"], result["mask"]
+    image, ann, info = result["image"], result["mask"], result["info"]
 
 # With SWIN Transformer
 oneformer_coco_swin = st.OneFormer(dataset="coco", use_swin=True)
 result = oneformer_coco_swin.run(image_np)
 if result is not None:
-    image, ann = result["image"], result["mask"]
+    image, ann, info = result["image"], result["mask"], result["info"]
 
 # Using prompt
 result = oneformer_coco.run(image_np, prompt)
@@ -191,6 +198,11 @@ result = oneformer_coco_swin.run(image_np, prompt)
 if result is not None:
     image, ann = result["image"], result["mask"]
 ```
+
+#### Additinal Notes
+- For OneFormer **without a prompt**, the `info` variable contains information about the segmented objects. Each entry in `info` includes details such as `id`, `isthing`, `category_id`, `area`, and `class`. The `ann` (annotation) format is such that non-mask areas are represented by 0. 
+- For OneFormer **with a prompt**, the `ann` (annotation) format is such that mask areas are represented by 1 and non-mask areas are represented by 0.
+- The `use_swin=True` parameter enables the use of the Swin Transformer as the backbone for the OneFormer models.
 
 ### Depth Anything
 ![depthany](image_dir/depth.png)
@@ -212,6 +224,5 @@ if result is not None:
 
 ### Additional Notes
 - The `run` method can be called with or without a prompt for all OneFormer variants.
-- The `use_swin=True` parameter enables the use of the SWIN Transformer as the backbone for the OneFormer models.
 - The `image` and `ann` (annotations) are obtained from the `result` dictionary, which is the output from the segmentation models.
 - If `result` is `None`, it indicates that the segmentation process was not successful. This could be due to various reasons such as incorrect input data or model limitations. It is important to handle this case in your code to avoid errors.
