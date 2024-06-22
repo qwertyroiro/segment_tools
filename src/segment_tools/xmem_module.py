@@ -1,14 +1,13 @@
 import torch
 import numpy as np
-from PIL import Image
-import os
-import sys
-
-# sys.path.append(os.path.join(os.path.dirname(__file__), "XMem"))
-from .XMem.model.network import XMem
-from .XMem.inference.inference_core import InferenceCore
 import cv2
-from .XMem.inference.interact.interactive_utils import (
+import sys
+import os
+
+sys.path.append(os.path.join(os.path.dirname(__file__), "XMem"))
+from XMem.model.network import XMem as XMemNetwork
+from XMem.inference.inference_core import InferenceCore
+from XMem.inference.interact.interactive_utils import (
     image_to_torch,
     index_numpy_to_one_hot_torch,
     torch_prob_to_numpy_mask,
@@ -16,46 +15,94 @@ from .XMem.inference.interact.interactive_utils import (
 )
 
 class XMem:
-    def __init__(
-        self,
-        top_k=30,
-        mem_every=5,
-        deep_update_every=-1,
-        enable_long_term=True,
-        enable_long_term_count_usage=True,
-        num_prototypes=128,
-        min_mid_term_frames=5,
-        max_mid_term_frames=10,
-        max_long_term_elements=10000,
-    ):
+    """
+    XMemクラスは、ビデオフレームに対するセグメンテーションを行うためのクラスです。
+    """
+
+    def __init__(self, config=None):
+        """
+        XMemクラスのコンストラクタ。
+
+        Args:
+            config (dict, optional): ネットワークの設定を含む辞書。デフォルトはNone。
+        """
         torch.set_grad_enabled(False)
-        # default configuration
-        self.config = {
-            "top_k": top_k,
-            "mem_every": mem_every,
-            "deep_update_every": deep_update_every,
-            "enable_long_term": enable_long_term,
-            "enable_long_term_count_usage": enable_long_term_count_usage,
-            "num_prototypes": num_prototypes,
-            "min_mid_term_frames": min_mid_term_frames,
-            "max_mid_term_frames": max_mid_term_frames,
-            "max_long_term_elements": max_long_term_elements,
+        self.config = config or {
+            "top_k": 30,
+            "mem_every": 5,
+            "deep_update_every": -1,
+            "enable_long_term": True,
+            "enable_long_term_count_usage": True,
+            "num_prototypes": 128,
+            "min_mid_term_frames": 5,
+            "max_mid_term_frames": 10,
+            "max_long_term_elements": 10000,
         }
-        
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.network = XMem(self.config, './saves/XMem.pth').eval().to(self.device)
-        
+        self.network = XMemNetwork(self.config, "./saves/XMem.pth").eval().to(self.device)
         self.processor = InferenceCore(self.network, config=self.config)
-        
-        # ...
-        
-        
-    def run(self, mask, video):
+
+    def __process_frame(self, frame, mask_torch=None):
+        frame_torch, _ = image_to_torch(frame, device=self.device)
+        prediction = self.processor.step(frame_torch, mask_torch)
+        return torch_prob_to_numpy_mask(prediction)
+
+    def run(self, video_path, mask, output_video_path="output_video.mp4", no_video=False, visualize_every=1, start_frame=0, end_frame=None):
+        """
+        ビデオ全体を処理し、セグメンテーションマスクを生成します。
+
+        Args:
+            video_path (str): 入力ビデオのパス。
+            mask (numpy.ndarray): 初期マスク。
+            output_video_path (str, optional): 出力ビデオのパス。デフォルトは"output_video.mp4"。
+            no_video (bool, optional): ビデオを保存しない場合はTrue。デフォルトはFalse。
+            visualize_every (int, optional): 可視化の頻度。デフォルトは1。
+            start_frame (int, optional): 処理を開始するフレーム番号。デフォルトは0。
+            end_frame (int, optional): 処理を終了するフレーム番号。デフォルトはNone。
+
+        Returns:
+            dict: セグメンテーションマスクを含む辞書。
+        """
         num_objects = len(np.unique(mask)) - 1
         torch.cuda.empty_cache()
-        
-        self.processor.set_all_labels(range(1, num_objects+1))
-        
-        # ...
-        
-        # return {"video": output_video, "mask": mask_name}
+        self.processor.set_all_labels(range(1, num_objects + 1))
+
+        cap = cv2.VideoCapture(video_path)
+        cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
+        total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        end_frame = end_frame or total_frames
+
+        out = None
+        if not no_video:
+            frame_width, frame_height = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+            fps = int(cap.get(cv2.CAP_PROP_FPS))
+            out = cv2.VideoWriter(output_video_path, cv2.VideoWriter_fourcc(*"mp4v"), fps, (frame_width, frame_height))
+
+        output_masks = []
+        current_frame_index = 0
+
+        with torch.cuda.amp.autocast(enabled=True):
+            ret, frame = cap.read()
+            if ret:
+                mask_torch = index_numpy_to_one_hot_torch(mask, num_objects + 1).to(self.device)
+                prediction = self.__process_frame(frame, mask_torch[1:])
+                output_masks.append(prediction)
+                if not no_video:
+                    out.write(overlay_davis(frame, prediction))
+                current_frame_index += 1
+
+            while cap.isOpened() and current_frame_index < end_frame - start_frame:
+                ret, frame = cap.read()
+                if not ret:
+                    break
+                prediction = self.__process_frame(frame)
+                output_masks.append(prediction)
+                if current_frame_index % visualize_every == 0 and not no_video:
+                    out.write(overlay_davis(frame, prediction))
+                current_frame_index += 1
+
+        cap.release()
+        if out:
+            out.release()
+
+        return {"mask": output_masks}
