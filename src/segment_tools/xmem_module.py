@@ -5,9 +5,9 @@ import sys
 import os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "XMem"))
-from XMem.model.network import XMem as XMemNetwork
-from XMem.inference.inference_core import InferenceCore
-from XMem.inference.interact.interactive_utils import (
+from model.network import XMem as XMemNetwork
+from inference.inference_core import InferenceCore
+from inference.interact.interactive_utils import (
     image_to_torch,
     index_numpy_to_one_hot_torch,
     torch_prob_to_numpy_mask,
