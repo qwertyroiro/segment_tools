@@ -12,4 +12,5 @@ from .dinoseg_module import *
 from .oneformer_module import *
 from .depthanything_module import *
 from .dinov2_module import *
+from .xmem_module import *
 from .utils import *
