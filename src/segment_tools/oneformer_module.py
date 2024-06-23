@@ -187,7 +187,7 @@ class OneFormer:
         else:
             raise ValueError("dataset is not supported")
                 
-    def run(self, image, prompt=None, color="random", task="panoptic"):
+    def run(self, image, prompt=None, color="random", task="panoptic", panoptic_mask=False):
         image = check_image_type(image)
         if isinstance(prompt, str):
             prompt = [prompt]
@@ -202,9 +202,14 @@ class OneFormer:
         # promptがNoneでない、かつrequire_imageがTrueの場合のみ、draw_multi_maskを実行(多分重いので)
         if prompt is not None:
             if color == "random":
-                color = ["random" for _ in range(len(prompt))]
+                if panoptic_mask:
+                    object_count = sum([info["class"] == "car" for info in segments_info])
+                    color = ["random" for _ in range(object_count)]
+                else:
+                    color = ["random" for _ in range(len(prompt))]
+                # device = "cuda" if torch.cuda.is_available() else "cpu"
             # panoptic_seg, flag = mask_class_objects(panoptic_seg, segments_info, prompt, self.metadata.stuff_classes)
-            panoptic_seg, output_image = mask_class_objects_multi(panoptic_seg, segments_info, prompt, self.metadata.stuff_classes, image, colors=color)
+            panoptic_seg, output_image = mask_class_objects_multi(panoptic_seg, segments_info, prompt, self.metadata.stuff_classes, image, colors=color, panoptic_mask=panoptic_mask)
             # promptをカンマ区切りのstrに変換
             prompt = ",".join(prompt)
             # output_image = draw_multi_mask(panoptic_seg, image, prompt, color=color)[:, :, :3]

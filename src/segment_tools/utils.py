@@ -112,7 +112,7 @@ def draw_multi_mask(
 
 
 def mask_class_objects(
-    seg: np.ndarray, ann: list, class_name: str, stuff_classes
+    seg: np.ndarray, ann: list, class_name: str, stuff_classes, panoptic_mask=False
 ) -> np.ndarray:
     """
     指定されたクラス(int)のオブジェクトをセグメンテーションマスクから分離し、そのマスクを返す関数。
@@ -143,7 +143,10 @@ def mask_class_objects(
     # target_idsに含まれるidの位置を1に設定
     for target_id in target_ids:
         mask = np.zeros_like(seg)
-        mask[seg == target_id] = 1
+        if panoptic_mask:
+            mask[seg == target_id] = target_id
+        else:
+            mask[seg == target_id] = 1
         separate_masks.append(mask)
 
     separate_masks = np.array(separate_masks)
@@ -151,13 +154,13 @@ def mask_class_objects(
     return separate_masks, True
 
 def mask_class_objects_multi(
-    seg: np.ndarray, ann: list, class_names: list, stuff_classes, image: np.ndarray, colors: list
+    seg: np.ndarray, ann: list, class_names: list, stuff_classes, image: np.ndarray, colors: list, panoptic_mask=False
 ) -> np.ndarray:
     
     masks = []
     annotated_frame = image.copy()
     for class_name, color in zip(class_names, colors):
-        separate_masks, execute_flag= mask_class_objects(seg, ann, class_name, stuff_classes)
+        separate_masks, execute_flag= mask_class_objects(seg, ann, class_name, stuff_classes, panoptic_mask=panoptic_mask)
 
         if execute_flag:
             masks.append(separate_masks)
