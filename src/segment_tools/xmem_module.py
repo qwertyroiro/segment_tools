@@ -14,18 +14,27 @@ from inference.interact.interactive_utils import (
     overlay_davis,
 )
 
+from .download_weights import *
+
 class XMem:
     """
     XMemクラスは、ビデオフレームに対するセグメンテーションを行うためのクラスです。
     """
 
-    def __init__(self, config=None):
+    def __init__(self, config=None, use_BL30K=False):
         """
         XMemクラスのコンストラクタ。
 
         Args:
             config (dict, optional): ネットワークの設定を含む辞書。デフォルトはNone。
         """
+        
+        if not os.path.exists("weights/XMem.pth") or not os.path.exists("weights/XMem-s012.pth"):
+            if use_BL30K:
+                download_weights_xmem("weights/XMem-s012.pth", use_BL30K)
+            else:
+                download_weights_xmem("weights/XMem.pth", use_BL30K)
+
         torch.set_grad_enabled(False)
         self.config = config or {
             "top_k": 30,
@@ -39,7 +48,10 @@ class XMem:
             "max_long_term_elements": 10000,
         }
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.network = XMemNetwork(self.config, "./saves/XMem.pth").eval().to(self.device)
+        if use_BL30K:
+            self.network = XMemNetwork(self.config, "./weights/XMem-s012.pth").eval().to(self.device)
+        else:
+            self.network = XMemNetwork(self.config, "./weights/XMem.pth").eval().to(self.device)
         self.processor = InferenceCore(self.network, config=self.config)
 
     def __process_frame(self, frame, mask_torch=None):
