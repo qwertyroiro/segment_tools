@@ -146,44 +146,23 @@ TASK_INFER = {
 class OneFormer:
     def __init__(self, dataset="ade20k", use_swin=False):
         if dataset == "ade20k":
-            from .download_weights import download_weights_ade20k
-            
-            if use_swin:
-                if not os.path.exists("weights/250_16_swin_l_oneformer_ade20k_160k.pth"):
-                    print("weights/250_16_swin_l_oneformer_ade20k_160k.pth not found. Downloading...")
-                    download_weights_ade20k("weights/250_16_swin_l_oneformer_ade20k_160k.pth", True)
-                self.predictor, self.metadata = setup_modules("ade20k", "weights/250_16_swin_l_oneformer_ade20k_160k.pth", True)
-            else:
-                if not os.path.exists("weights/250_16_dinat_l_oneformer_ade20k_160k.pth"):
-                    print("weights/250_16_dinat_l_oneformer_ade20k_160k.pth not found. Downloading...")
-                    download_weights_ade20k("weights/250_16_dinat_l_oneformer_ade20k_160k.pth", False)
-                self.predictor, self.metadata = setup_modules("ade20k", "weights/250_16_dinat_l_oneformer_ade20k_160k.pth", False)
+            from .download_weights import download_weights_ade20k     
+            weight_path = "weights/250_16_swin_l_oneformer_ade20k_160k.pth" if use_swin else "weights/250_16_dinat_l_oneformer_ade20k_160k.pth"
+            if not os.path.exists(weight_path):
+                download_weights_ade20k(weight_path, use_swin)
+            self.predictor, self.metadata = setup_modules(dataset, weight_path, use_swin)
         elif dataset == "cityscapes":
             from .download_weights import download_weights_cityscapes
-            
-            if use_swin:
-                if not os.path.exists("weights/250_16_swin_l_oneformer_cityscapes_90k.pth"):
-                    print("weights/250_16_swin_l_oneformer_cityscapes_90k.pth not found. Downloading...")
-                    download_weights_cityscapes("weights/250_16_swin_l_oneformer_cityscapes_90k.pth", True)
-                self.predictor, self.metadata = setup_modules("cityscapes", "weights/250_16_swin_l_oneformer_cityscapes_90k.pth", True)
-            else:
-                if not os.path.exists("weights/250_16_dinat_l_oneformer_cityscapes_90k.pth"):
-                    print("weights/250_16_dinat_l_oneformer_cityscapes_90k.pth not found. Downloading...")
-                    download_weights_cityscapes("weights/250_16_dinat_l_oneformer_cityscapes_90k.pth", False)
-                self.predictor, self.metadata = setup_modules("cityscapes", "weights/250_16_dinat_l_oneformer_cityscapes_90k.pth", False)
+            weight_path = "weights/250_16_swin_l_oneformer_cityscapes_90k.pth" if use_swin else "weights/250_16_dinat_l_oneformer_cityscapes_90k.pth"
+            if not os.path.exists(weight_path):
+                download_weights_cityscapes(weight_path, use_swin)
+            self.predictor, self.metadata = setup_modules(dataset, weight_path, use_swin)
         elif dataset == "coco":
             from .download_weights import download_weights_coco
-            
-            if use_swin:
-                if not os.path.exists("weights/150_16_swin_l_oneformer_coco_100ep.pth"):
-                    print("weights/150_16_swin_l_oneformer_coco_100ep.pth not found. Downloading...")
-                    download_weights_coco("weights/150_16_swin_l_oneformer_coco_100ep.pth", True)
-                self.predictor, self.metadata = setup_modules("coco", "weights/150_16_swin_l_oneformer_coco_100ep.pth", True)
-            else:
-                if not os.path.exists("weights/150_16_dinat_l_oneformer_coco_100ep.pth"):
-                    print("weights/150_16_dinat_l_oneformer_coco_100ep.pth not found. Downloading...")
-                    download_weights_coco("weights/150_16_dinat_l_oneformer_coco_100ep.pth", False)
-                self.predictor, self.metadata = setup_modules("coco", "weights/150_16_dinat_l_oneformer_coco_100ep.pth", False)
+            weight_path = "weights/150_16_swin_l_oneformer_coco_100ep.pth" if use_swin else "weights/150_16_dinat_l_oneformer_coco_100ep.pth"
+            if not os.path.exists(weight_path):
+                download_weights_coco(weight_path, use_swin)
+            self.predictor, self.metadata = setup_modules(dataset, weight_path, use_swin)
         else:
             raise ValueError("dataset is not supported")
                 

@@ -37,7 +37,6 @@ class DINOSeg:
             raise ValueError(f"Invalid sam_checkpoint: {sam_checkpoint}")
         sam_checkpoint_path = os.path.join("weights", sam_pth[sam_checkpoint])
         if not os.path.exists(sam_checkpoint_path):
-            print(f"{sam_checkpoint_path} is not found. Downloading...")
             from .download_weights import download_weights_SAM
             download_weights_SAM(sam_checkpoint_path)
         self.groundingdino_model = self.__load_model_hf(

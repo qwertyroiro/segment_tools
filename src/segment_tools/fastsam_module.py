@@ -9,7 +9,6 @@ class FastSAM:
         self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
         model_path="weights/FastSAM.pt"
         if not os.path.exists(model_path):
-            print("weights/FastSAM.pt not found. Downloading...")
             from .download_weights import download_weights_FastSAM
             download_weights_FastSAM(model_path)
         self.model = fs(model_path)

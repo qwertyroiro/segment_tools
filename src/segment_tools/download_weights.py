@@ -2,6 +2,7 @@ import os
 import subprocess
 
 def make_dir(weight_path):
+    print(f"{weight_path} not found. Downloading...")
     # pathから上位ディレクトリを抜き出す
     dir_name = os.path.dirname(weight_path)
     os.makedirs(dir_name, exist_ok=True)

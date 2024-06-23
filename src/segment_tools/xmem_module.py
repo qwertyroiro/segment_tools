@@ -28,15 +28,6 @@ class XMem:
         Args:
             config (dict, optional): ネットワークの設定を含む辞書。デフォルトはNone。
         """
-        
-        if not os.path.exists("weights/XMem.pth") or not os.path.exists("weights/XMem-s012.pth"):
-            if use_BL30K:
-                print("weights/XMem-s012.pth not found. Downloading...")
-                download_weights_xmem("weights/XMem-s012.pth", use_BL30K)
-            else:
-                print("weights/XMem.pth not found. Downloading...")
-                download_weights_xmem("weights/XMem.pth", use_BL30K)
-
         torch.set_grad_enabled(False)
         self.config = config or {
             "top_k": 30,
@@ -49,11 +40,14 @@ class XMem:
             "max_mid_term_frames": 10,
             "max_long_term_elements": 10000,
         }
+        
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        if use_BL30K:
-            self.network = XMemNetwork(self.config, "./weights/XMem-s012.pth").eval().to(self.device)
-        else:
-            self.network = XMemNetwork(self.config, "./weights/XMem.pth").eval().to(self.device)
+        weight_path = "weights/XMem-s012.pth" if use_BL30K else "weights/XMem.pth"
+
+        if not os.path.exists(weight_path):
+            download_weights_xmem(weight_path, use_BL30K)
+
+        self.network = XMemNetwork(self.config, weight_path).eval().to(self.device)
         self.processor = InferenceCore(self.network, config=self.config)
 
     def __process_frame(self, frame, mask_torch=None):
