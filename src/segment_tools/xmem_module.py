@@ -31,8 +31,10 @@ class XMem:
         
         if not os.path.exists("weights/XMem.pth") or not os.path.exists("weights/XMem-s012.pth"):
             if use_BL30K:
+                print("weights/XMem-s012.pth not found. Downloading...")
                 download_weights_xmem("weights/XMem-s012.pth", use_BL30K)
             else:
+                print("weights/XMem.pth not found. Downloading...")
                 download_weights_xmem("weights/XMem.pth", use_BL30K)
 
         torch.set_grad_enabled(False)
@@ -75,6 +77,13 @@ class XMem:
         Returns:
             dict: セグメンテーションマスクを含む辞書。
         """
+        # np.maximum.reduceを使って複数のマスクを結合
+        combined_mask = np.maximum.reduce(mask)
+        # ユニークな値を連番にマッピングする辞書を作成
+        value_to_index = {v: i for i, v in enumerate(np.unique(combined_mask))}
+        # マスクの各値を連番に変換
+        mask = np.vectorize(value_to_index.get)(combined_mask)
+        
         num_objects = len(np.unique(mask)) - 1
         torch.cuda.empty_cache()
         self.processor.set_all_labels(range(1, num_objects + 1))
