@@ -47,6 +47,7 @@ def draw_multi_mask(
     font_scale=0.7,
     thickness=1,
     padding=1,
+    panoptic_mask=False
 ):
     """マスクと画像を与えることで、すべてのマスクを画像に重ね合わせた画像を返す関数。
 
@@ -65,6 +66,8 @@ def draw_multi_mask(
     color = get_color(color)
 
     for mask in masks:
+        if panoptic_mask:
+            color = get_color("random")
         # マスクを描画
         for c in range(3):
             annotated_frame[:, :, c] = np.where(
@@ -164,7 +167,7 @@ def mask_class_objects_multi(
 
         if execute_flag:
             masks.append(separate_masks)
-            annotated_frame = draw_multi_mask(separate_masks, annotated_frame, label=class_name, color=color)
+            annotated_frame = draw_multi_mask(separate_masks, annotated_frame, label=class_name, color=color, panoptic_mask=panoptic_mask)
 
     return masks, annotated_frame[:, :, :3]
 
