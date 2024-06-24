@@ -1,6 +1,3 @@
-######
-# @title 3. Import Libraries and other Utilities
-######
 # Setup detectron2 logger
 import detectron2
 from detectron2.utils.logger import setup_logger
@@ -42,6 +39,8 @@ from oneformer import (
 from .download_weights import *
 
 from .utils import mask_class_objects, draw_multi_mask, check_image_type, mask_class_objects_multi
+
+from itertools import cycle
 
 cpu_device = torch.device("cpu")
 config_dir = os.path.join(os.path.dirname(__file__), "OneFormer_colab_segtools/configs")
@@ -168,30 +167,21 @@ class OneFormer:
                 
     def run(self, image, prompt=None, color="random", task="panoptic", panoptic_mask=False):
         image = check_image_type(image)
-        if isinstance(prompt, str):
-            prompt = [prompt]
+        prompt = [prompt] if isinstance(prompt, str) else prompt
+        color = [color] if isinstance(color, str) else color
         
         out, panoptic_seg, segments_info = TASK_INFER[task](image, self.predictor, self.metadata)
+
         try:
-            if len(out) == 2:
-                out = out[0]
+            out = out[0] if len(out) == 2 else out
         except:
             pass
 
-        # promptがNoneでない、かつrequire_imageがTrueの場合のみ、draw_multi_maskを実行(多分重いので)
+        # promptがNoneでない場合のみ、draw_multi_maskを実行(多分重いので)
+        # panoptic_maskがTrueの場合、colorはrandomしかできない(色指定する方も面倒かも)
         if prompt is not None:
-            if color == "random":
-                if panoptic_mask:
-                    object_count = sum([info["class"] == "car" for info in segments_info])
-                    color = ["random" for _ in range(object_count)]
-                else:
-                    color = ["random" for _ in range(len(prompt))]
-                # device = "cuda" if torch.cuda.is_available() else "cpu"
-            # panoptic_seg, flag = mask_class_objects(panoptic_seg, segments_info, prompt, self.metadata.stuff_classes)
-            panoptic_seg, output_image = mask_class_objects_multi(panoptic_seg, segments_info, prompt, self.metadata.stuff_classes, image, colors=color, panoptic_mask=panoptic_mask)
-            # promptをカンマ区切りのstrに変換
-            prompt = ",".join(prompt)
-            # output_image = draw_multi_mask(panoptic_seg, image, prompt, color=color)[:, :, :3]
+            prompt_color_map = {prompt_: color_ for prompt_, color_ in zip(prompt, cycle(color))}
+            panoptic_seg, output_image = mask_class_objects_multi(seg=panoptic_seg, ann=segments_info, stuff_classes=self.metadata.stuff_classes, image=image, panoptic_mask=panoptic_mask, prompt_color_map=prompt_color_map)
         else:
             output_image = out.get_image()[:, :, ::-1]
         

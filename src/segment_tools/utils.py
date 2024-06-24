@@ -147,7 +147,7 @@ def mask_class_objects(
     for target_id in target_ids:
         mask = np.zeros_like(seg)
         if panoptic_mask:
-            mask[seg == target_id] = target_id
+            mask[seg == target_id] = 1
         else:
             mask[seg == target_id] = 1
         separate_masks.append(mask)
@@ -157,23 +157,23 @@ def mask_class_objects(
     return separate_masks, True
 
 def mask_class_objects_multi(
-    seg: np.ndarray, ann: list, class_names: list, stuff_classes, image: np.ndarray, colors: list, panoptic_mask=False
+    seg: np.ndarray, ann: list, stuff_classes, image: np.ndarray, panoptic_mask=False, prompt_color_map=None
 ) -> np.ndarray:
+    """
+    mask_class_objectsをプロンプトごとに複数回実行し、複数のマスクを返す関数。
+    """
     
     masks = []
     annotated_frame = image.copy()
-    for class_name, color in zip(class_names, colors):
-        separate_masks, execute_flag= mask_class_objects(seg, ann, class_name, stuff_classes, panoptic_mask=panoptic_mask)
-
+    
+    for prompt, color in prompt_color_map.items():
+        separated_masks, execute_flag= mask_class_objects(seg, ann, prompt, stuff_classes, panoptic_mask=panoptic_mask)
         if execute_flag:
-            masks.append(separate_masks)
-            annotated_frame = draw_multi_mask(separate_masks, annotated_frame, label=class_name, color=color, panoptic_mask=panoptic_mask)
+            masks.append(separated_masks)
+            annotated_frame = draw_multi_mask(separated_masks, annotated_frame, label=prompt, color=color, panoptic_mask=panoptic_mask)
+            
 
     return masks, annotated_frame[:, :, :3]
-
-
-    
-
 
 def separate_masks(seg: np.ndarray) -> list:
     """
