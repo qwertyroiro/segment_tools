@@ -40,9 +40,13 @@ def download_weights_FastSAM(weight_path):
     make_dir(weight_path)
     download_file(url, weight_path)
 
-def download_weights_SAM(weight_path):
-    weight_path_model = os.path.basename(weight_path)
-    url = f"https://dl.fbaipublicfiles.com/segment_anything/{weight_path_model}"
+def download_weights_SAM(weight_path, vit_size):
+    url_list = {
+        "vit_h": "sam_vit_h_4b8939.pth",
+        "vit_l": "sam_vit_l_0b3195.pth",
+        "vit_b": "sam_vit_b_01ec64.pth",
+    }
+    url = f"https://dl.fbaipublicfiles.com/segment_anything/{url_list[vit_size]}"
     make_dir(weight_path)
     download_file(url, weight_path)
 

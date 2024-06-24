@@ -38,7 +38,7 @@ class DINOSeg:
         sam_checkpoint_path = os.path.join("weights", sam_pth[sam_checkpoint])
         if not os.path.exists(sam_checkpoint_path):
             from .download_weights import download_weights_SAM
-            download_weights_SAM(sam_checkpoint_path)
+            download_weights_SAM(sam_checkpoint_path, sam_checkpoint)
         self.groundingdino_model = self.__load_model_hf(
             ckpt_repo_id, ckpt_filenmae, ckpt_config_filename, self.device
         )
