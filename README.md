@@ -41,6 +41,7 @@ For additional tools and libraries, execute:
 wget https://github.com/qwertyroiro/segment_tools/releases/download/whl/clip-1.0-py3-none-any.whl
 wget https://github.com/qwertyroiro/segment_tools/releases/download/whl/detectron2-0.6-cp310-cp310-linux_x86_64.whl
 wget https://github.com/qwertyroiro/segment_tools/releases/download/whl/groundingdino-0.1.0-cp310-cp310-linux_x86_64.whl
+wget https://shi-labs.com/natten/wheels/cu121/torch2.1.0/natten-0.15.1%2Btorch210cu121-cp310-cp310-linux_x86_64.whl
 pip install git+https://github.com/qwertyroiro/segment_tools.git@light
 ```
 
