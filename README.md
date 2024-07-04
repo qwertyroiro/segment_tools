@@ -17,36 +17,21 @@ Additionally, you will need the following packages:
 
 - **PyTorch**: 2.1.0
 - **Torchvision**: 0.16.0
-- **Wheel**: 0.42.0
 
 For detailed installation instructions for PyTorch and Torchvision, refer to the [PyTorch previous versions documentation](https://pytorch.org/get-started/previous-versions/#v210).
 
 ### Installation Commands
 
-First, install the specific version of Wheel:
-
-```bash
-pip install wheel==0.42.0
-```
-
-Next, install PyTorch and Torchvision using the following commands:
+Install PyTorch and Torchvision using the following commands:
 
 ```bash
 pip install torch==2.1.0 torchvision==0.16.0 --index-url https://download.pytorch.org/whl/cu121
 ```
 
-For additional tools and libraries, execute:
+Install segment_tools using the following commands:
 
 ```bash
-wget https://github.com/qwertyroiro/segment_tools/releases/download/whl/clip-1.0-py3-none-any.whl
-wget https://github.com/qwertyroiro/segment_tools/releases/download/whl/detectron2-0.6-cp310-cp310-linux_x86_64.whl
-wget https://github.com/qwertyroiro/segment_tools/releases/download/whl/groundingdino-0.1.0-cp310-cp310-linux_x86_64.whl
-wget https://shi-labs.com/natten/wheels/cu121/torch2.1.0/natten-0.15.1%2Btorch210cu121-cp310-cp310-linux_x86_64.whl
 pip install git+https://github.com/qwertyroiro/segment_tools.git@light
-```
-
-```bash
-pip install natten==0.15.1 -f https://shi-labs.com/natten/wheels/cu121/torch2.1.0/index.html
 ```
 
 Ensure all the prerequisites are properly installed to avoid any compatibility issues during the setup process.
