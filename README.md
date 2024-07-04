@@ -39,7 +39,6 @@ For additional tools and libraries, execute:
 
 ```bash
 pip install git+https://github.com/qwertyroiro/segment_tools.git
-pip install natten==0.15.1 -f https://shi-labs.com/natten/wheels/cu121/torch2.1.0/index.html
 ```
 
 Ensure all the prerequisites are properly installed to avoid any compatibility issues during the setup process.
