@@ -23,13 +23,7 @@ For detailed installation instructions for PyTorch and Torchvision, refer to the
 
 ### Installation Commands
 
-First, install the specific version of Wheel:
-
-```bash
-pip install wheel==0.42.0
-```
-
-Next, install PyTorch and Torchvision using the following commands:
+Install PyTorch and Torchvision using the following commands:
 
 ```bash
 pip install torch==2.1.0 torchvision==0.16.0 --index-url https://download.pytorch.org/whl/cu121
