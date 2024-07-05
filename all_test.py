@@ -8,10 +8,19 @@ image_pil = Image.open(image_path)  # Open image with Pillow
 image_np = np.array(image_pil)      # Convert to numpy array
 
 import logging
-logging.getLogger("fvcore").setLevel(logging.ERROR)
-logging.getLogger("detectron2").setLevel(logging.ERROR)
-logging.getLogger("ultralytics").setLevel(logging.ERROR)
-logging.getLogger("dinov2").setLevel(logging.ERROR)
+# すべてのロガーの名前を取得
+loggers = [logging.getLogger(name) for name in logging.root.manager.loggerDict]
+
+# すべてのロガーのレベルを設定
+for logger in loggers:
+    logger.setLevel(logging.ERROR)
+    
+# logging.getLogger("fvcore").setLevel(logging.ERROR)
+# logging.getLogger("detectron2").setLevel(logging.ERROR)
+# logging.getLogger("ultralytics").setLevel(logging.ERROR)
+# logging.getLogger("dinov2").setLevel(logging.ERROR)
+
+
 
 prompt = "car"  # Define your prompt
 
