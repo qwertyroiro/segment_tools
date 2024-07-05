@@ -167,7 +167,7 @@ if result is not None:
 oneformer_city = st.OneFormer(dataset="cityscapes")
 result = oneformer_city.run(image_np)
 if result is not None:
-image, ann, info = result["image"], result["mask"], result["info"]
+    image, ann, info = result["image"], result["mask"], result["info"]
 ```
 #### With prompt (Backbone: DiNAT)
 ![cityscapes_prompt](image_dir/OneFormer_cityscapes(dinat)(prompt).png)
@@ -175,21 +175,21 @@ image, ann, info = result["image"], result["mask"], result["info"]
 oneformer_city = st.OneFormer(dataset="cityscapes")
 result = oneformer_city.run(image_np, prompt)
 if result is not None:
-image, ann = result["image"], result["mask"]
+    image, ann = result["image"], result["mask"]
 ```
 #### Without prompt (Backbone: Swin)
 ```python
 oneformer_city_swin = st.OneFormer(dataset="cityscapes", use_swin=True)
 result = oneformer_city_swin.run(image_np)
 if result is not None:
-image, ann, info = result["image"], result["mask"], result["info"]
+    image, ann, info = result["image"], result["mask"], result["info"]
 ```
 #### With prompt (Backbone: Swin)
 ```python
 oneformer_city_swin = st.OneFormer(dataset="cityscapes", use_swin=True)
 result = oneformer_city_swin.run(image_np, prompt)
 if result is not None:
-image, ann = result["image"], result["mask"]
+    image, ann = result["image"], result["mask"]
 ```
 ### 5.3 OneFormer (COCO Dataset)
 #### Without prompt (Backbone: DiNAT)
@@ -198,7 +198,7 @@ image, ann = result["image"], result["mask"]
 oneformer_coco = st.OneFormer(dataset="coco")
 result = oneformer_coco.run(image_np)
 if result is not None:
-image, ann, info = result["image"], result["mask"], result["info"]
+    image, ann, info = result["image"], result["mask"], result["info"]
 ```
 #### With prompt (Backbone: DiNAT)
 ![coco_prompt](image_dir/OneFormer_coco(dinat)(prompt).png)
@@ -206,21 +206,21 @@ image, ann, info = result["image"], result["mask"], result["info"]
 oneformer_coco = st.OneFormer(dataset="coco")
 result = oneformer_coco.run(image_np, prompt)
 if result is not None:
-image, ann = result["image"], result["mask"]
+    image, ann = result["image"], result["mask"]
 ```
 #### Without prompt (Backbone: Swin)
 ```python
 oneformer_coco_swin = st.OneFormer(dataset="coco", use_swin=True)
 result = oneformer_coco_swin.run(image_np)
 if result is not None:
-image, ann, info = result["image"], result["mask"], result["info"]
+    image, ann, info = result["image"], result["mask"], result["info"]
 ```
 #### With prompt (Backbone: Swin)
 ```python
 oneformer_coco_swin = st.OneFormer(dataset="coco", use_swin=True)
 result = oneformer_coco_swin.run(image_np, prompt)
 if result is not None:
-image, ann = result["image"], result["mask"]
+    image, ann = result["image"], result["mask"]
 ```
 
 #### Additinal Notes
