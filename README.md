@@ -28,9 +28,9 @@ pip install git+https://github.com/qwertyroiro/segment_tools.git@light
 ```
 
 Ensure all the prerequisites are properly installed to avoid any compatibility issues during the setup process.
-## Usage
 
 [Colab Demo](segment_tools_demo.ipynb)
+## Usage
 
 ### Image Preparation
 ```python
@@ -57,19 +57,22 @@ logging.getLogger("dinov2").setLevel(logging.ERROR)
 prompt = "car"  # Define your prompt
 ```
 
-### Segment Tools Usage
+## Segment Tools Usage
 
-### FastSAM
+### 1. FastSAM
+
+#### Without Prompt
 ![fastsam](image_dir/FastSAM.png)
-![fastsam_prompt](image_dir/FastSAM_prompt.png)
 ```python
-# Segment without prompt
 fastsam = st.FastSAM()
 result = fastsam.run(image_np)
 if result is not None:
     image, ann = result["image"], result["mask"]
+```
 
-# Segment with prompt
+#### With prompt
+![fastsam_prompt](image_dir/FastSAM_prompt.png)
+```python
 fastsam = st.FastSAM()
 result = fastsam.run(image_np, prompt)
 if result is not None:
@@ -79,7 +82,8 @@ if result is not None:
 #### Additional Notes
 - For FastSAM, the `ann` (annotation) format is such that non-mask areas are represented by 0 and mask areas are represented by 1.
 
-### CLIPSeg
+### 2. CLIPSeg
+#### With prompt
 ![clipseg](image_dir/CLIPSeg.png)
 ```python
 clipseg = st.CLIPSeg()
@@ -90,7 +94,8 @@ if result is not None:
 #### Additional Notes
 - For CLIPSeg, the `ann` (annotation) format is such that non-mask areas are represented by 0 and mask areas are represented by 1.
 
-### DINO
+### 3. DINO
+#### With prompt
 ![DINO](image_dir/dino.png)
 ```python
 dino = st.DINO()
@@ -99,7 +104,8 @@ if result is not None:
     image, bbox = result["image"], result["bbox"]
 ```
 
-### DINOSeg
+### 4. DINOSeg
+#### With prompt
 ![DINOSeg](image_dir/DINOSeg.png)
 ```python
 dinoseg = st.DINOSeg(sam_checkpoint="vit_h")
@@ -110,86 +116,112 @@ if result is not None:
 #### Additional Notes
 - For DINOSeg, the `ann` (annotation) format is such that non-mask areas are represented by 0 and mask areas are represented by 1.
 
-### OneFormer Variants
+### 5. OneFormer Variants
 
-#### OneFormer (ADE20K Dataset)
+### 5.1 OneFormer (ADE20K Dataset)
+#### Without prompt (Backbone: DiNAT)
 ![ade20k](image_dir/OneFormer_ade20k(dinat).png)
-![ade20k_prompt](image_dir/OneFormer_ade20k(dinat)(prompt).png)
 ```python
 oneformer_ade20k = st.OneFormer(dataset="ade20k")
 result = oneformer_ade20k.run(image_np)
 if result is not None:
     image, ann, info = result["image"], result["mask"], result["info"]
+```
+#### With prompt (Backbone: DiNAT)
+![ade20k_prompt](image_dir/OneFormer_ade20k(dinat)(prompt).png)
+```python
+oneformer_ade20k = st.OneFormer(dataset="ade20k")
+result = oneformer_ade20k.run(image_np, prompt)
+if result is not None:
+    image, ann = result["image"], result["mask"]
+```
 
-# With SWIN Transformer
+#### Without prompt (Backbone: Swin)
+```python
 oneformer_ade20k_swin = st.OneFormer(dataset="ade20k", use_swin=True)
 result = oneformer_ade20k_swin.run(image_np)
 if result is not None:
     image, ann, info = result["image"], result["mask"], result["info"]
+```
 
-# Using prompt
-result = oneformer_ade20k.run(image_np, prompt)
-if result is not None:
-    image, ann = result["image"], result["mask"]
+#### Without prompt (Backbone: Swin)
+```python
+oneformer_ade20k_swin = st.OneFormer(dataset="ade20k", use_swin=True)
 result = oneformer_ade20k_swin.run(image_np, prompt)
 if result is not None:
     image, ann = result["image"], result["mask"]
 ```
 
-#### OneFormer (Cityscapes Dataset)
+### 5.2 OneFormer (Cityscapes Dataset)
+#### Without prompt (Backbone: DiNAT)
 ![cityscapes](image_dir/OneFormer_cityscapes(dinat).png)
-![cityscapes_prompt](image_dir/OneFormer_cityscapes(dinat)(prompt).png)
 ```python
 oneformer_city = st.OneFormer(dataset="cityscapes")
 result = oneformer_city.run(image_np)
 if result is not None:
     image, ann, info = result["image"], result["mask"], result["info"]
-
-# With SWIN Transformer
+```
+#### With prompt (Backbone: DiNAT)
+![cityscapes_prompt](image_dir/OneFormer_cityscapes(dinat)(prompt).png)
+```python
+oneformer_city = st.OneFormer(dataset="cityscapes")
+result = oneformer_city.run(image_np, prompt)
+if result is not None:
+    image, ann = result["image"], result["mask"]
+```
+#### Without prompt (Backbone: Swin)
+```python
 oneformer_city_swin = st.OneFormer(dataset="cityscapes", use_swin=True)
 result = oneformer_city_swin.run(image_np)
 if result is not None:
     image, ann, info = result["image"], result["mask"], result["info"]
-
-# Using prompt
-result = oneformer_city.run(image_np, prompt)
-if result is not None:
-    image, ann = result["image"], result["mask"]
+```
+#### With prompt (Backbone: Swin)
+```python
+oneformer_city_swin = st.OneFormer(dataset="cityscapes", use_swin=True)
 result = oneformer_city_swin.run(image_np, prompt)
 if result is not None:
     image, ann = result["image"], result["mask"]
 ```
-
-#### OneFormer (COCO Dataset)
+### 5.3 OneFormer (COCO Dataset)
+#### Without prompt (Backbone: DiNAT)
 ![coco](image_dir/OneFormer_coco(dinat).png)
-![coco_prompt](image_dir/OneFormer_coco(dinat)(prompt).png)
 ```python
 oneformer_coco = st.OneFormer(dataset="coco")
 result = oneformer_coco.run(image_np)
 if result is not None:
     image, ann, info = result["image"], result["mask"], result["info"]
-
-# With SWIN Transformer
+```
+#### With prompt (Backbone: DiNAT)
+![coco_prompt](image_dir/OneFormer_coco(dinat)(prompt).png)
+```python
+oneformer_coco = st.OneFormer(dataset="coco")
+result = oneformer_coco.run(image_np, prompt)
+if result is not None:
+    image, ann = result["image"], result["mask"]
+```
+#### Without prompt (Backbone: Swin)
+```python
 oneformer_coco_swin = st.OneFormer(dataset="coco", use_swin=True)
 result = oneformer_coco_swin.run(image_np)
 if result is not None:
     image, ann, info = result["image"], result["mask"], result["info"]
-
-# Using prompt
-result = oneformer_coco.run(image_np, prompt)
-if result is not None:
-    image, ann = result["image"], result["mask"]
+```
+#### With prompt (Backbone: Swin)
+```python
+oneformer_coco_swin = st.OneFormer(dataset="coco", use_swin=True)
 result = oneformer_coco_swin.run(image_np, prompt)
 if result is not None:
     image, ann = result["image"], result["mask"]
 ```
 
 #### Additinal Notes
+- The `run` method can be called with or without a prompt for all OneFormer variants.
 - For OneFormer **without a prompt**, the `info` variable contains information about the segmented objects. Each entry in `info` includes details such as `id`, `isthing`, `category_id`, `area`, and `class`. The `ann` (annotation) format is such that non-mask areas are represented by 0. 
 - For OneFormer **with a prompt**, the `ann` (annotation) format is such that mask areas are represented by 1 and non-mask areas are represented by 0.
 - The `use_swin=True` parameter enables the use of the Swin Transformer as the backbone for the OneFormer models.
 
-### Depth Anything
+### 6. Depth Anything
 ![depthany](image_dir/depth.png)
 ```python
 depth_model = st.Depth_Anything(encoder="vitl") # vits or vitb or vitl
@@ -198,7 +230,7 @@ if result is not None:
     image, depth = result["image"], result["depth"]
 ```
 
-### DINOv2 (depth estimation) (CPU is not supported)
+### 7. DINOv2 (depth estimation) (CPU is not supported)
 ![dinov2depth](image_dir/dinov2_depth.png)
 ```python
 depth_model = st.DINOv2_depth(BACKBONE_SIZE="base") # small, base, large, giant
@@ -208,6 +240,5 @@ if result is not None:
 ```
 
 ### Additional Notes
-- The `run` method can be called with or without a prompt for all OneFormer variants.
 - The `image` and `ann` (annotations) are obtained from the `result` dictionary, which is the output from the segmentation models.
-- If `result` is `None`, it indicates that the segmentation process was not successful. This could be due to various reasons such as incorrect input data or model limitations. It is important to handle this case in your code to avoid errors.
+- If `result` is `None`, it indicates that the process was not successful. This could be due to various reasons such as incorrect input data or model limitations. It is important to handle this case in your code to avoid errors.
