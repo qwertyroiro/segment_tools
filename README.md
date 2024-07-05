@@ -21,13 +21,6 @@ Additionally, you will need the following packages:
 For detailed installation instructions for PyTorch and Torchvision, refer to the [PyTorch previous versions documentation](https://pytorch.org/get-started/previous-versions/#v210).
 
 ### Installation Commands
-
-Install PyTorch and Torchvision using the following commands:
-
-```bash
-pip install torch==2.1.0 torchvision==0.16.0 --index-url https://download.pytorch.org/whl/cu121
-```
-
 Install segment_tools using the following commands:
 
 ```bash
