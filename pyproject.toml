@@ -15,7 +15,7 @@ dependencies = [
     "Pillow == 9.3.0",
     "PyYAML == 6.0.1",
     "scipy == 1.12.0",
-    "wheel == 0.42.0"
+    "wheel == 0.42.0",
     "torch @ https://download.pytorch.org/whl/cu121/torch-2.1.0%2Bcu121-cp310-cp310-linux_x86_64.whl#sha256=0d4e8c52a1fcf5ed6cfc256d9a370fcf4360958fc79d0b08a51d55e70914df46",
     "torchvision @ https://download.pytorch.org/whl/cu121/torchvision-0.16.0%2Bcu121-cp310-cp310-linux_x86_64.whl#sha256=e76e78d0ad43636c9884b3084ffaea8a8b61f21129fbfa456a5fe734f0affea9",
     "tqdm == 4.66.1",
