@@ -229,7 +229,7 @@ image, ann = result["image"], result["mask"]
 - For OneFormer **with a prompt**, the `ann` (annotation) format is such that mask areas are represented by 1 and non-mask areas are represented by 0.
 - The `use_swin=True` parameter enables the use of the Swin Transformer as the backbone for the OneFormer models.
 
-### Depth Anything
+### 6. Depth Anything
 ![depthany](image_dir/depth.png)
 ```python
 depth_model = st.Depth_Anything(encoder="vitl") # vits or vitb or vitl
@@ -238,7 +238,7 @@ if result is not None:
     image, depth = result["image"], result["depth"]
 ```
 
-### DINOv2 (depth estimation) (CPU is not supported)
+### 7. DINOv2 (depth estimation) (CPU is not supported)
 ![dinov2depth](image_dir/dinov2_depth.png)
 ```python
 depth_model = st.DINOv2_depth(BACKBONE_SIZE="base") # small, base, large, giant
