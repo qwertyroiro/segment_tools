@@ -16,3 +16,4 @@ Untitled.ipynb
 oneformer_video_demo.ipynb
 *.whl
 *.egg-info/
+all_test.py
