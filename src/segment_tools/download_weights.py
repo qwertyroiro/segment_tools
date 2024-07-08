@@ -81,3 +81,8 @@ def download_weights_xmem(weight_path, use_BL30K):
         url = "https://github.com/hkchengrex/XMem/releases/download/v1.0/XMem.pth"
     make_dir(weight_path)
     download_file(url, weight_path)
+
+def download_weights_grit(weight_path):
+    url = "https://datarelease.blob.core.windows.net/grit/models/grit_b_densecap_objectdet.pth"
+    make_dir(weight_path)
+    download_file(url, weight_path)
