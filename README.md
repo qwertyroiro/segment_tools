@@ -250,3 +250,30 @@ if result is not None:
 ### Additional Notes
 - The `image` and `ann` (annotations) are obtained from the `result` dictionary, which is the output from the segmentation models.
 - If `result` is `None`, it indicates that the process was not successful. This could be due to various reasons such as incorrect input data or model limitations. It is important to handle this case in your code to avoid errors.
+
+
+## Modifications and Build Information
+
+This project includes modified versions of the following third-party libraries:
+
+1. **Detectron2** (Apache 2.0 License)
+   - Repository: [https://github.com/facebookresearch/detectron2](https://github.com/facebookresearch/detectron2)
+   - Build: The source code has been built and the resulting binary files are available in the [Releases](https://github.com/qwertyroiro/segment_tools/releases) section.
+
+2. **GroundingDINO** (Apache 2.0 License)
+   - Repository: [https://github.com/IDEA-Research/GroundingDINO](https://github.com/IDEA-Research/GroundingDINO)
+   - Build: The source code has been built and the resulting binary files are available in the [Releases](https://github.com/qwertyroiro/segment_tools/releases) section.
+
+3. **CLIP** (MIT License)
+   - Repository: [https://github.com/openai/CLIP](https://github.com/openai/CLIP)
+   - Build: The source code has been built and the resulting binary files are available in the [Releases](https://github.com/qwertyroiro/segment_tools/releases) section.
+
+
+### License
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+### Third-Party Licenses
+This project includes third-party software licensed under the Apache License 2.0 and the MIT License.
+- Detectron2: [Apache License 2.0](https://github.com/facebookresearch/detectron2/blob/main/LICENSE)
+- GroundingDINO: [Apache License 2.0](https://github.com/IDEA-Research/GroundingDINO/blob/main/LICENSE)
+- CLIP: [MIT License](https://github.com/openai/CLIP/blob/main/LICENSE)
