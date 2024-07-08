@@ -25,7 +25,7 @@ def setup_cfg(test_task="", weight_path="GRiT/models/grit_b_densecap_objectdet.p
         cfg.MODEL.DEVICE="cpu"
     add_centernet_config(cfg)
     add_grit_config(cfg)
-    cfg.merge_from_file("GRiT/configs/GRiT_B_DenseCap_ObjectDet.yaml")
+    cfg.merge_from_file(os.path.join(os.path.dirname(__file__), "GRiT/configs/GRiT_B_DenseCap_ObjectDet.yaml"))
     opts = ["MODEL.WEIGHTS", weight_path]
     cfg.merge_from_list(opts)
     # Set score_threshold for builtin models
@@ -39,7 +39,7 @@ def setup_cfg(test_task="", weight_path="GRiT/models/grit_b_densecap_objectdet.p
     cfg.freeze()
     return cfg
 
-class GRiT_demo_class:
+class GRiT:
     def __init__(self):
         weight_path = "weights/grit_b_densecap_objectdet.pth"
         if not os.path.exists(weight_path):
@@ -49,13 +49,13 @@ class GRiT_demo_class:
         self.demo = VisualizationDemo(self.cfg)
 
     def run(self, image):
-        image = check_image_type(image, "pil")
+        image = check_image_type(image, "numpy")
         predictions, visualized_output = self.demo.run_on_image(image)
 
         # 中身をcpuに移動
         instances = predictions["instances"].to(torch.device("cpu"))
         # 検出したbox
-        pred_boxes = instances.pred_boxes.tensor.detach().numpy().tolist()
+        pred_boxes = instances.pred_boxes.tensor.detach().numpy()
         # それへのキャプショニング
         pred_object_descriptions = instances.pred_object_descriptions.data
     
