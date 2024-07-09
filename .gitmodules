@@ -3,10 +3,6 @@
 	url = https://github.com/CASIA-IVA-Lab/FastSAM.git
 	# Commit hash: 4d153e909f0ad9c8ecd7632566e5a24e21cf0071
 
-[submodule "src/segment_tools/OneFormer_colab_segtools"]
-	path = src/segment_tools/OneFormer_colab_segtools
-	url = https://github.com/qwertyroiro/OneFormer_colab_segtools.git
-
 [submodule "src/segment_tools/Depth-Anything_segtools"]
 	path = src/segment_tools/Depth-Anything_segtools
 	url = https://github.com/qwertyroiro/Depth-Anything_segtools.git
