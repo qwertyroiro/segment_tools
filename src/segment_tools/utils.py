@@ -249,7 +249,7 @@ def check_image_type(image, type="numpy"):
     
     return image
 
-def calculate_bounding_boxes(masks):
+def calc_bboxes(masks):
     """
     セグメンテーションマスクからバウンディングボックスを計算する関数
     
@@ -278,7 +278,7 @@ def calculate_bounding_boxes(masks):
     
     return bounding_boxes
 
-def draw_bounding_boxes(image, bboxes, color=(0, 255, 0), thickness=2, point_radius=5):
+def draw_bboxes(image, bboxes, color=(0, 255, 0), thickness=2, point_radius=5):
     """
     画像に複数のバウンディングボックスを描画する関数
     
@@ -319,7 +319,7 @@ def draw_bounding_boxes(image, bboxes, color=(0, 255, 0), thickness=2, point_rad
     image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     return Image.fromarray(image_rgb)
 
-def calculate_polygons(masks):
+def calc_polygons(masks):
     """
     セグメンテーションマスクからポリゴンを計算する関数
     
@@ -365,8 +365,8 @@ def draw_polygons(image, polygons, fill=False, alpha=0.5, color=(0, 255, 0)):
     :return: ポリゴンが描画された画像
     """
     H, W = image.shape[:2]
-    result = image.copy()
-    overlay = image.copy()
+    result = check_image_type(image, type="numpy")
+    overlay = result.copy()
     
     for polygon in polygons:
         # 相対座標を画像の実際の座標に変換
