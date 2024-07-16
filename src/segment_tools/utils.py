@@ -248,3 +248,73 @@ def check_image_type(image, type="numpy"):
         raise ValueError("type is not supported")
     
     return image
+
+def calculate_bounding_boxes(masks):
+    """
+    セグメンテーションマスクからバウンディングボックスを計算する関数
+    
+    :param masks: shape [x, H, W] の numpy array
+    :return: shape [x, 4] の numpy array (中心x, 中心y, 幅, 高さ) (すべて画像のH,Wに対する相対値)
+    """
+    x, H, W = masks.shape
+    bounding_boxes = np.zeros((x, 4), dtype=np.float32)
+    
+    for i in range(x):
+        mask = masks[i]
+        rows = np.any(mask, axis=1)
+        cols = np.any(mask, axis=0)
+        y_min, y_max = np.where(rows)[0][[0, -1]]
+        x_min, x_max = np.where(cols)[0][[0, -1]]
+        
+        # バウンディングボックスの中心座標（相対値）
+        center_x = (x_min + x_max) / (2 * W)
+        center_y = (y_min + y_max) / (2 * H)
+        
+        # バウンディングボックスの幅と高さ（相対値）
+        width = (x_max - x_min + 1) / W
+        height = (y_max - y_min + 1) / H
+        
+        bounding_boxes[i] = [center_x, center_y, width, height]
+    
+    return bounding_boxes
+
+def draw_bounding_boxes(image, bboxes, color=(0, 255, 0), thickness=2, point_radius=5):
+    """
+    画像に複数のバウンディングボックスを描画する関数
+    
+    :param image: numpy array形式の画像 (BGR順)
+    :param bboxes: shape [x, 4] の numpy array (中心x, 中心y, 幅, 高さ)
+    :param color: バウンディングボックスの色 (BGR順)
+    :param thickness: バウンディングボックスの線の太さ
+    :param point_radius: 中心点の半径
+    :return: バウンディングボックスが描画された画像 (PIL.Image形式)
+    """
+    image = check_image_type(image, type="numpy")
+    height, width, _ = image.shape
+
+    for bbox in bboxes:
+        x_center, y_center, box_width, box_height = bbox
+
+        # 中心座標を画像のピクセル座標に変換
+        x_center = int(x_center * width)
+        y_center = int(y_center * height)
+
+        # 中心点を描画
+        cv2.circle(image, (x_center, y_center), point_radius, color, -1)
+
+        # 幅と高さを画像のピクセル座標に変換
+        box_width = int(box_width * width)
+        box_height = int(box_height * height)
+
+        # バウンディングボックスの左上と右下の座標を計算
+        x1 = int(x_center - box_width / 2)
+        y1 = int(y_center - box_height / 2)
+        x2 = int(x_center + box_width / 2)
+        y2 = int(y_center + box_height / 2)
+
+        # バウンディングボックスを描画
+        cv2.rectangle(image, (x1, y1), (x2, y2), color, thickness)
+
+    # OpenCV形式(BGR)からPIL形式(RGB)に変換
+    image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    return Image.fromarray(image_rgb)
