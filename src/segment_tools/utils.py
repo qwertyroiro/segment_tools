@@ -318,3 +318,70 @@ def draw_bounding_boxes(image, bboxes, color=(0, 255, 0), thickness=2, point_rad
     # OpenCV形式(BGR)からPIL形式(RGB)に変換
     image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     return Image.fromarray(image_rgb)
+
+def calculate_polygons(masks):
+    """
+    セグメンテーションマスクからポリゴンを計算する関数
+    
+    :param masks: shape [x, H, W] の numpy array
+    :return: リスト of リスト of (x, y) 座標のタプル。各マスクに対して1つのポリゴン。
+    """
+    x, H, W = masks.shape
+    polygons = []
+    
+    for i in range(x):
+        mask = masks[i].astype(np.uint8)  # OpenCVは uint8 を期待する
+        
+        # 輪郭を見つける
+        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        
+        if contours:
+            # 最大の輪郭を選択（通常はこれがオブジェクトの輪郭）
+            contour = max(contours, key=cv2.contourArea)
+            
+            # 輪郭を単純化（オプション）
+            epsilon = 0.005 * cv2.arcLength(contour, True)
+            approx = cv2.approxPolyDP(contour, epsilon, True)
+            
+            # 相対座標に変換
+            polygon = [(float(point[0][0])/W, float(point[0][1])/H) for point in approx]
+            
+            polygons.append(polygon)
+        else:
+            # 輪郭が見つからない場合は空のリストを追加
+            polygons.append([])
+    
+    return polygons
+
+def draw_polygons(image, polygons, fill=False, alpha=0.5, color=(0, 255, 0)):
+    """
+    画像にポリゴンを描画する関数
+    
+    :param image: 描画対象の画像 (numpy array, shape: [H, W, 3])
+    :param polygons: ポリゴンのリスト。各ポリゴンは (x, y) 座標のリスト
+    :param fill: ポリゴンを塗りつぶすかどうか (デフォルトは False)
+    :param alpha: 塗りつぶす場合の透明度 (0.0 ~ 1.0, デフォルトは 0.5)
+    :param color: ポリゴンの色 (B, G, R)
+    :return: ポリゴンが描画された画像
+    """
+    H, W = image.shape[:2]
+    result = image.copy()
+    overlay = image.copy()
+    
+    for polygon in polygons:
+        # 相対座標を画像の実際の座標に変換
+        points = np.array([(int(x * W), int(y * H)) for x, y in polygon], np.int32)
+        points = points.reshape((-1, 1, 2))
+        
+        if fill:
+            # ポリゴンを塗りつぶす
+            cv2.fillPoly(overlay, [points], color)
+        else:
+            # ポリゴンの輪郭のみを描画
+            cv2.polylines(result, [points], True, color, 2)
+    
+    if fill:
+        # 透明度を適用して元の画像と合成
+        cv2.addWeighted(overlay, alpha, result, 1 - alpha, 0, result)
+    
+    return result
