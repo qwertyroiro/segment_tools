@@ -405,8 +405,8 @@ def calc_polygons(masks):
                     polygons.append(polygon)
                 else:
                     # 輪郭が見つからない場合は空のリストを追加
-                    polygons.append([])            
-        polygon_list.append(polygons)
+                    polygons.append([])     
+            polygon_list.append(polygons)
         return polygon_list
     else:
         x, H, W = masks.shape
