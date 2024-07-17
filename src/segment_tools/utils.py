@@ -366,6 +366,7 @@ def separate_panoptic_masks(masks):
     for cls in classes:
         class_mask = np.zeros((height, width), dtype=np.int8)
         class_mask[masks == cls] = 1
+        class_mask = np.expand_dims(class_mask, axis=0)
         separated_masks.append(class_mask)
     
     return separated_masks
@@ -443,23 +444,43 @@ def draw_polygons(image, polygons, fill=False, alpha=0.5, color=(0, 255, 0)):
     :return: ポリゴンが描画された画像
     """
     H, W = image.shape[:2]
-    result = check_image_type(image, type="numpy")
-    overlay = result.copy()
-    
-    for polygon in polygons:
-        # 相対座標を画像の実際の座標に変換
-        points = np.array([(int(x * W), int(y * H)) for x, y in polygon], np.int32)
-        points = points.reshape((-1, 1, 2))
+    image = check_image_type(image, type="numpy")
+    overlay = image.copy()
+    if type(polygons) == list:
+        polygons_list = polygons
+        for polygons in polygons_list:
+            for polygon in polygons:
+                # 相対座標を画像の実際の座標に変換
+                points = np.array([(int(x * W), int(y * H)) for x, y in polygon], np.int32)
+                points = points.reshape((-1, 1, 2))
+                
+                if fill:
+                    # ポリゴンを塗りつぶす
+                    cv2.fillPoly(overlay, [points], color)
+                else:
+                    # ポリゴンの輪郭のみを描画
+                    cv2.polylines(image, [points], True, color, 2)
+            
+            if fill:
+                # 透明度を適用して元の画像と合成
+                cv2.addWeighted(overlay, alpha, image, 1 - alpha, 0, image)
+            
+        return image
+    else:
+        for polygon in polygons:
+            # 相対座標を画像の実際の座標に変換
+            points = np.array([(int(x * W), int(y * H)) for x, y in polygon], np.int32)
+            points = points.reshape((-1, 1, 2))
+            
+            if fill:
+                # ポリゴンを塗りつぶす
+                cv2.fillPoly(overlay, [points], color)
+            else:
+                # ポリゴンの輪郭のみを描画
+                cv2.polylines(image, [points], True, color, 2)
         
         if fill:
-            # ポリゴンを塗りつぶす
-            cv2.fillPoly(overlay, [points], color)
-        else:
-            # ポリゴンの輪郭のみを描画
-            cv2.polylines(result, [points], True, color, 2)
-    
-    if fill:
-        # 透明度を適用して元の画像と合成
-        cv2.addWeighted(overlay, alpha, result, 1 - alpha, 0, result)
-    
-    return result
+            # 透明度を適用して元の画像と合成
+            cv2.addWeighted(overlay, alpha, image, 1 - alpha, 0, image)
+        
+        return image
