@@ -353,32 +353,59 @@ def calc_polygons(masks):
     :param masks: shape [x, H, W] の numpy array
     :return: リスト of リスト of (x, y) 座標のタプル。各マスクに対して1つのポリゴン。
     """
-    x, H, W = masks.shape
-    polygons = []
     
-    for i in range(x):
-        mask = masks[i].astype(np.uint8)  # OpenCVは uint8 を期待する
+    if type(masks) == list: # prompt指定したとき
+        polygon_list = []
+        for mask in masks: # prompt回分
+            x, H, W = masks.shape
+            polygons = []
+            
+            for i in range(x):
+                mask = masks[i].astype(np.uint8)  # OpenCVは uint8 を期待する
+                
+                # 輪郭を見つける
+                contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                
+                if contours:
+                    # 最大の輪郭を選択（通常はこれがオブジェクトの輪郭）
+                    contour = max(contours, key=cv2.contourArea)
+                    
+                    # 輪郭を単純化（オプション）
+                    epsilon = 0.005 * cv2.arcLength(contour, True)
+                    approx = cv2.approxPolyDP(contour, epsilon, True)
+                    
+                    # 相対座標に変換
+                    polygon = [(float(point[0][0])/W, float(point[0][1])/H) for point in approx]
+                    
+                    polygons.append(polygon)
+                else:
+                    # 輪郭が見つからない場合は空のリストを追加
+                    polygons.append([])            
+        polygon_list.append(polygons)
+        return polygon_list
+    else:
+        x, H, W = masks.shape
+        polygons = []
         
-        # 輪郭を見つける
-        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        
-        if contours:
-            # 最大の輪郭を選択（通常はこれがオブジェクトの輪郭）
-            contour = max(contours, key=cv2.contourArea)
+        for i in range(x):
+            mask = masks[i].astype(np.uint8)
             
-            # 輪郭を単純化（オプション）
-            epsilon = 0.005 * cv2.arcLength(contour, True)
-            approx = cv2.approxPolyDP(contour, epsilon, True)
+            # 輪郭を見つける
+            contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             
-            # 相対座標に変換
-            polygon = [(float(point[0][0])/W, float(point[0][1])/H) for point in approx]
-            
-            polygons.append(polygon)
-        else:
-            # 輪郭が見つからない場合は空のリストを追加
-            polygons.append([])
-    
-    return polygons
+            if contours:
+                # 最大の輪郭を選択（通常はこれがオブジェクトの輪郭）
+                contour = max(contours, key=cv2.contourArea)
+                
+                # 輪郭を単純化（オプション）
+                epsilon = 0.005 * cv2.arcLength(contour, True)
+                approx = cv2.approxPolyDP(contour, epsilon, True)
+                
+                # 相対座標に変換
+                polygon = [(float(point[0][0])/W, float(point[0][1])/H) for point in approx]
+                
+                polygons.append(polygon)
+        return polygons
 
 def draw_polygons(image, polygons, fill=False, alpha=0.5, color=(0, 255, 0)):
     """
