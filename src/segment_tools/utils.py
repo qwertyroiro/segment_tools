@@ -382,11 +382,11 @@ def calc_polygons(masks):
     if type(masks) == list: # prompt指定したとき
         polygon_list = []
         for mask in masks: # prompt回分
-            x, H, W = masks.shape
+            x, H, W = mask.shape
             polygons = []
             
             for i in range(x):
-                mask = masks[i].astype(np.uint8)  # OpenCVは uint8 を期待する
+                mask = mask[i].astype(np.uint8)  # OpenCVは uint8 を期待する
                 
                 # 輪郭を見つける
                 contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
