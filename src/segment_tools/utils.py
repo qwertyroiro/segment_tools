@@ -248,7 +248,7 @@ def check_image_type(image, type="numpy"):
         raise ValueError("type is not supported")
     
     return image
-
+    
 def calc_bboxes(masks):
     """
     セグメンテーションマスクからバウンディングボックスを計算する関数
@@ -345,6 +345,30 @@ def draw_bboxes(image, bboxes, color=(0, 255, 0), thickness=2, point_radius=5):
     # OpenCV形式(BGR)からPIL形式(RGB)に変換
     image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     return Image.fromarray(image_rgb)
+
+def separate_panoptic_masks(masks):
+    """マスクをクラスごとに分離する関数
+
+    Args:
+        masks (np.ndarray): Panopticセグメンテーションマスクの配列(H, W)
+
+    Returns:
+        list: クラスごとに分離されたマスクのリスト
+    """
+    # マスクの形状を取得
+    height, width = masks.shape
+    
+    # ユニークなクラス値を取得
+    classes = np.unique(masks)[0:]
+    
+    # 各クラスに対してマスクを作成
+    separated_masks = []
+    for cls in classes:
+        class_mask = np.zeros((height, width), dtype=np.int8)
+        class_mask[masks == cls] = 1
+        separated_masks.append(class_mask)
+    
+    return separated_masks
 
 def calc_polygons(masks):
     """
