@@ -256,27 +256,54 @@ def calc_bboxes(masks):
     :param masks: shape [x, H, W] の numpy array
     :return: shape [x, 4] の numpy array (中心x, 中心y, 幅, 高さ) (すべて画像のH,Wに対する相対値)
     """
-    x, H, W = masks.shape
-    bounding_boxes = np.zeros((x, 4), dtype=np.float32)
     
-    for i in range(x):
-        mask = masks[i]
-        rows = np.any(mask, axis=1)
-        cols = np.any(mask, axis=0)
-        y_min, y_max = np.where(rows)[0][[0, -1]]
-        x_min, x_max = np.where(cols)[0][[0, -1]]
+    if type(masks) == list: # prompt指定したとき
+        bounding_boxes_list = []
+        for mask in masks: # prompt回分
+            x, H, W = mask.shape
+            bounding_boxes = np.zeros((x, 4), dtype=np.float32)
+            
+            for i in range(x):
+                mask = mask[i]
+                rows = np.any(mask, axis=1)
+                cols = np.any(mask, axis=0)
+                y_min, y_max = np.where(rows)[0][[0, -1]]
+                x_min, x_max = np.where(cols)[0][[0, -1]]
+                
+                # バウンディングボックスの中心座標（相対値）
+                center_x = (x_min + x_max) / (2 * W)
+                center_y = (y_min + y_max) / (2 * H)
+                
+                # バウンディングボックスの幅と高さ（相対値）
+                width = (x_max - x_min + 1) / W
+                height = (y_max - y_min + 1) / H
+                
+                bounding_boxes[i] = [center_x, center_y, width, height]
+                
+        bounding_boxes_list.append(bounding_boxes)
+        return bounding_boxes_list
+    else:
+        x, H, W = masks.shape
+        bounding_boxes = np.zeros((x, 4), dtype=np.float32)
         
-        # バウンディングボックスの中心座標（相対値）
-        center_x = (x_min + x_max) / (2 * W)
-        center_y = (y_min + y_max) / (2 * H)
+        for i in range(x):
+            mask = masks[i]
+            rows = np.any(mask, axis=1)
+            cols = np.any(mask, axis=0)
+            y_min, y_max = np.where(rows)[0][[0, -1]]
+            x_min, x_max = np.where(cols)[0][[0, -1]]
+            
+            # バウンディングボックスの中心座標（相対値）
+            center_x = (x_min + x_max) / (2 * W)
+            center_y = (y_min + y_max) / (2 * H)
+            
+            # バウンディングボックスの幅と高さ（相対値）
+            width = (x_max - x_min + 1) / W
+            height = (y_max - y_min + 1) / H
+            
+            bounding_boxes[i] = [center_x, center_y, width, height]
         
-        # バウンディングボックスの幅と高さ（相対値）
-        width = (x_max - x_min + 1) / W
-        height = (y_max - y_min + 1) / H
-        
-        bounding_boxes[i] = [center_x, center_y, width, height]
-    
-    return bounding_boxes
+        return bounding_boxes
 
 def draw_bboxes(image, bboxes, color=(0, 255, 0), thickness=2, point_radius=5):
     """
