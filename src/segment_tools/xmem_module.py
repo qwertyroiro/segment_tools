@@ -80,6 +80,8 @@ class XMem:
         Returns:
             dict: セグメンテーションマスクを含む辞書。
         """
+        if len(mask.shape) == 2:
+            mask = np.expand_dims(mask, axis=0)
         # np.maximum.reduceを使って複数のマスクを結合
         combined_mask = np.maximum.reduce(mask)
         # ユニークな値を連番にマッピングする辞書を作成

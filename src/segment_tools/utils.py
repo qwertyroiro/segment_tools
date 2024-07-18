@@ -294,53 +294,46 @@ def calc_bboxes(masks):
     # masksがリストでない場合は、単一のマスクに対して計算を行う
     return calc_single_mask(masks)
 
-def draw_polygons(image, polygons, fill=False, alpha=0.5, color="random"):
+def draw_bboxes(image, bboxes, color=(0, 255, 0), thickness=2, point_radius=5):
     """
-    画像にポリゴンを描画する関数
-    :param image: 描画対象の画像（numpy配列）
-    :param polygons: 描画するポリゴンのリスト（各ポリゴンは座標のタプルのリスト）
-    :param fill: Trueの場合、ポリゴンを塗りつぶす
-    :param alpha: 画像の重ね合わせ時の透明度
-    :param color: ポリゴンの色（BGR形式）
-    :return: ポリゴンを描画した画像
+    画像に複数のバウンディングボックスを描画する関数
+    
+    :param image: numpy array形式の画像 (BGR順)
+    :param bboxes: shape [x, 4] の numpy array (中心x, 中心y, 幅, 高さ)
+    :param color: バウンディングボックスの色 (BGR順)
+    :param thickness: バウンディングボックスの線の太さ
+    :param point_radius: 中心点の半径
+    :return: バウンディングボックスが描画された画像 (PIL.Image形式)
     """
-    
-    # 画像の高さと幅を取得
-    H, W = image.shape[:2]
-    
-    # 画像のタイプを確認して、numpy配列であることを保証
     image = check_image_type(image, type="numpy")
-    
-    # 描画用のオーバーレイ画像を作成（元の画像のコピー）
-    overlay = image.copy()
+    height, width, _ = image.shape
 
-    # ポリゴンを描画する内部関数
-    def draw_polygon(polygon, color):
-        color = get_color(color)
-        # ポリゴンの座標を画像の幅と高さに基づいて整数に変換し、形状を整える
-        points = np.array([(int(x * W), int(y * H)) for x, y in polygon], np.int32).reshape((-1, 1, 2))
-        
-        # 塗りつぶしが必要な場合は、ポリゴンを塗りつぶす
-        if fill:
-            cv2.fillPoly(overlay, [points], color)
-        # 塗りつぶしが不要な場合は、ポリゴンの輪郭を描画
-        else:
-            cv2.polylines(image, [points], True, color, 2)
+    for bbox in bboxes:
+        x_center, y_center, box_width, box_height = bbox
 
-    # polygonsがリストでない場合は、リストに変換
-    polygons = polygons if isinstance(polygons, list) else [polygons]
-    
-    # 各ポリゴンを順に描画
-    for polygons_ in polygons:
-        for polygon in polygons_:
-            draw_polygon(polygon, color)
+        # 中心座標を画像のピクセル座標に変換
+        x_center = int(x_center * width)
+        y_center = int(y_center * height)
 
-    # 塗りつぶしが必要な場合、オーバーレイと元の画像を合成
-    if fill:
-        cv2.addWeighted(overlay, alpha, image, 1 - alpha, 0, image)
+        # 中心点を描画
+        cv2.circle(image, (x_center, y_center), point_radius, color, -1)
 
-    # 描画した画像を返す
-    return image
+        # 幅と高さを画像のピクセル座標に変換
+        box_width = int(box_width * width)
+        box_height = int(box_height * height)
+
+        # バウンディングボックスの左上と右下の座標を計算
+        x1 = int(x_center - box_width / 2)
+        y1 = int(y_center - box_height / 2)
+        x2 = int(x_center + box_width / 2)
+        y2 = int(y_center + box_height / 2)
+
+        # バウンディングボックスを描画
+        cv2.rectangle(image, (x1, y1), (x2, y2), color, thickness)
+
+    # OpenCV形式(BGR)からPIL形式(RGB)に変換
+    image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    return Image.fromarray(image_rgb)
 
 def separate_panoptic_masks(masks):
     """マスクをクラスごとに分離する関数

@@ -8,12 +8,15 @@ image_pil = Image.open(image_path)  # Open image with Pillow
 image_np = np.array(image_pil)      # Convert to numpy array
 
 import logging
-# すべてのロガーの名前を取得
-loggers = [logging.getLogger(name) for name in logging.root.manager.loggerDict]
+# ルートロガーのログレベルをCRITICALに設定し、すべてのハンドラを削除
+logging.getLogger().setLevel(logging.ERROR)
+[logging.getLogger().removeHandler(h) for h in logging.getLogger().handlers]
+# # すべてのロガーの名前を取得
+# loggers = [logging.getLogger(name) for name in logging.root.manager.loggerDict]
 
-# すべてのロガーのレベルを設定
-for logger in loggers:
-    logger.setLevel(logging.ERROR)
+# # すべてのロガーのレベルを設定
+# for logger in loggers:
+#     logger.setLevel(logging.ERROR)
     
 # logging.getLogger("fvcore").setLevel(logging.ERROR)
 # logging.getLogger("detectron2").setLevel(logging.ERROR)
@@ -170,3 +173,24 @@ if result is not None:
     depth_img, depth = result["image"], result["depth"]
 save_image(depth_img, "depth_dinov2.jpg")
 del depth_model
+
+# XMem
+print("XMem")
+result = st.OneFormer(dataset="cityscapes").run(image_np, prompt) # Use OneFormer to get the mask
+if result is not None:
+    image, ann, info = result["image"], result["mask"], result["info"]
+# ann is list (num of prompts)
+# ann[0] is ndarray, ann[0].shape => (x, H, W) # x is number of detected objects, H and W are height and width of image
+xmem = st.XMem()
+result = xmem.run(image_np, ann[0])
+# one object tracking
+result = xmem.run(image_np, ann[0][0])
+del xmem
+
+# GRiT
+print("GRiT")
+grit = st.GRiT()
+result = grit.run(image_np)
+if result is not None:
+    image, ann = result["image"], result["bbox"], result["info"]
+del grit
