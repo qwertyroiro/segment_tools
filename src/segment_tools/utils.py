@@ -32,7 +32,7 @@ def get_color(color):
         return np.random.randint(0, 256, size=3).tolist()
     elif color in colors:
         return colors[color]
-    elif isinstance(color, list) and len(color) == 3:
+    elif (isinstance(color, list) or isinstance(color, tuple)) and len(color) == 3:
         return color
     else:
         return colors["DodgerBlue"] # 既定の色を返す
@@ -253,57 +253,47 @@ def calc_bboxes(masks):
     """
     セグメンテーションマスクからバウンディングボックスを計算する関数
     
-    :param masks: shape [x, H, W] の numpy array
+    :param masks: shape [x, H, W] の numpy array またはリスト
     :return: shape [x, 4] の numpy array (中心x, 中心y, 幅, 高さ) (すべて画像のH,Wに対する相対値)
     """
     
-    if type(masks) == list: # prompt指定したとき
-        bounding_boxes_list = []
-        for mask in masks: # prompt回分
-            x, H, W = mask.shape
-            bounding_boxes = np.zeros((x, 4), dtype=np.float32)
-            
-            for i in range(x):
-                mask = mask[i]
-                rows = np.any(mask, axis=1)
-                cols = np.any(mask, axis=0)
-                y_min, y_max = np.where(rows)[0][[0, -1]]
-                x_min, x_max = np.where(cols)[0][[0, -1]]
-                
-                # バウンディングボックスの中心座標（相対値）
-                center_x = (x_min + x_max) / (2 * W)
-                center_y = (y_min + y_max) / (2 * H)
-                
-                # バウンディングボックスの幅と高さ（相対値）
-                width = (x_max - x_min + 1) / W
-                height = (y_max - y_min + 1) / H
-                
-                bounding_boxes[i] = [center_x, center_y, width, height]
-                
-        bounding_boxes_list.append(bounding_boxes)
-        return bounding_boxes_list
-    else:
-        x, H, W = masks.shape
+    # 1つのマスクに対してバウンディングボックスを計算する内部関数
+    def calc_single_mask(mask):
+        # マスクの形状を取得
+        x, H, W = mask.shape
+        
+        # バウンディングボックスを格納する配列を初期化
         bounding_boxes = np.zeros((x, 4), dtype=np.float32)
-        
+
+        # 各マスクに対して処理を行う
         for i in range(x):
-            mask = masks[i]
-            rows = np.any(mask, axis=1)
-            cols = np.any(mask, axis=0)
+            m = mask[i]  # 現在のマスクを取得
+            
+            # 各行および列で少なくとも1つのピクセルがあるかを確認
+            rows, cols = np.any(m, axis=1), np.any(m, axis=0)
+            
+            # ポジティブな行の最小・最大インデックスを取得
             y_min, y_max = np.where(rows)[0][[0, -1]]
+            # ポジティブな列の最小・最大インデックスを取得
             x_min, x_max = np.where(cols)[0][[0, -1]]
-            
-            # バウンディングボックスの中心座標（相対値）
-            center_x = (x_min + x_max) / (2 * W)
-            center_y = (y_min + y_max) / (2 * H)
-            
-            # バウンディングボックスの幅と高さ（相対値）
-            width = (x_max - x_min + 1) / W
-            height = (y_max - y_min + 1) / H
-            
-            bounding_boxes[i] = [center_x, center_y, width, height]
-        
-        return bounding_boxes
+
+            # バウンディングボックスの中心座標、幅、高さを計算して格納
+            bounding_boxes[i] = [
+                (x_min + x_max) / (2 * W),  # center_x: 幅で割って相対位置に変換
+                (y_min + y_max) / (2 * H),  # center_y: 高さで割って相対位置に変換
+                (x_max - x_min + 1) / W,    # width: 幅を計算し相対位置に変換
+                (y_max - y_min + 1) / H      # height: 高さを計算し相対位置に変換
+            ]
+
+        return bounding_boxes  # 計算したバウンディングボックスを返す
+    
+    # masksがリストの場合、各マスクに対してバウンディングボックスを計算
+    if isinstance(masks, list):
+        return [calc_single_mask(mask) for mask in masks]
+    
+    # masksがリストでない場合は、単一のマスクに対して計算を行う
+    return calc_single_mask(masks)
+
 
 def draw_bboxes(image, bboxes, color=(0, 255, 0), thickness=2, point_radius=5):
     """
@@ -373,114 +363,94 @@ def separate_panoptic_masks(masks):
 
 def calc_polygons(masks):
     """
-    セグメンテーションマスクからポリゴンを計算する関数
+    セグメンテーションマスクからポリゴンを計算する関数。
     
-    :param masks: shape [x, H, W] の numpy array
+    :param masks: shape [x, H, W] の numpy array またはリスト
     :return: リスト of リスト of (x, y) 座標のタプル。各マスクに対して1つのポリゴン。
     """
     
-    if type(masks) == list: # prompt指定したとき
-        polygon_list = []
-        for mask in masks: # prompt回分
-            x, H, W = mask.shape
-            polygons = []
-            
-            for i in range(x):
-                mask = mask[i].astype(np.uint8)  # OpenCVは uint8 を期待する
-                
-                # 輪郭を見つける
-                contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-                
-                if contours:
-                    # 最大の輪郭を選択（通常はこれがオブジェクトの輪郭）
-                    contour = max(contours, key=cv2.contourArea)
-                    
-                    # 輪郭を単純化（オプション）
-                    epsilon = 0.005 * cv2.arcLength(contour, True)
-                    approx = cv2.approxPolyDP(contour, epsilon, True)
-                    
-                    # 相対座標に変換
-                    polygon = [(float(point[0][0])/W, float(point[0][1])/H) for point in approx]
-                    
-                    polygons.append(polygon)
-                else:
-                    # 輪郭が見つからない場合は空のリストを追加
-                    polygons.append([])     
-            polygon_list.append(polygons)
-        return polygon_list
-    else:
-        x, H, W = masks.shape
+    # 1つのマスクに対してポリゴンを計算する内部関数
+    def calc_single_mask(mask):
+        # 各マスクから取得したポリゴンを格納するリスト
         polygons = []
         
-        for i in range(x):
-            mask = masks[i].astype(np.uint8)
+        # 各レイヤーに対して処理を行う
+        for layer in mask:
+            # 外側の輪郭を検出
+            contours, _ = cv2.findContours(layer.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             
-            # 輪郭を見つける
-            contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-            
+            # 輪郭が存在する場合
             if contours:
-                # 最大の輪郭を選択（通常はこれがオブジェクトの輪郭）
+                # 面積が最も大きい輪郭を取得
                 contour = max(contours, key=cv2.contourArea)
                 
-                # 輪郭を単純化（オプション）
+                # 輪郭の周囲の長さを計算し、近似ポリゴンの精度を設定
                 epsilon = 0.005 * cv2.arcLength(contour, True)
+                
+                # 近似ポリゴンを計算
                 approx = cv2.approxPolyDP(contour, epsilon, True)
                 
-                # 相対座標に変換
-                polygon = [(float(point[0][0])/W, float(point[0][1])/H) for point in approx]
+                # ポリゴンの座標を画像サイズに基づいて正規化
+                polygon = [(x / mask.shape[2], y / mask.shape[1]) for x, y in approx[:, 0]]
                 
+                # 計算したポリゴンをリストに追加
                 polygons.append(polygon)
+            else:
+                # 輪郭が存在しない場合は空のリストを追加
+                polygons.append([])
+        
         return polygons
 
-def draw_polygons(image, polygons, fill=False, alpha=0.5, color=(0, 255, 0)):
+    # masksがリストであれば、各マスクに対してポリゴンを計算
+    return [calc_single_mask(mask) for mask in masks] if isinstance(masks, list) else calc_single_mask(masks)
+
+
+
+def draw_polygons(image, polygons, fill=False, alpha=0.5, color="random"):
     """
     画像にポリゴンを描画する関数
-    
-    :param image: 描画対象の画像 (numpy array, shape: [H, W, 3])
-    :param polygons: ポリゴンのリスト。各ポリゴンは (x, y) 座標のリスト
-    :param fill: ポリゴンを塗りつぶすかどうか (デフォルトは False)
-    :param alpha: 塗りつぶす場合の透明度 (0.0 ~ 1.0, デフォルトは 0.5)
-    :param color: ポリゴンの色 (B, G, R)
-    :return: ポリゴンが描画された画像
+    :param image: 描画対象の画像（numpy配列）
+    :param polygons: 描画するポリゴンのリスト（各ポリゴンは座標のタプルのリスト）
+    :param fill: Trueの場合、ポリゴンを塗りつぶす
+    :param alpha: 画像の重ね合わせ時の透明度
+    :param color: ポリゴンの色（BGR形式）
+    :return: ポリゴンを描画した画像
     """
+    
+    color = get_color(color)
+    
+    # 画像の高さと幅を取得
     H, W = image.shape[:2]
+    
+    # 画像のタイプを確認して、numpy配列であることを保証
     image = check_image_type(image, type="numpy")
+    
+    # 描画用のオーバーレイ画像を作成（元の画像のコピー）
     overlay = image.copy()
-    if type(polygons) == list:
-        polygons_list = polygons
-        for polygons in polygons_list:
-            for polygon in polygons:
-                # 相対座標を画像の実際の座標に変換
-                points = np.array([(int(x * W), int(y * H)) for x, y in polygon], np.int32)
-                points = points.reshape((-1, 1, 2))
-                
-                if fill:
-                    # ポリゴンを塗りつぶす
-                    cv2.fillPoly(overlay, [points], color)
-                else:
-                    # ポリゴンの輪郭のみを描画
-                    cv2.polylines(image, [points], True, color, 2)
-            
-            if fill:
-                # 透明度を適用して元の画像と合成
-                cv2.addWeighted(overlay, alpha, image, 1 - alpha, 0, image)
-            
-        return image
-    else:
-        for polygon in polygons:
-            # 相対座標を画像の実際の座標に変換
-            points = np.array([(int(x * W), int(y * H)) for x, y in polygon], np.int32)
-            points = points.reshape((-1, 1, 2))
-            
-            if fill:
-                # ポリゴンを塗りつぶす
-                cv2.fillPoly(overlay, [points], color)
-            else:
-                # ポリゴンの輪郭のみを描画
-                cv2.polylines(image, [points], True, color, 2)
+
+    # ポリゴンを描画する内部関数
+    def draw_polygon(polygon):
+        # ポリゴンの座標を画像の幅と高さに基づいて整数に変換し、形状を整える
+        points = np.array([(int(x * W), int(y * H)) for x, y in polygon], np.int32).reshape((-1, 1, 2))
         
+        # 塗りつぶしが必要な場合は、ポリゴンを塗りつぶす
         if fill:
-            # 透明度を適用して元の画像と合成
-            cv2.addWeighted(overlay, alpha, image, 1 - alpha, 0, image)
-        
-        return image
+            cv2.fillPoly(overlay, [points], color)
+        # 塗りつぶしが不要な場合は、ポリゴンの輪郭を描画
+        else:
+            cv2.polylines(image, [points], True, color, 2)
+
+    # polygonsがリストでない場合は、リストに変換
+    polygons = polygons if isinstance(polygons, list) else [polygons]
+    
+    # 各ポリゴンを順に描画
+    for polygons_ in polygons:
+        for polygon in polygons_:
+            draw_polygon(polygon)
+
+    # 塗りつぶしが必要な場合、オーバーレイと元の画像を合成
+    if fill:
+        cv2.addWeighted(overlay, alpha, image, 1 - alpha, 0, image)
+
+    # 描画した画像を返す
+    return image
