@@ -43,7 +43,7 @@ from .utils import mask_class_objects, draw_multi_mask, check_image_type, mask_c
 from itertools import cycle
 
 cpu_device = torch.device("cpu")
-config_dir = os.path.join(os.path.dirname(__file__), "OneFormer_colab_segtools/configs")
+config_dir = os.path.join(os.path.dirname(__file__), "OneFormer_segtools/configs")
 SWIN_CFG_DICT = {
     "ade20k":       "ade20k/swin/oneformer_swin_large_bs16_160k.yaml",
     "cityscapes":   "cityscapes/swin/oneformer_swin_large_bs16_90k.yaml",
@@ -54,7 +54,7 @@ SWIN_CFG_DICT = {
 CONVNEXT_CFG_DICT = {
     "ade20k":       "ade20k/convnext/oneformer_convnext_large_bs16_160k.yaml",
     "cityscapes":   "cityscapes/convnext/mapillary_pretrain_oneformer_convnext_large_bs16_90k.yaml",
-    "coco":         None,
+    "coco":         "",
     "vistas":       "mapillary_vistas/convnext/oneformer_convnext_large_bs16_300k.yaml",
 }
 
@@ -82,7 +82,7 @@ def setup_cfg(dataset, model_path, use_swin, use_convnext):
     if use_swin:
         cfg_path = SWIN_CFG_DICT[dataset]
     elif use_convnext:
-        cfg_path = CONVNEXT_CFG_DICT
+        cfg_path = CONVNEXT_CFG_DICT[dataset]
     else:
         cfg_path = DINAT_CFG_DICT[dataset]
     cfg.merge_from_file(cfg_path)
@@ -93,8 +93,8 @@ def setup_cfg(dataset, model_path, use_swin, use_convnext):
     return cfg
 
 
-def setup_modules(dataset, model_path, use_swin):
-    cfg = setup_cfg(dataset, model_path, use_swin)
+def setup_modules(dataset, model_path, use_swin, use_convnext):
+    cfg = setup_cfg(dataset, model_path, use_swin, use_convnext)
     predictor = DefaultPredictor(cfg)
     metadata = MetadataCatalog.get(
         cfg.DATASETS.TEST_PANOPTIC[0] if len(cfg.DATASETS.TEST_PANOPTIC) else "__unused"
@@ -186,7 +186,7 @@ class OneFormer:
                 weight_path = "weights/150_16_dinat_l_oneformer_coco_100ep.pth"
             if not os.path.exists(weight_path):
                 download_weights_coco(weight_path, use_swin)
-            self.predictor, self.metadata = setup_modules(dataset, weight_path, use_swin)
+            self.predictor, self.metadata = setup_modules(dataset, weight_path, use_swin, use_convnext)
             
         elif dataset == "vistas":
             if use_swin:
