@@ -24,3 +24,6 @@
 [submodule "src/segment_tools/OneFormer_colab_segtools"]
 	path = src/segment_tools/OneFormer_colab_segtools
 	url = https://github.com/qwertyroiro/OneFormer_colab_segtools.git
+[submodule "src/segment_tools/OneFormer_segtools"]
+	path = src/segment_tools/OneFormer_segtools
+	url = https://github.com/qwertyroiro/OneFormer_segtools.git
