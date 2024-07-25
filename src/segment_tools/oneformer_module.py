@@ -22,7 +22,7 @@ import os
 import sys
 import PIL
 
-sys.path.append(os.path.join(os.path.dirname(__file__), "OneFormer_colab_segtools"))
+sys.path.append(os.path.join(os.path.dirname(__file__), "OneFormer_segtools"))
 from demo.defaults import DefaultPredictor
 from demo.visualizer import Visualizer, ColorMode
 
@@ -45,22 +45,32 @@ from itertools import cycle
 cpu_device = torch.device("cpu")
 config_dir = os.path.join(os.path.dirname(__file__), "OneFormer_colab_segtools/configs")
 SWIN_CFG_DICT = {
-    "cityscapes": "cityscapes/oneformer_swin_large_IN21k_384_bs16_90k.yaml",
-    "coco": "coco/oneformer_swin_large_IN21k_384_bs16_100ep.yaml",
-    "ade20k": "ade20k/oneformer_swin_large_IN21k_384_bs16_160k.yaml",
+    "ade20k":       "ade20k/swin/oneformer_swin_large_bs16_160k.yaml",
+    "cityscapes":   "cityscapes/swin/oneformer_swin_large_bs16_90k.yaml",
+    "coco":         "coco/swin/oneformer_swin_large_bs16_100ep.yaml",
+    "vistas":       "mapillary_vistas/swin/oneformer_swin_large_bs16_300k.yaml", 
+}
+
+CONVNEXT_CFG_DICT = {
+    "ade20k":       "ade20k/convnext/oneformer_convnext_large_bs16_160k.yaml",
+    "cityscapes":   "cityscapes/convnext/mapillary_pretrain_oneformer_convnext_large_bs16_90k.yaml",
+    "coco":         None,
+    "vistas":       "mapillary_vistas/convnext/oneformer_convnext_large_bs16_300k.yaml",
 }
 
 DINAT_CFG_DICT = {
-    "cityscapes": "cityscapes/oneformer_dinat_large_bs16_90k.yaml",
-    "coco": "coco/oneformer_dinat_large_bs16_100ep.yaml",
-    "ade20k": "ade20k/oneformer_dinat_large_IN21k_384_bs16_160k.yaml",
+    "ade20k":       "ade20k/dinat/coco_pretrain_oneformer_dinat_large_bs16_160k_1280x1280.yaml",
+    "cityscapes":   "cityscapes/dinat/oneformer_dinat_large_bs16_90k.yaml",
+    "coco":         "coco/dinat/oneformer_dinat_large_bs16_100ep.yaml",
+    "vistas":       "mapillary_vistas/dinat/oneformer_dinat_large_bs16_300k.yaml",
 }
 
 SWIN_CFG_DICT = {k: os.path.join(config_dir, v) for k, v in SWIN_CFG_DICT.items()}
+CONVNEXT_CFG_DICT = {k: os.path.join(config_dir, v) for k, v in CONVNEXT_CFG_DICT.items()}
 DINAT_CFG_DICT = {k: os.path.join(config_dir, v) for k, v in DINAT_CFG_DICT.items()}
 
 
-def setup_cfg(dataset, model_path, use_swin):
+def setup_cfg(dataset, model_path, use_swin, use_convnext):
     # load config from file and command-line arguments
     cfg = get_cfg()
     add_deeplab_config(cfg)
@@ -71,6 +81,8 @@ def setup_cfg(dataset, model_path, use_swin):
     add_oneformer_config(cfg)
     if use_swin:
         cfg_path = SWIN_CFG_DICT[dataset]
+    elif use_convnext:
+        cfg_path = CONVNEXT_CFG_DICT
     else:
         cfg_path = DINAT_CFG_DICT[dataset]
     cfg.merge_from_file(cfg_path)
@@ -143,25 +155,50 @@ TASK_INFER = {
 }
 
 class OneFormer:
-    def __init__(self, dataset="ade20k", use_swin=False):
+    def __init__(self, dataset="ade20k", use_swin=False, use_convnext=False):
         if dataset == "ade20k":
-            from .download_weights import download_weights_ade20k     
-            weight_path = "weights/250_16_swin_l_oneformer_ade20k_160k.pth" if use_swin else "weights/250_16_dinat_l_oneformer_ade20k_160k.pth"
+            if use_swin:
+                weight_path = "weights/250_16_swin_l_oneformer_ade20k_160k.pth"
+            elif use_convnext:
+                weight_path = "weights/250_16_convnext_l_oneformer_ade20k_160k.pth"
+            else:
+                weight_path = "weights/250_16_dinat_l_oneformer_ade20k_160k.pth"
             if not os.path.exists(weight_path):
-                download_weights_ade20k(weight_path, use_swin)
-            self.predictor, self.metadata = setup_modules(dataset, weight_path, use_swin)
+                download_weights_ade20k(weight_path, use_swin, use_convnext)
+            self.predictor, self.metadata = setup_modules(dataset, weight_path, use_swin, use_convnext)
+            
         elif dataset == "cityscapes":
-            from .download_weights import download_weights_cityscapes
-            weight_path = "weights/250_16_swin_l_oneformer_cityscapes_90k.pth" if use_swin else "weights/250_16_dinat_l_oneformer_cityscapes_90k.pth"
+            if use_swin:
+                weight_path = "weights/250_16_swin_l_oneformer_cityscapes_90k.pth"
+            elif use_convnext:
+                weight_path = "weights/250_16_convnext_l_oneformer_cityscapes_90k.pth"
+            else:
+                weight_path = "weights/250_16_dinat_l_oneformer_cityscapes_90k.pth"
             if not os.path.exists(weight_path):
-                download_weights_cityscapes(weight_path, use_swin)
-            self.predictor, self.metadata = setup_modules(dataset, weight_path, use_swin)
+                download_weights_cityscapes(weight_path, use_swin, use_convnext)
+            self.predictor, self.metadata = setup_modules(dataset, weight_path, use_swin, use_convnext)
+            
         elif dataset == "coco":
-            from .download_weights import download_weights_coco
-            weight_path = "weights/150_16_swin_l_oneformer_coco_100ep.pth" if use_swin else "weights/150_16_dinat_l_oneformer_coco_100ep.pth"
+            assert not use_convnext, "convnext is not supported in coco dataset"
+            if use_swin:
+                weight_path = "weights/150_16_swin_l_oneformer_coco_100ep.pth"
+            else:
+                weight_path = "weights/150_16_dinat_l_oneformer_coco_100ep.pth"
             if not os.path.exists(weight_path):
                 download_weights_coco(weight_path, use_swin)
             self.predictor, self.metadata = setup_modules(dataset, weight_path, use_swin)
+            
+        elif dataset == "vistas":
+            if use_swin:
+                weight_path = "weights/250_16_swin_l_oneformer_mapillary_300k.pth"
+            elif use_convnext:
+                weight_path = "weights/250_16_convnext_l_oneformer_mapillary_300k.pth"
+            else:
+                weight_path = "weights/250_16_dinat_l_oneformer_mapillary_300k.pth"
+            if not os.path.exists(weight_path):
+                download_weights_vistas(weight_path, use_swin, use_convnext)
+            self.predictor, self.metadata = setup_modules(dataset, weight_path, use_swin, use_convnext)
+                
         else:
             raise ValueError("dataset is not supported")
                 

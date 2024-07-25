@@ -50,17 +50,21 @@ def download_weights_SAM(weight_path, vit_size):
     make_dir(weight_path)
     download_file(url, weight_path)
 
-def download_weights_ade20k(weight_path, use_swin):
+def download_weights_ade20k(weight_path, use_swin, use_convnext):
     if use_swin:
         url = "https://shi-labs.com/projects/oneformer/ade20k/250_16_swin_l_oneformer_ade20k_160k.pth"
+    elif use_convnext:
+        url = "https://shi-labs.com/projects/oneformer/ade20k/250_16_convnext_l_oneformer_ade20k_160k.pth"
     else:
         url = "https://shi-labs.com/projects/oneformer/ade20k/250_16_dinat_l_oneformer_ade20k_160k.pth"
     make_dir(weight_path)
     download_file(url, weight_path)
 
-def download_weights_cityscapes(weight_path, use_swin):
+def download_weights_cityscapes(weight_path, use_swin, use_convnext):
     if use_swin:
         url = "https://shi-labs.com/projects/oneformer/cityscapes/250_16_swin_l_oneformer_cityscapes_90k.pth"
+    elif use_convnext:
+        url = "https://shi-labs.com/projects/oneformer/mapillary/mapillary_pretrain_250_16_convnext_l_oneformer_mapillary_300k.pth"
     else:
         url = "https://shi-labs.com/projects/oneformer/cityscapes/250_16_dinat_l_oneformer_cityscapes_90k.pth"
     make_dir(weight_path)
@@ -71,6 +75,16 @@ def download_weights_coco(weight_path, use_swin):
         url = "https://shi-labs.com/projects/oneformer/coco/150_16_swin_l_oneformer_coco_100ep.pth"
     else:
         url = "https://shi-labs.com/projects/oneformer/coco/150_16_dinat_l_oneformer_coco_100ep.pth"
+    make_dir(weight_path)
+    download_file(url, weight_path)
+    
+def download_weights_vistas(weight_path, use_swin, use_convnext):
+    if use_swin:
+        url = "https://shi-labs.com/projects/oneformer/mapillary/250_16_swin_l_oneformer_mapillary_300k.pth"
+    elif use_convnext:
+        url = "https://shi-labs.com/projects/oneformer/mapillary/250_16_convnext_l_oneformer_mapillary_300k.pth"
+    else:
+        url = "https://shi-labs.com/projects/oneformer/mapillary/250_16_dinat_l_oneformer_mapillary_300k.pth"
     make_dir(weight_path)
     download_file(url, weight_path)
 
