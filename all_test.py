@@ -185,6 +185,7 @@ save_image(image, "oneformer_coco_swin_prompt.jpg")
 del oneformer_coco_swin
 
 # Vistas
+prompt = "Car"
 print("Vistas")
 oneformer_vistas = st.OneFormer(dataset="vistas")
 result = oneformer_vistas.run(image_np)
@@ -245,7 +246,7 @@ del depth_model
 
 # XMem
 print("XMem")
-result = st.OneFormer(dataset="cityscapes").run(image_np, prompt) # Use OneFormer to get the mask
+result = st.OneFormer(dataset="cityscapes").run(image_np, "car") # Use OneFormer to get the mask
 if result is not None:
     image, ann, info = result["image"], result["mask"], result["info"]
 # ann is list (num of prompts)
