@@ -53,7 +53,7 @@ SWIN_CFG_DICT = {
 
 CONVNEXT_CFG_DICT = {
     "ade20k":       "ade20k/convnext/oneformer_convnext_large_bs16_160k.yaml",
-    "cityscapes":   "cityscapes/convnext/mapillary_pretrain_oneformer_convnext_large_bs16_90k.yaml",
+    "cityscapes":   "cityscapes/convnext/oneformer_convnext_large_bs16_90k.yaml",
     "coco":         "",
     "vistas":       "mapillary_vistas/convnext/oneformer_convnext_large_bs16_300k.yaml",
 }

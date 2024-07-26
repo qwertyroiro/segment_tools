@@ -261,5 +261,6 @@ print("GRiT")
 grit = st.GRiT()
 result = grit.run(image_np)
 if result is not None:
-    image, ann = result["image"], result["bbox"], result["info"]
+    image, ann, info = result["image"], result["bbox"], result["info"]
+save_image(image, "grit.jpg")
 del grit

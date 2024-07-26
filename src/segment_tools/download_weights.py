@@ -64,7 +64,7 @@ def download_weights_cityscapes(weight_path, use_swin, use_convnext):
     if use_swin:
         url = "https://shi-labs.com/projects/oneformer/cityscapes/250_16_swin_l_oneformer_cityscapes_90k.pth"
     elif use_convnext:
-        url = "https://shi-labs.com/projects/oneformer/mapillary/mapillary_pretrain_250_16_convnext_l_oneformer_mapillary_300k.pth"
+        url = "https://shi-labs.com/projects/oneformer/cityscapes/250_16_convnext_l_oneformer_cityscapes_90k.pth"
     else:
         url = "https://shi-labs.com/projects/oneformer/cityscapes/250_16_dinat_l_oneformer_cityscapes_90k.pth"
     make_dir(weight_path)
