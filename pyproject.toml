@@ -28,6 +28,7 @@ dependencies = [
     "natten @ https://shi-labs.com/natten/wheels/cu121/torch2.1.0/natten-0.15.1%2Btorch210cu121-cp310-cp310-linux_x86_64.whl",
     "lvis == 0.5.3",
     "boto3 == 1.34.140",
+    "supervision == 0.19.0",
 ]
 
 [tool.setuptools]
