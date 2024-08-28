@@ -17,22 +17,14 @@ Additionally, you will need the following packages:
 
 - **PyTorch**: 2.1.0
 - **Torchvision**: 0.16.0
-- **Wheel**: 0.42.0
 
 For detailed installation instructions for PyTorch and Torchvision, refer to the [PyTorch previous versions documentation](https://pytorch.org/get-started/previous-versions/#v210).
 
 ### Installation Commands
-
-Install PyTorch and Torchvision using the following commands:
-
-```bash
-pip install torch==2.1.0 torchvision==0.16.0 --index-url https://download.pytorch.org/whl/cu121
-```
-
-For additional tools and libraries, execute:
+Install segment_tools using the following commands:
 
 ```bash
-pip install git+https://github.com/qwertyroiro/segment_tools.git
+pip install git+https://github.com/qwertyroiro/segment_tools.git@light
 ```
 
 Ensure all the prerequisites are properly installed to avoid any compatibility issues during the setup process.

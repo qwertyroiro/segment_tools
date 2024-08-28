@@ -2,6 +2,7 @@ from PIL import Image
 import numpy as np
 import cv2
 import segment_tools as st
+import os
 
 image_path = "cityscapes.png"
 image_pil = Image.open(image_path)  # Open image with Pillow
@@ -28,7 +29,8 @@ logging.getLogger().setLevel(logging.ERROR)
 prompt = "car"  # Define your prompt
 
 def save_image(image, filename):
-    cv2.imwrite(filename, cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
+    os.makedirs("test_output", exist_ok=True)
+    cv2.imwrite(f"test_output/{filename}", cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
 
 # fastsam
 print("fastsam")
@@ -100,6 +102,19 @@ if result is not None:
 save_image(image, "oneformer_ade20k_swin_prompt.jpg")
 del oneformer_ade20k_swin
 
+oneformer_ade20k_conv = st.OneFormer(dataset="ade20k", use_convnext=True)
+result = oneformer_ade20k_conv.run(image_np)
+if result is not None:
+    image, ann, info = result["image"], result["mask"], result["info"]
+save_image(image, "oneformer_ade20k_convnext.jpg")
+
+oneformer_ade20k_conv = st.OneFormer(dataset="ade20k", use_convnext=True)
+result = oneformer_ade20k_conv.run(image_np, prompt)
+if result is not None:
+    image, ann = result["image"], result["mask"]
+save_image(image, "oneformer_ade20k_convnext_prompt.jpg")
+del oneformer_ade20k_conv
+
 # Cityscapes
 print("Cityscapes")
 oneformer_city = st.OneFormer(dataset="cityscapes")
@@ -127,6 +142,19 @@ if result is not None:
     image, ann = result["image"], result["mask"]
 save_image(image, "oneformer_city_swin_prompt.jpg")
 del oneformer_city_swin
+
+oneformer_city_conv = st.OneFormer(dataset="cityscapes", use_convnext=True)
+result = oneformer_city_conv.run(image_np)
+if result is not None:
+    image, ann, info = result["image"], result["mask"], result["info"]
+save_image(image, "oneformer_city_convnext.jpg")
+
+oneformer_city_conv = st.OneFormer(dataset="cityscapes", use_convnext=True)
+result = oneformer_city_conv.run(image_np, prompt)
+if result is not None:
+    image, ann = result["image"], result["mask"]
+save_image(image, "oneformer_city_convnext_prompt.jpg")
+del oneformer_city_conv
 
 # COCO
 print("COCO")
@@ -156,6 +184,48 @@ if result is not None:
 save_image(image, "oneformer_coco_swin_prompt.jpg")
 del oneformer_coco_swin
 
+# Vistas
+prompt = "Car"
+print("Vistas")
+oneformer_vistas = st.OneFormer(dataset="vistas")
+result = oneformer_vistas.run(image_np)
+if result is not None:
+    image, ann, info = result["image"], result["mask"], result["info"]
+save_image(image, "oneformer_vistas.jpg")
+
+oneformer_vistas = st.OneFormer(dataset="vistas")
+result = oneformer_vistas.run(image_np, prompt)
+if result is not None:
+    image, ann = result["image"], result["mask"]
+save_image(image, "oneformer_vistas_prompt.jpg")
+del oneformer_vistas
+
+oneformer_vistas_swin = st.OneFormer(dataset="vistas", use_swin=True)
+result = oneformer_vistas_swin.run(image_np)
+if result is not None:
+    image, ann, info = result["image"], result["mask"], result["info"]
+save_image(image, "oneformer_vistas_swin.jpg")
+
+oneformer_vistas_swin = st.OneFormer(dataset="vistas", use_swin=True)
+result = oneformer_vistas_swin.run(image_np, prompt)
+if result is not None:
+    image, ann = result["image"], result["mask"]
+save_image(image, "oneformer_vistas_swin_prompt.jpg")
+del oneformer_vistas_swin
+
+oneformer_vistas_conv = st.OneFormer(dataset="vistas", use_convnext=True)
+result = oneformer_vistas_conv.run(image_np)
+if result is not None:
+    image, ann, info = result["image"], result["mask"], result["info"]
+save_image(image, "oneformer_vistas_convnext.jpg")
+
+oneformer_vistas_conv = st.OneFormer(dataset="vistas", use_convnext=True)
+result = oneformer_vistas_conv.run(image_np, prompt)
+if result is not None:
+    image, ann = result["image"], result["mask"]
+save_image(image, "oneformer_vistas_convnext_prompt.jpg")
+del oneformer_vistas_conv
+
 # depth
 print("depth")
 depth_model = st.Depth_Anything(encoder="vitl") # vits or vitb or vitl
@@ -176,7 +246,7 @@ del depth_model
 
 # XMem
 print("XMem")
-result = st.OneFormer(dataset="cityscapes").run(image_np, prompt) # Use OneFormer to get the mask
+result = st.OneFormer(dataset="cityscapes").run(image_np, "car") # Use OneFormer to get the mask
 if result is not None:
     image, ann, info = result["image"], result["mask"], result["info"]
 # ann is list (num of prompts)
@@ -192,5 +262,6 @@ print("GRiT")
 grit = st.GRiT()
 result = grit.run(image_np)
 if result is not None:
-    image, ann = result["image"], result["bbox"], result["info"]
+    image, ann, info = result["image"], result["bbox"], result["info"]
+save_image(image, "grit.jpg")
 del grit
