@@ -108,15 +108,21 @@ def setup_modules(dataset, model_path, use_swin, use_convnext):
     return predictor, metadata
 
 
-def panoptic_run(img, predictor, metadata):
-    visualizer = Visualizer(
-        img[:, :, ::-1], metadata=metadata, instance_mode=ColorMode.IMAGE
-    )
+def panoptic_run(img, predictor, metadata, no_image=False):
+    
+    if not no_image:
+        visualizer = Visualizer(
+            img[:, :, ::-1], metadata=metadata, instance_mode=ColorMode.IMAGE
+        )
     predictions = predictor(img, "panoptic")
     panoptic_seg, segments_info = predictions["panoptic_seg"]
-    out = visualizer.draw_panoptic_seg_predictions(
-        panoptic_seg.to(cpu_device), segments_info, alpha=0.5
-    )
+    
+    if not no_image:
+        out = visualizer.draw_panoptic_seg_predictions(
+            panoptic_seg.to(cpu_device), segments_info, alpha=0.5
+        )
+    else:
+        out = None
     classes = metadata.stuff_classes
 
     # クラス名も追加
@@ -202,12 +208,9 @@ class OneFormer:
         else:
             raise ValueError("dataset is not supported")
                 
-    def run(self, image, prompt=None, color="random", task="panoptic", panoptic_mask=False):
+    def run(self, image, prompt=None, color="random", task="panoptic", panoptic_mask=False, no_image=False):
         image = check_image_type(image)
-        prompt = [prompt] if isinstance(prompt, str) else prompt
-        color = [color] if isinstance(color, str) else color
-        
-        out, panoptic_seg, segments_info = TASK_INFER[task](image, self.predictor, self.metadata)
+        out, panoptic_seg, segments_info = TASK_INFER[task](image, self.predictor, self.metadata, no_image=no_image)
 
         try:
             out = out[0] if len(out) == 2 else out
@@ -217,10 +220,15 @@ class OneFormer:
         # promptがNoneでない場合のみ、draw_multi_maskを実行(多分重いので)
         # panoptic_maskがTrueの場合、colorはrandomしかできない(色指定する方も面倒かも)
         if prompt is not None:
+            prompt = [prompt] if isinstance(prompt, str) else prompt
+            color = [color] if isinstance(color, str) else color
             prompt_color_map = {prompt_: color_ for prompt_, color_ in zip(prompt, cycle(color))}
             panoptic_seg, output_image = mask_class_objects_multi(seg=panoptic_seg, ann=segments_info, stuff_classes=self.metadata.stuff_classes, image=image, panoptic_mask=panoptic_mask, prompt_color_map=prompt_color_map)
         else:
-            output_image = out.get_image()[:, :, ::-1]
+            try:
+                output_image = out.get_image()[:, :, ::-1]
+            except:
+                output_image = None
         
         return {"image": output_image, "mask": panoptic_seg, "info": segments_info}
                 
