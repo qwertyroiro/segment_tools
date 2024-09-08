@@ -22,7 +22,7 @@ class Depth_Anything:
             "LiheYoung/depth_anything_{:}14".format(encoder)
         ).to(self.device).eval()
 
-    def run(self, image):
+    def run(self, image, no_image=False):
         """画像から深度マップを生成する
 
         Args:
@@ -62,6 +62,8 @@ class Depth_Anything:
         depth = cv2.resize(
             depth[0], (image_width, image_height), interpolation=cv2.INTER_NEAREST
         )
+        if no_image:
+            return {"image": None, "depth": depth}
         depth_img = self.__render_depth(depth)
         return {"image": depth_img, "depth": depth}
 
