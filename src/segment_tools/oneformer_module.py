@@ -69,8 +69,13 @@ SWIN_CFG_DICT = {k: os.path.join(config_dir, v) for k, v in SWIN_CFG_DICT.items(
 CONVNEXT_CFG_DICT = {k: os.path.join(config_dir, v) for k, v in CONVNEXT_CFG_DICT.items()}
 DINAT_CFG_DICT = {k: os.path.join(config_dir, v) for k, v in DINAT_CFG_DICT.items()}
 
+cfg_backbone_dict = {
+    "swin": SWIN_CFG_DICT,
+    "convnext": CONVNEXT_CFG_DICT,
+    "dinat": DINAT_CFG_DICT,
+}
 
-def setup_cfg(dataset, model_path, use_swin, use_convnext):
+def setup_cfg(dataset, model_path, backbone):
     # load config from file and command-line arguments
     cfg = get_cfg()
     add_deeplab_config(cfg)
@@ -79,12 +84,9 @@ def setup_cfg(dataset, model_path, use_swin, use_convnext):
     add_dinat_config(cfg)
     add_convnext_config(cfg)
     add_oneformer_config(cfg)
-    if use_swin:
-        cfg_path = SWIN_CFG_DICT[dataset]
-    elif use_convnext:
-        cfg_path = CONVNEXT_CFG_DICT[dataset]
-    else:
-        cfg_path = DINAT_CFG_DICT[dataset]
+    
+    cfg_path = cfg_backbone_dict[backbone][dataset]
+    
     cfg.merge_from_file(cfg_path)
     cfg.MODEL.DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -93,8 +95,8 @@ def setup_cfg(dataset, model_path, use_swin, use_convnext):
     return cfg
 
 
-def setup_modules(dataset, model_path, use_swin, use_convnext):
-    cfg = setup_cfg(dataset, model_path, use_swin, use_convnext)
+def setup_modules(dataset, model_path, backbone):
+    cfg = setup_cfg(dataset, model_path, backbone)
     predictor = DefaultPredictor(cfg)
     metadata = MetadataCatalog.get(
         cfg.DATASETS.TEST_PANOPTIC[0] if len(cfg.DATASETS.TEST_PANOPTIC) else "__unused"
@@ -160,50 +162,60 @@ TASK_INFER = {
     "semantic": semantic_run,
 }
 
+ade20k_weight_dict = {
+    "swin": "250_16_swin_l_oneformer_ade20k_160k.pth",
+    "convnext": "250_16_convnext_l_oneformer_ade20k_160k.pth",
+    "dinat": "250_16_dinat_l_oneformer_ade20k_160k.pth",
+}
+
+cityscapes_weight_dict = {
+    "swin": "250_16_swin_l_oneformer_cityscapes_90k.pth",
+    "convnext": "250_16_convnext_l_oneformer_cityscapes_90k.pth",
+    "dinat": "250_16_dinat_l_oneformer_cityscapes_90k.pth",
+}
+
+coco_weight_dict = {
+    "swin": "150_16_swin_l_oneformer_coco_100ep.pth",
+    "convnext": "", # not supported
+    "dinat": "150_16_dinat_l_oneformer_coco_100ep.pth",
+}
+
+vistas_weight_dict = {
+    "swin": "250_16_swin_l_oneformer_mapillary_300k.pth",
+    "convnext": "250_16_convnext_l_oneformer_mapillary_300k.pth",
+    "dinat": "250_16_dinat_l_oneformer_mapillary_300k.pth",
+}
+
 class OneFormer:
-    def __init__(self, dataset="ade20k", use_swin=False, use_convnext=False):
+    def __init__(self, dataset="ade20k", backbone="dinat"):
         if dataset == "ade20k":
-            if use_swin:
-                weight_path = "weights/250_16_swin_l_oneformer_ade20k_160k.pth"
-            elif use_convnext:
-                weight_path = "weights/250_16_convnext_l_oneformer_ade20k_160k.pth"
-            else:
-                weight_path = "weights/250_16_dinat_l_oneformer_ade20k_160k.pth"
+            weight_path = ade20k_weight_dict[backbone]
+            
             if not os.path.exists(weight_path):
-                download_weights_ade20k(weight_path, use_swin, use_convnext)
-            self.predictor, self.metadata = setup_modules(dataset, weight_path, use_swin, use_convnext)
+                download_weights_ade20k(weight_path, backbone)
+            self.predictor, self.metadata = setup_modules(dataset, weight_path, backbone)
             
         elif dataset == "cityscapes":
-            if use_swin:
-                weight_path = "weights/250_16_swin_l_oneformer_cityscapes_90k.pth"
-            elif use_convnext:
-                weight_path = "weights/250_16_convnext_l_oneformer_cityscapes_90k.pth"
-            else:
-                weight_path = "weights/250_16_dinat_l_oneformer_cityscapes_90k.pth"
+            weight_path = cityscapes_weight_dict[backbone]
+            
             if not os.path.exists(weight_path):
-                download_weights_cityscapes(weight_path, use_swin, use_convnext)
-            self.predictor, self.metadata = setup_modules(dataset, weight_path, use_swin, use_convnext)
+                download_weights_cityscapes(weight_path, backbone)
+            self.predictor, self.metadata = setup_modules(dataset, weight_path, backbone)
             
         elif dataset == "coco":
-            assert not use_convnext, "convnext is not supported in coco dataset"
-            if use_swin:
-                weight_path = "weights/150_16_swin_l_oneformer_coco_100ep.pth"
-            else:
-                weight_path = "weights/150_16_dinat_l_oneformer_coco_100ep.pth"
+            weight_path = coco_weight_dict[backbone]
+            if weight_path == "": raise ValueError("convnext is not supported in coco dataset")
+            
             if not os.path.exists(weight_path):
-                download_weights_coco(weight_path, use_swin)
-            self.predictor, self.metadata = setup_modules(dataset, weight_path, use_swin, use_convnext)
+                download_weights_coco(weight_path, backbone)
+            self.predictor, self.metadata = setup_modules(dataset, weight_path, backbone)
             
         elif dataset == "vistas":
-            if use_swin:
-                weight_path = "weights/250_16_swin_l_oneformer_mapillary_300k.pth"
-            elif use_convnext:
-                weight_path = "weights/250_16_convnext_l_oneformer_mapillary_300k.pth"
-            else:
-                weight_path = "weights/250_16_dinat_l_oneformer_mapillary_300k.pth"
+            weight_path = vistas_weight_dict[backbone]
+            
             if not os.path.exists(weight_path):
-                download_weights_vistas(weight_path, use_swin, use_convnext)
-            self.predictor, self.metadata = setup_modules(dataset, weight_path, use_swin, use_convnext)
+                download_weights_vistas(weight_path, backbone)
+            self.predictor, self.metadata = setup_modules(dataset, weight_path, backbone)
                 
         else:
             raise ValueError("dataset is not supported")
