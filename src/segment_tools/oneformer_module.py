@@ -220,7 +220,7 @@ class OneFormer:
         else:
             raise ValueError("dataset is not supported")
                 
-    def run(self, image, prompt=None, color="random", task="panoptic", panoptic_mask=False, no_image=False):
+    def run(self, image, prompt=None, color="random", alpha=0.5, task="panoptic", panoptic_mask=False, no_image=False):
         image = check_image_type(image)
         out, panoptic_seg, segments_info = TASK_INFER[task](image, self.predictor, self.metadata, no_image=no_image)
 
@@ -235,7 +235,7 @@ class OneFormer:
             prompt = [prompt] if isinstance(prompt, str) else prompt
             color = [color] if isinstance(color, str) else color
             prompt_color_map = {prompt_: color_ for prompt_, color_ in zip(prompt, cycle(color))}
-            panoptic_seg, output_image = mask_class_objects_multi(seg=panoptic_seg, ann=segments_info, stuff_classes=self.metadata.stuff_classes, image=image, panoptic_mask=panoptic_mask, prompt_color_map=prompt_color_map)
+            panoptic_seg, output_image = mask_class_objects_multi(seg=panoptic_seg, ann=segments_info, stuff_classes=self.metadata.stuff_classes, image=image, panoptic_mask=panoptic_mask, prompt_color_map=prompt_color_map, alpha=alpha)
         else:
             try:
                 output_image = out.get_image()[:, :, ::-1]

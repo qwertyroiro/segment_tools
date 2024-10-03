@@ -157,7 +157,7 @@ def mask_class_objects(
     return separate_masks, True
 
 def mask_class_objects_multi(
-    seg: np.ndarray, ann: list, stuff_classes, image: np.ndarray, panoptic_mask=False, prompt_color_map=None
+    seg: np.ndarray, ann: list, stuff_classes, image: np.ndarray, alpha, panoptic_mask=False, prompt_color_map=None
 ) -> np.ndarray:
     """
     mask_class_objectsをプロンプトごとに複数回実行し、複数のマスクを返す関数。
@@ -170,7 +170,7 @@ def mask_class_objects_multi(
         separated_masks, execute_flag= mask_class_objects(seg, ann, prompt, stuff_classes, panoptic_mask=panoptic_mask)
         if execute_flag:
             masks.append(separated_masks)
-            annotated_frame = draw_multi_mask(separated_masks, annotated_frame, label=prompt, color=color, panoptic_mask=panoptic_mask)
+            annotated_frame = draw_multi_mask(separated_masks, annotated_frame, label=prompt, color=color, panoptic_mask=panoptic_mask, alpha=alpha)
             
 
     return masks, annotated_frame[:, :, :3]
