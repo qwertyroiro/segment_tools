@@ -138,7 +138,7 @@ if result is not None:
 
 #### Without prompt (Backbone: Swin)
 ```python
-oneformer_ade20k_swin = st.OneFormer(dataset="ade20k", use_swin=True)
+oneformer_ade20k_swin = st.OneFormer(dataset="ade20k", backbone="swin")
 result = oneformer_ade20k_swin.run(image_np)
 if result is not None:
     image, ann, info = result["image"], result["mask"], result["info"]
@@ -146,7 +146,7 @@ if result is not None:
 
 #### Without prompt (Backbone: Swin)
 ```python
-oneformer_ade20k_swin = st.OneFormer(dataset="ade20k", use_swin=True)
+oneformer_ade20k_swin = st.OneFormer(dataset="ade20k", backbone="swin")
 result = oneformer_ade20k_swin.run(image_np, prompt)
 if result is not None:
     image, ann = result["image"], result["mask"]
@@ -171,14 +171,14 @@ if result is not None:
 ```
 #### Without prompt (Backbone: Swin)
 ```python
-oneformer_city_swin = st.OneFormer(dataset="cityscapes", use_swin=True)
+oneformer_city_swin = st.OneFormer(dataset="cityscapes", backbone="swin")
 result = oneformer_city_swin.run(image_np)
 if result is not None:
     image, ann, info = result["image"], result["mask"], result["info"]
 ```
 #### With prompt (Backbone: Swin)
 ```python
-oneformer_city_swin = st.OneFormer(dataset="cityscapes", use_swin=True)
+oneformer_city_swin = st.OneFormer(dataset="cityscapes", backbone="swin")
 result = oneformer_city_swin.run(image_np, prompt)
 if result is not None:
     image, ann = result["image"], result["mask"]
@@ -202,14 +202,14 @@ if result is not None:
 ```
 #### Without prompt (Backbone: Swin)
 ```python
-oneformer_coco_swin = st.OneFormer(dataset="coco", use_swin=True)
+oneformer_coco_swin = st.OneFormer(dataset="coco", backbone="swin")
 result = oneformer_coco_swin.run(image_np)
 if result is not None:
     image, ann, info = result["image"], result["mask"], result["info"]
 ```
 #### With prompt (Backbone: Swin)
 ```python
-oneformer_coco_swin = st.OneFormer(dataset="coco", use_swin=True)
+oneformer_coco_swin = st.OneFormer(dataset="coco", backbone="swin")
 result = oneformer_coco_swin.run(image_np, prompt)
 if result is not None:
     image, ann = result["image"], result["mask"]
