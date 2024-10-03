@@ -190,7 +190,7 @@ class OneFormer:
     def __init__(self, dataset="ade20k", backbone="dinat", weight_dir="weights"):
         if dataset == "ade20k":
             weight_path = ade20k_weight_dict[backbone]
-            os.path.join(weight_dir, weight_path)
+            weight_path = os.path.join(weight_dir, weight_path)
             
             if not os.path.exists(weight_path):
                 download_weights_ade20k(weight_path, backbone)
@@ -198,7 +198,7 @@ class OneFormer:
             
         elif dataset == "cityscapes":
             weight_path = cityscapes_weight_dict[backbone]
-            os.path.join(weight_dir, weight_path)
+            weight_path = os.path.join(weight_dir, weight_path)
             
             if not os.path.exists(weight_path):
                 download_weights_cityscapes(weight_path, backbone)
@@ -207,7 +207,7 @@ class OneFormer:
         elif dataset == "coco":
             weight_path = coco_weight_dict[backbone]
             if weight_path == "": raise ValueError("convnext is not supported in coco dataset")
-            os.path.join(weight_dir, weight_path)
+            weight_path = os.path.join(weight_dir, weight_path)
             
             if not os.path.exists(weight_path):
                 download_weights_coco(weight_path, backbone)
@@ -215,7 +215,7 @@ class OneFormer:
             
         elif dataset == "vistas":
             weight_path = vistas_weight_dict[backbone]
-            os.path.join(weight_dir, weight_path)
+            weight_path = os.path.join(weight_dir, weight_path)
             
             if not os.path.exists(weight_path):
                 download_weights_vistas(weight_path, backbone)
