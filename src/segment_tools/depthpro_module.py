@@ -8,6 +8,7 @@ import torch
 import os
 from .download_weights import *
 from dataclasses import dataclass
+from typing import Mapping, Optional, Tuple, Union
 
 from depth_pro.network.vit_factory import ViTPreset
 
@@ -19,8 +20,8 @@ class DepthProConfig:
     image_encoder_preset: ViTPreset
     decoder_features: int
 
-    checkpoint_uri = None
-    fov_encoder_preset = None
+    checkpoint_uri: Optional[str] = None
+    fov_encoder_preset: Optional[ViTPreset] = None
     use_fov_head: bool = True
 
 class Depth_Pro:
