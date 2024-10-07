@@ -16,8 +16,8 @@ class DepthProConfig:
     image_encoder_preset: ViTPreset
     decoder_features: int
 
-    checkpoint_uri: Optional[str] = None
-    fov_encoder_preset: Optional[ViTPreset] = None
+    checkpoint_uri = None
+    fov_encoder_preset = None
     use_fov_head: bool = True
 
 class Depth_Pro:
