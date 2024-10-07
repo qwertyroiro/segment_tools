@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from .utils import check_image_type
 import depth_pro
 import cv2
@@ -6,9 +7,11 @@ import numpy as np
 import torch
 import os
 from .download_weights import *
+from dataclasses import dataclass
 
 from depth_pro.network.vit_factory import ViTPreset
 
+@dataclass
 class DepthProConfig:
     """Configuration for DepthPro."""
 
