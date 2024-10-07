@@ -48,7 +48,7 @@ class Depth_Pro:
         prediction = self.model.infer(image)
         depth = prediction["depth"]
         depth_cpu = depth.to("cpu").detach().numpy().copy()
-        depth_image = self.__render_depth(depth_cpu)
+        depth_image = self.__render_depth(1/depth_cpu)
         return {"image": depth_image, "depth": depth_cpu}
 
     def __render_depth(self, values, colormap_name="magma_r"):
