@@ -112,3 +112,8 @@ def download_weights_grit(weight_path):
     url = "https://datarelease.blob.core.windows.net/grit/models/grit_b_densecap_objectdet.pth"
     make_dir(weight_path)
     download_file(url, weight_path)
+    
+def download_weights_depthpro(weight_path):
+    url = "https://ml-site.cdn-apple.com/models/depth-pro/depth_pro.pt"
+    make_dir(weight_path)
+    download_file(url, weight_path)
