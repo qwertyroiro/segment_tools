@@ -16,4 +16,5 @@ from .xmem_module import *
 from .sam_module import *
 from .grit_module import *
 from .depthpro_module import *
+from .insightface_module import *
 from .utils import *
