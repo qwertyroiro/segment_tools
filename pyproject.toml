@@ -33,6 +33,7 @@ dependencies = [
     "Cython == 3.0.11",
     "onnxruntime-gpu == 1.19.2",
     "insightface == 0.7.3",
+    "nvidia-cudnn-cu12 == 9.1.0.70"
 ]
 
 [tool.setuptools]
