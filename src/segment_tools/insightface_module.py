@@ -4,7 +4,7 @@ import torch
 from .utils import check_image_type
 
 
-class InsightfaceModule:
+class Insightface:
     def __init__(self):
         self.app = insightface.app.FaceAnalysis()
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
