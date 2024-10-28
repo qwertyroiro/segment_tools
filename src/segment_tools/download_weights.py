@@ -117,3 +117,17 @@ def download_weights_depthpro(weight_path):
     url = "https://ml-site.cdn-apple.com/models/depth-pro/depth_pro.pt"
     make_dir(weight_path)
     download_file(url, weight_path)
+    
+def download_weights_SAM2(weight_path, model_size):
+    if model_size == "tiny":
+        url = "https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_tiny.pt"
+    elif model_size == "small":
+        url = "https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_small.pt"
+    elif model_size == "base":
+        url = "https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_base_plus.pt"
+    elif model_size == "large":
+        url = "https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_large.pt"
+    else:
+        raise ValueError(f"Unknown model size {model_size}")
+    make_dir(weight_path)
+    download_file(url, weight_path)
