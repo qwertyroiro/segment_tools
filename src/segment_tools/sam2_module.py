@@ -14,6 +14,7 @@ import supervision as sv
 import gradio as gr
 from gradio_rangeslider import RangeSlider
 import matplotlib.pyplot as plt
+from tqdm import tqdm
 
 sam_pt_config_dict = {
     "tiny": ["sam2.1_hiera_tiny.pt", "configs/sam2.1/sam2.1_hiera_t.yaml"],
@@ -124,10 +125,55 @@ class SAM2:
                 out_obj_id: (out_mask_logits[i] > 0.0).cpu().numpy()
                 for i, out_obj_id in enumerate(out_obj_ids)
             }
+            
+        cap = cv2.VideoCapture(video)
+        # slider_minからslider_maxまでのフレームを取得
+        cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
+        fps = int(cap.get(cv2.CAP_PROP_FPS))
+        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        
+        if os.path.exists("temp_output"):
+            shutil.rmtree("temp_output")
+        os.makedirs("temp_output", exist_ok=True)
+        
+        row_frames = []
+        out = cv2.VideoWriter(f"temp_output/{os.path.basename(video)}", fourcc, fps, (width, height))
+        for idx, segments in tqdm(video_segments.items()):
+            object_ids = list(segments.keys())
+            masks = list(segments.values())
+            masks = np.concatenate(masks, axis=0)
+            detections = sv.Detections(
+                xyxy=sv.mask_to_xyxy(masks),  # (n, 4)
+                mask=masks, # (n, h, w)
+                class_id=np.array(object_ids, dtype=np.int32),
+            )
+            ret, row_frame = cap.read()
+            row_frames.append(row_frame)
+            mask_annotator = sv.MaskAnnotator()
+            output_seg_image = mask_annotator.annotate(scene=row_frame, detections=detections)
+            out.write(output_seg_image)
+        out.release()
+        row_frames = np.array(row_frames)
+        
+        
+        n, h, w, _ = row_frames.shape
+        video_segments_reshaped = np.zeros((n, h, w))
+        for idx, segments in video_segments.items():
+            object_ids = list(segments.keys())
+            masks = list(segments.values())
+            masks = np.concatenate(masks, axis=0)
+            for i, object_id in enumerate(object_ids):
+                video_segments_reshaped[idx, :, :] += object_id * masks[i]
+        
+        return {"video": f"temp_output/{os.path.basename(video)}", "masks": video_segments_reshaped}
+        return f"temp_output/{os.path.basename(video)}"
 
     def extract_video_to_dir(
         self, video, start_frame=0, end_frame=None, temp_dir="temp_sam2_video"
     ):
+        start_frame, end_frame = int(start_frame), int(end_frame)
         # tempフォルダが存在する場合、削除する
         if os.path.exists(temp_dir):
             shutil.rmtree(temp_dir)
@@ -157,51 +203,6 @@ class SAM2:
         self.points = np.empty((0, 2), dtype=np.float32)
         self.labels = np.empty((0,), dtype=np.int32)
         self.masks = None
-
-        def segment_single_img(frame):
-            image = self.run(frame, self.points, self.labels)["image"]
-            return image
-        
-        def draw_points(frame):
-            # ポイントを描画する
-            img = frame.copy()
-            for (x, y), label in zip(self.points, self.labels):
-                color = (0, 255, 0) if label == 1 else (0, 0, 255)
-                cv2.circle(img, (int(x), int(y)), 5, color, -1)
-            return img
-        
-        def on_click(frame, label_type, evt: gr.SelectData):
-            # 画像クリックイベントの処理
-            x, y = evt.index[0], evt.index[1] # クリックした座標を取得
-            if label_type == "positive":
-                self.points = np.append(self.points, [[x, y]], axis=0)
-                self.labels = np.append(self.labels, [1])
-            elif label_type == "negative":
-                self.points = np.append(self.points, [[x, y]], axis=0)
-                self.labels = np.append(self.labels, [0])
-            return draw_points(frame), segment_single_img(frame)
-        
-        def delete_last(frame):
-            # 直前のポイントを削除
-            if len(self.points) > 0:
-                self.points = self.points[:-1]
-                self.labels = self.labels[:-1]
-            return draw_points(frame), segment_single_img(frame)
-        
-        def reset(frame):
-            # ポイントをリセット
-            self.points = np.empty((0, 2), dtype=np.float32)
-            self.labels = np.empty((0,), dtype=np.int32)
-            return draw_points(frame), frame
-        
-        def save_npz(npz_file_name):
-            # もしnpz_file_nameが空の場合、デフォルトのファイル名を設定
-            if npz_file_name == "":
-                npz_file_name = "sam2_mask.npz"
-            if not npz_file_name.endswith(".npz"):
-                npz_file_name += ".npz"
-            np.savez_compressed(npz_file_name, mask=self.masks)
-            return gr.update(value=f"Saved as {npz_file_name}. npz_key=mask", visible=True)
         
         with gr.Blocks() as demo:
             label_type = gr.Radio(["positive", "negative"], label="SAM Label Type", value="positive")
@@ -219,15 +220,130 @@ class SAM2:
             # 画像がアップロードされたら、input_imageに画像をセット
             image.upload(lambda x: x.copy(), [image], [input_image])
             # 画像をクリックした場合、ポイントを追加し、セグメンテーションを実行
-            image.select(on_click, [input_image, label_type], [image, process_image])
+            image.select(self.on_click, [input_image, label_type], [image, process_image])
             # ポイントの削除
-            delete_btn.click(delete_last, [input_image], [image, process_image])
+            delete_btn.click(self.delete_last, [input_image], [image, process_image])
             # リセット
-            reset_btn.click(reset, [input_image], [image, process_image])
+            reset_btn.click(self.reset, [input_image], [image, process_image])
             # npzファイルとしてマスクを保存
-            save_npz_btn.click(save_npz, [npz_file_name], [npz_result])
+            save_npz_btn.click(self.save_npz, [npz_file_name], [npz_result])
             
         demo.launch(debug=True)
 
-    def run_video_gradio():
-        pass
+    def run_video_gradio(self):
+        self.points = np.empty((0, 2), dtype=np.float32)
+        self.labels = np.empty((0,), dtype=np.int32)
+        self.masks = None
+        
+        def process_sam2(video, range_slider):
+            # ビデオセグメンテーションを実行
+            start_frame, end_frame = range_slider
+            result = self.run_video(video, start_frame, end_frame, self.points, self.labels)
+            self.masks = result["masks"]
+            return result["video"]
+        
+        with gr.Blocks() as demo:
+            video = gr.Video()
+            with gr.Row():
+                with gr.Column():
+                    label_type = gr.Radio(["positive", "negative"], label="Label Type", value="positive")
+                    range_slider = RangeSlider(minimum=0, maximum=100, value=(0, 100), visible=False)
+                output_img = gr.Image(type="numpy", label="Processed Image")
+                
+            output_img_seg = gr.Image(type="numpy", label="Processed Image Seg", interactive=False)
+            orig_img = gr.Image(type="numpy", visible=False) # 画像の元の状態を保持(ポイント付きの画像は使えないため)
+            execute_btn = gr.Button("ビデオセグメンテーションを実行")
+            delete_btn = gr.Button("最後のポイントを削除")
+            reset_btn = gr.Button("すべてのポイントを削除")
+            output_video = gr.Video()
+            
+            with gr.Row():
+                with gr.Column():
+                    npz_file_name = gr.Textbox("", label="npzファイル名", placeholder="sam2_mask")
+                    save_npz_btn = gr.Button("npzとしてマスクを保存")
+                npz_result = gr.Textbox("", visible=False)
+            
+            def update_first_frame(video_path):
+                frame, frame_count = self.get_n_frame(video_path, 0)
+                return [frame, frame, gr.update(maximum=frame_count, value=(0, frame_count), visible=True)]
+            
+            def update_nframe(video_path, range_slider):
+                frame, frame_count = self.get_n_frame(video_path, range_slider[0])
+                return [frame, frame]
+            
+            # 動画がアップロードされた場合、最初のフレームを取得
+            video.change(update_first_frame, [video], [output_img, orig_img, range_slider])
+            # レンジスライダーの値が変更された場合、任意のフレームを取得
+            range_slider.change(update_nframe, [video, range_slider], [output_img, orig_img])
+            # 画像をクリックした場合、ポイントを追加
+            output_img.select(self.on_click, [orig_img, label_type], [output_img, output_img_seg])
+            # ビデオセグメンテーションを実行
+            execute_btn.click(process_sam2, [video, range_slider], output_video)
+            # ポイントの削除
+            delete_btn.click(self.delete_last, orig_img, [output_img, output_img_seg])
+            # リセット
+            reset_btn.click(self.reset, orig_img, [output_img, output_img_seg])
+            
+        demo.launch(debug=True)
+        
+    def segment_single_img(self, frame):
+        image = self.run(frame, self.points, self.labels)["image"]
+        return image
+    
+    def draw_points(self, frame):
+        # ポイントを描画する
+        img = frame.copy()
+        for (x, y), label in zip(self.points, self.labels):
+            color = (0, 255, 0) if label == 1 else (0, 0, 255)
+            cv2.circle(img, (int(x), int(y)), 5, color, -1)
+        return img
+    
+    def on_click(self, frame, label_type, evt: gr.SelectData):
+        # 画像クリックイベントの処理
+        x, y = evt.index[0], evt.index[1] # クリックした座標を取得
+        if label_type == "positive":
+            self.points = np.append(self.points, [[x, y]], axis=0)
+            self.labels = np.append(self.labels, [1])
+        elif label_type == "negative":
+            self.points = np.append(self.points, [[x, y]], axis=0)
+            self.labels = np.append(self.labels, [0])
+        return self.draw_points(frame), self.segment_single_img(frame)
+    
+    def delete_last(self, frame):
+        # 直前のポイントを削除
+        if len(self.points) > 0:
+            self.points = self.points[:-1]
+            self.labels = self.labels[:-1]
+        return self.draw_points(frame), self.segment_single_img(frame)
+    
+    def reset(self, frame):
+        # ポイントをリセット
+        self.points = np.empty((0, 2), dtype=np.float32)
+        self.labels = np.empty((0,), dtype=np.int32)
+        return self.draw_points(frame), frame
+    
+    def save_npz(self, npz_file_name):
+        # もしnpz_file_nameが空の場合、デフォルトのファイル名を設定
+        if npz_file_name == "":
+            npz_file_name = "sam2_mask.npz"
+        if not npz_file_name.endswith(".npz"):
+            npz_file_name += ".npz"
+            
+        # npz_file_nameがすでに存在する場合、上書きしない
+        if os.path.exists(npz_file_name):
+            return gr.update(value=f"{npz_file_name} already exists. Please choose another name or delete the existing file.", visible=True)
+        np.savez_compressed(npz_file_name, mask=self.masks)
+        return gr.update(value=f"Saved as {npz_file_name}. \nnpz_key=mask", visible=True)
+    
+    def get_n_frame(self, video_path, frame_num):
+        # 動画から任意のフレームを取得し、任意のフレームとフレーム数を返す
+        cap = cv2.VideoCapture(video_path)
+        frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        frame_idx = min(frame_num, frame_count - 1)
+        cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
+        ret, frame = cap.read()
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        cap.release()
+        if not ret:
+            raise ValueError("動画のフレームを取得できませんでした。")
+        return frame, frame_count
