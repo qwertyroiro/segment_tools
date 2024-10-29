@@ -1,3 +1,4 @@
+from http import server
 from httpx import delete
 import torch
 from sam2.build_sam import build_sam2_video_predictor
@@ -228,7 +229,7 @@ class SAM2:
             # npzファイルとしてマスクを保存
             save_npz_btn.click(self.save_npz, [npz_file_name], [npz_result])
             
-        demo.launch(debug=True)
+        demo.launch(debug=True, server_name="0.0.0.0", server_port=7860)
 
     def run_video_gradio(self):
         self.points = np.empty((0, 2), dtype=np.float32)
@@ -283,8 +284,10 @@ class SAM2:
             delete_btn.click(self.delete_last, orig_img, [output_img, output_img_seg])
             # リセット
             reset_btn.click(self.reset, orig_img, [output_img, output_img_seg])
+            # npzファイルとしてマスクを保存
+            save_npz_btn.click(self.save_npz, [npz_file_name], [npz_result])
             
-        demo.launch(debug=True)
+        demo.launch(debug=True, server_name="0.0.0.0", server_port=7860)
         
     def segment_single_img(self, frame):
         image = self.run(frame, self.points, self.labels)["image"]
