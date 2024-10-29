@@ -229,7 +229,7 @@ class SAM2:
             # npzファイルとしてマスクを保存
             save_npz_btn.click(self.save_npz, [npz_file_name], [npz_result])
             
-        demo.launch(debug=True, server_name="0.0.0.0", server_port=7860)
+        demo.launch(debug=True, server_port=7860)
 
     def run_video_gradio(self):
         self.points = np.empty((0, 2), dtype=np.float32)
@@ -241,7 +241,11 @@ class SAM2:
             start_frame, end_frame = range_slider
             result = self.run_video(video, start_frame, end_frame, self.points, self.labels)
             self.masks = result["masks"]
-            return result["video"]
+            
+            # result["video"]の絶対パスを返す
+            video_path = os.path.abspath(result["video"])
+            # return result["video"]
+            return gr.update(value=video_path, format="mp4")
         
         with gr.Blocks() as demo:
             video = gr.Video()
@@ -287,7 +291,7 @@ class SAM2:
             # npzファイルとしてマスクを保存
             save_npz_btn.click(self.save_npz, [npz_file_name], [npz_result])
             
-        demo.launch(debug=True, server_name="0.0.0.0", server_port=7860)
+        demo.launch(debug=True, server_port=7860)
         
     def segment_single_img(self, frame):
         image = self.run(frame, self.points, self.labels)["image"]
