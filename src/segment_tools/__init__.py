@@ -1,5 +1,5 @@
 from .clipseg_module import *
-from .fastsam_module import *
+# from .fastsam_module import *
 from .dino_module import *
 from .dinoseg_module import *
 from .oneformer_module import *
