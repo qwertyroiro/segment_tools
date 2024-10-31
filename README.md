@@ -260,6 +260,10 @@ This project includes modified versions of the following third-party libraries:
    - Repository: [https://github.com/openai/CLIP](https://github.com/openai/CLIP)
    - Build: The source code has been built and the resulting binary files are available in the [Releases](https://github.com/qwertyroiro/segment_tools/releases) section.
 
+4. **NATTEN** (MIT License)
+   - Repository: [https://github.com/SHI-Labs/NATTEN](https://github.com/SHI-Labs/NATTEN)
+   - Build: The source code has been built and the resulting binary files are available in the [Releases](https://github.com/qwertyroiro/segment_tools/releases) section.
+
 
 ### License
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
