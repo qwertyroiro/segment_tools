@@ -144,10 +144,25 @@ if result is not None:
     image, ann, info = result["image"], result["mask"], result["info"]
 ```
 
-#### Without prompt (Backbone: Swin)
+#### With prompt (Backbone: Swin)
 ```python
 oneformer_ade20k_swin = st.OneFormer(dataset="ade20k", backbone="swin")
 result = oneformer_ade20k_swin.run(image_np, prompt)
+if result is not None:
+    image, ann = result["image"], result["mask"]
+```
+#### Without prompt (Backbone: ConvNeXt)
+```python
+oneformer_ade20k_convnext = st.OneFormer(dataset="ade20k", backbone="convnext")
+result = oneformer_ade20k_convnext.run(image_np)
+if result is not None:
+    image, ann, info = result["image"], result["mask"], result["info"]
+```
+
+#### With prompt (Backbone: ConvNeXt)
+```python
+oneformer_ade20k_convnext = st.OneFormer(dataset="ade20k", backbone="convnext")
+result = oneformer_ade20k_convnext.run(image_np, prompt)
 if result is not None:
     image, ann = result["image"], result["mask"]
 ```
@@ -183,6 +198,21 @@ result = oneformer_city_swin.run(image_np, prompt)
 if result is not None:
     image, ann = result["image"], result["mask"]
 ```
+#### Without prompt (Backbone: ConvNeXt)
+```python
+oneformer_city_convnext = st.OneFormer(dataset="cityscapes", backbone="convnext")
+result = oneformer_city_convnext.run(image_np)
+if result is not None:
+    image, ann, info = result["image"], result["mask"], result["info"]
+```
+#### With prompt (Backbone: ConvNeXt)
+```python
+oneformer_city_convnext = st.OneFormer(dataset="cityscapes", backbone="convnext")
+result = oneformer_city_convnext.run(image_np, prompt)
+if result is not None:
+    image, ann = result["image"], result["mask"]
+```
+
 ### 5.3 OneFormer (COCO Dataset)
 #### Without prompt (Backbone: DiNAT)
 ![coco](image_dir/OneFormer_coco(dinat).png)
@@ -215,28 +245,112 @@ if result is not None:
     image, ann = result["image"], result["mask"]
 ```
 
+### 5.4 OneFormer (Mapillary Vistas Dataset)
+#### Without prompt (Backbone: DiNAT)
+<!-- ![cityscapes](image_dir/OneFormer_cityscapes(dinat).png) -->
+```python
+oneformer_vistas = st.OneFormer(dataset="vistas")
+result = oneformer_vistas.run(image_np)
+if result is not None:
+    image, ann, info = result["image"], result["mask"], result["info"]
+```
+#### With prompt (Backbone: DiNAT)
+<!-- ![cityscapes_prompt](image_dir/OneFormer_cityscapes(dinat)(prompt).png) -->
+```python
+oneformer_vistas = st.OneFormer(dataset="vistas")
+result = oneformer_vistas.run(image_np, prompt)
+if result is not None:
+    image, ann = result["image"], result["mask"]
+```
+#### Without prompt (Backbone: Swin)
+```python
+oneformer_vistas_swin = st.OneFormer(dataset="vistas", backbone="swin")
+result = oneformer_vistas_swin.run(image_np)
+if result is not None:
+    image, ann, info = result["image"], result["mask"], result["info"]
+```
+#### With prompt (Backbone: Swin)
+```python
+oneformer_vistas_swin = st.OneFormer(dataset="vistas", backbone="swin")
+result = oneformer_vistas_swin.run(image_np, prompt)
+if result is not None:
+    image, ann = result["image"], result["mask"]
+```
+#### Without prompt (Backbone: ConvNeXt)
+```python
+oneformer_vistas_convnext = st.OneFormer(dataset="vistas", backbone="convnext")
+result = oneformer_vistas_convnext.run(image_np)
+if result is not None:
+    image, ann, info = result["image"], result["mask"], result["info"]
+```
+#### With prompt (Backbone: ConvNeXt)
+```python
+oneformer_vistas_convnext = st.OneFormer(dataset="vistas", backbone="convnext")
+result = oneformer_vistas_convnext.run(image_np, prompt)
+if result is not None:
+    image, ann = result["image"], result["mask"]
+```
+
 #### Additinal Notes
 - The `run` method can be called with or without a prompt for all OneFormer variants.
 - For OneFormer **without a prompt**, the `info` variable contains information about the segmented objects. Each entry in `info` includes details such as `id`, `isthing`, `category_id`, `area`, and `class`. The `ann` (annotation) format is such that non-mask areas are represented by 0. 
 - For OneFormer **with a prompt**, the `ann` (annotation) format is such that mask areas are represented by 1 and non-mask areas are represented by 0.
-- The `use_swin=True` parameter enables the use of the Swin Transformer as the backbone for the OneFormer models.
+- There is no convnext as backbone in the coco dataset.
 
 ### 6. Depth Anything
 ![depthany](image_dir/depth.png)
 ```python
-depth_model = st.Depth_Anything(encoder="vitl") # vits or vitb or vitl
-result = depth_model.run(image)
+depth_any = st.Depth_Anything(encoder="vitl") # vits or vitb or vitl
+result = depth_any.run(image)
 if result is not None:
-    image, depth = result["image"], result["depth"]
+    depth_img, depth = result["image"], result["depth"]
 ```
 
 ### 7. DINOv2 (depth estimation) (CPU is not supported)
 ![dinov2depth](image_dir/dinov2_depth.png)
 ```python
-depth_model = st.DINOv2_depth(BACKBONE_SIZE="base") # small, base, large, giant
-result = depth_model.run(image)
+depth_dino = st.DINOv2_depth(BACKBONE_SIZE="base") # small, base, large, giant
+result = depth_dino.run(image)
 if result is not None:
     depth_img, depth = result["image"], result["depth"]
+```
+
+### 8. DepthPro
+```python
+depth_pro = st.Depth_Pro()
+result = depth_pro.run(image)
+if result is not None:
+    depth_img, depth = result["image"], result["depth"]
+```
+
+### 9. SAM2
+
+#### Image
+```python
+sam2 = st.SAM2(model_size="base") # tiny, small, base, large
+result = sam2.run(image, point=..., point_label=..., bbox=..., mask=..., multimask_output=True/False)
+if result is not None:
+    image, ann = result["image"], result["masks"]
+```
+
+#### Video
+```python
+sam2 = st.SAM2(model_size="base") # tiny, small, base, large
+result = sam2.run_video(video_path, start_frame=0, end_frame=None, point=..., point_label=..., bbox=..., mask=..., temp_dir=...)
+if result is not None:
+    out_video_path, ann = result["video"], result["masks"]
+```
+
+#### Image(Gradio)
+```python
+sam2 = st.SAM2(model_size="base") # tiny, small, base, large
+sam2.run_gradio(server_port=7860)
+```
+
+#### Video(Gradio)
+```python
+sam2 = st.SAM2(model_size="base") # tiny, small, base, large
+sam2.run_video_gradio(server_port=7860)
 ```
 
 ### Additional Notes
