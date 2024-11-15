@@ -82,6 +82,7 @@ POSSIBILITY OF SUCH DAMAGE.
 # The following projects are included under the Apache License 2.0:
 # - Detectron2 (https://github.com/facebookresearch/detectron2)
 # - GroundingDINO (https://github.com/IDEA-Research/GroundingDINO)
+# - SAM2 (https://github.com/facebookresearch/sam2.git)
 
 # The following project is included under the MIT License:
 # - CLIP (https://github.com/openai/CLIP)

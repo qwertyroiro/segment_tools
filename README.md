@@ -388,3 +388,4 @@ This project includes third-party software licensed under the Apache License 2.0
 - GroundingDINO: [Apache License 2.0](https://github.com/IDEA-Research/GroundingDINO/blob/main/LICENSE)
 - CLIP: [MIT License](https://github.com/openai/CLIP/blob/main/LICENSE)
 - ml-depth-pro: [Apple](https://github.com/apple/ml-depth-pro.git)
+- SAM2: [Apache License 2.0](https://github.com/facebookresearch/sam2.git)
