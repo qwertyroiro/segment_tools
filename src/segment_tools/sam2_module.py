@@ -229,7 +229,7 @@ class SAM2:
             # npzファイルとしてマスクを保存
             save_npz_btn.click(self.save_npz, [npz_file_name], [npz_result])
             
-        demo.launch(debug=True, server_port={server_port}, server_name="0.0.0.0")
+        demo.launch(debug=True, server_port=server_port, server_name="0.0.0.0")
 
     def run_video_gradio(self, server_port=7860):
         self.points = np.empty((0, 2), dtype=np.float32)
@@ -291,7 +291,7 @@ class SAM2:
             # npzファイルとしてマスクを保存
             save_npz_btn.click(self.save_npz, [npz_file_name], [npz_result])
             
-        demo.launch(debug=True, server_port={server_port}, server_name="0.0.0.0")
+        demo.launch(debug=True, server_port=server_port, server_name="0.0.0.0")
         
     def segment_single_img(self, frame):
         image = self.run(frame, self.points, self.labels)["image"]
