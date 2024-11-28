@@ -17,7 +17,7 @@ dependencies = [
     "clip @ https://github.com/qwertyroiro/segment_tools/releases/download/whl/clip-1.0-py3-none-any.whl",
     "segment_anything @ git+https://github.com/facebookresearch/segment-anything.git@6fdee8f2727f4506cfbbe553e23b895e27956588",
     "transformers == 4.37.1",
-    "numpy == 1.24.4",
+    "numpy == 1.26.4",
     "cityscapesscripts @ git+https://github.com/mcordts/cityscapesScripts.git@a7ac7b4062d1a80ed5e22d2ea2179c886801c77d",
     "einops == 0.4.1",
     "diffdist == 0.1",
