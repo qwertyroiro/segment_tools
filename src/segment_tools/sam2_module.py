@@ -89,6 +89,12 @@ class SAM2:
         if not os.path.exists(video):
             raise ValueError(f"Video file not found: {video}")
 
+        # end_frameがNoneの場合、最終フレームを取得
+        if end_frame is None:
+            cap = cv2.VideoCapture(video)
+            end_frame = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            cap.release()
+
         # videoからフレームを抽出
         self.extract_video_to_dir(video, start_frame, end_frame, temp_dir)
         
