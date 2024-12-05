@@ -149,12 +149,21 @@ class SAM2:
                 box=bbox,
             )
         elif mask is not None:
-            _, out_obj_ids, out_mask_logits = self.video_predictor.add_new_mask(
-                inference_state=state,
-                frame_idx=0,
-                obj_id=1,
-                mask=mask,
-            )
+            if mask.ndim == 3:
+                for idx, mask_ in enumerate(mask):
+                    _, out_obj_ids, out_mask_logits = self.video_predictor.add_new_mask(
+                        inference_state=state,
+                        frame_idx=0,
+                        obj_id=idx + 1,
+                        mask=mask_,
+                    )
+            else:     
+                _, out_obj_ids, out_mask_logits = self.video_predictor.add_new_mask(
+                    inference_state=state,
+                    frame_idx=0,
+                    obj_id=1,
+                    mask=mask,
+                )
         else:
             raise ValueError("No input given")
         
