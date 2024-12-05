@@ -74,6 +74,35 @@ class SAM2:
         
         return {"image": annotated_image, "masks": masks, "scores": scores, "logits": logits}
 
+    def get_fourcc():
+        """
+        Check if 'avc1' is supported by cv2.VideoWriter. If supported, return 'avc1',
+        otherwise return 'mp4v'.
+
+        Returns:
+            int: FourCC code for 'avc1' or 'mp4v'.
+        """
+        # Test file path (temporary)
+        test_file = "temp_check_fourcc.mp4"
+        
+        # Try 'avc1'
+        fourcc_avc1 = cv2.VideoWriter_fourcc(*'avc1')
+        writer = cv2.VideoWriter(test_file, fourcc_avc1, 30, (640, 480))
+        if writer.isOpened():
+            writer.release()
+            return fourcc_avc1
+        
+
+        # Fallback to 'mp4v'
+        fourcc_mp4v = cv2.VideoWriter_fourcc(*'mp4v')
+        writer = cv2.VideoWriter(test_file, fourcc_mp4v, 30, (640, 480))
+        if writer.isOpened():
+            writer.release()
+            return fourcc_mp4v
+        
+        # If neither works, raise an error
+        raise RuntimeError("Neither 'avc1' nor 'mp4v' is supported by cv2.VideoWriter.")
+
     def run_video(
         self,
         video,
@@ -83,7 +112,8 @@ class SAM2:
         labels=None,
         bbox=None,
         mask=None,
-        temp_dir="temp_sam2_video",
+        temp_dir="temp_sam2_video_to_frames",
+        output_dir="sam2_processed_video",
     ):
         # videoのパスが存在しない場合、エラーを出力
         if not os.path.exists(video):
@@ -103,7 +133,7 @@ class SAM2:
         if points is not None and labels is not None:
             _, out_obj_ids, out_mask_logits = self.video_predictor.add_new_points_or_box(
                 inference_state=state,
-                frame_idx=0,
+                frame_idx=start_frame,
                 obj_id=1,
                 points=points,
                 labels=labels,
@@ -112,14 +142,14 @@ class SAM2:
             bbox = np.array(bbox)
             _, out_obj_ids, out_mask_logits = self.video_predictor.add_new_points_or_box(
                 inference_state=state,
-                frame_idx=0,
+                frame_idx=start_frame,
                 obj_id=1,
                 box=bbox,
             )
         elif mask is not None:
             _, out_obj_ids, out_mask_logits = self.video_predictor.add_new_mask(
                 inference_state=state,
-                frame_idx=0,
+                frame_idx=start_frame,
                 obj_id=1,
                 mask=mask,
             )
@@ -139,14 +169,13 @@ class SAM2:
         fps = int(cap.get(cv2.CAP_PROP_FPS))
         width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        fourcc = cv2.VideoWriter_fourcc(*'avc1')
-        
-        if os.path.exists("temp_output"):
-            shutil.rmtree("temp_output")
-        os.makedirs("temp_output", exist_ok=True)
+        fourcc = self.get_fourcc()
+
+        os.makedirs(output_dir, exist_ok=True)
         
         row_frames = []
-        out = cv2.VideoWriter(f"temp_output/{os.path.basename(video)}", fourcc, fps, (width, height))
+        output_file = os.path.join(output_dir, os.path.basename(video))
+        out = cv2.VideoWriter(output_file, fourcc, fps, (width, height))
         for idx, segments in tqdm(video_segments.items()):
             object_ids = list(segments.keys())
             masks = list(segments.values())
@@ -173,12 +202,11 @@ class SAM2:
             masks = np.concatenate(masks, axis=0)
             for i, object_id in enumerate(object_ids):
                 video_segments_reshaped[idx, :, :] += object_id * masks[i]
-        
-        return {"video": f"temp_output/{os.path.basename(video)}", "masks": video_segments_reshaped}
-        return f"temp_output/{os.path.basename(video)}"
+                
+        return {"video": output_file, "masks": video_segments_reshaped}
 
     def extract_video_to_dir(
-        self, video, start_frame=0, end_frame=None, temp_dir="temp_sam2_video"
+        self, video, start_frame, end_frame, temp_dir
     ):
         start_frame, end_frame = int(start_frame), int(end_frame)
         # tempフォルダが存在する場合、削除する
@@ -194,8 +222,9 @@ class SAM2:
             frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
             if end_frame is None:
                 end_frame = frame_count
+                
+            cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
             for i in range(start_frame, end_frame):
-                cap.set(cv2.CAP_PROP_POS_FRAMES, i)
                 ret, frame = cap.read()
                 cv2.imwrite(f"{temp_dir}/{str(i).zfill(5)}.jpg", frame)
             cap.release()
