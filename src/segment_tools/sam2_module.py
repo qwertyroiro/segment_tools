@@ -90,6 +90,7 @@ class SAM2:
         writer = cv2.VideoWriter(test_file, fourcc_avc1, 30, (640, 480))
         if writer.isOpened():
             writer.release()
+            print("FourCC 'avc1' is supported by cv2.VideoWriter.")
             return fourcc_avc1
         
 
@@ -98,6 +99,7 @@ class SAM2:
         writer = cv2.VideoWriter(test_file, fourcc_mp4v, 30, (640, 480))
         if writer.isOpened():
             writer.release()
+            print("FourCC 'mp4v' is supported by cv2.VideoWriter.")
             return fourcc_mp4v
         
         # If neither works, raise an error
@@ -133,7 +135,7 @@ class SAM2:
         if points is not None and labels is not None:
             _, out_obj_ids, out_mask_logits = self.video_predictor.add_new_points_or_box(
                 inference_state=state,
-                frame_idx=start_frame,
+                frame_idx=0,
                 obj_id=1,
                 points=points,
                 labels=labels,
@@ -142,14 +144,14 @@ class SAM2:
             bbox = np.array(bbox)
             _, out_obj_ids, out_mask_logits = self.video_predictor.add_new_points_or_box(
                 inference_state=state,
-                frame_idx=start_frame,
+                frame_idx=0,
                 obj_id=1,
                 box=bbox,
             )
         elif mask is not None:
             _, out_obj_ids, out_mask_logits = self.video_predictor.add_new_mask(
                 inference_state=state,
-                frame_idx=start_frame,
+                frame_idx=0,
                 obj_id=1,
                 mask=mask,
             )
@@ -172,8 +174,7 @@ class SAM2:
         fourcc = self.get_fourcc()
 
         os.makedirs(output_dir, exist_ok=True)
-        
-        row_frames = []
+
         output_file = os.path.join(output_dir, os.path.basename(video))
         out = cv2.VideoWriter(output_file, fourcc, fps, (width, height))
         for idx, segments in tqdm(video_segments.items()):
@@ -186,16 +187,12 @@ class SAM2:
                 class_id=np.array(object_ids, dtype=np.int32),
             )
             ret, row_frame = cap.read()
-            row_frames.append(row_frame)
             mask_annotator = sv.MaskAnnotator()
             output_seg_image = mask_annotator.annotate(scene=row_frame, detections=detections)
             out.write(output_seg_image)
         out.release()
-        row_frames = np.array(row_frames)
         
-        
-        n, h, w, _ = row_frames.shape
-        video_segments_reshaped = np.zeros((n, h, w))
+        video_segments_reshaped = np.zeros((end_frame - start_frame, height, width))
         for idx, segments in video_segments.items():
             object_ids = list(segments.keys())
             masks = list(segments.values())
@@ -219,9 +216,6 @@ class SAM2:
         if shutil.which("ffmpeg") is None:
             print("ffmpeg is not installed. Using cv2")
             cap = cv2.VideoCapture(video)
-            frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-            if end_frame is None:
-                end_frame = frame_count
                 
             cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
             for i in range(start_frame, end_frame):
