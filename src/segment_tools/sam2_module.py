@@ -74,7 +74,7 @@ class SAM2:
         
         return {"image": annotated_image, "masks": masks, "scores": scores, "logits": logits}
 
-    def get_fourcc():
+    def get_fourcc(self):
         """
         Check if 'avc1' is supported by cv2.VideoWriter. If supported, return 'avc1',
         otherwise return 'mp4v'.
