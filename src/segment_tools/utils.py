@@ -231,6 +231,7 @@ def check_image_type(image, type="numpy"):
             image = cv2.imread(image)
         elif isinstance(image, PIL.Image.Image):
             image = np.array(image)
+            image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
         elif isinstance(image, np.ndarray):
             image = image.copy()
         else:
@@ -239,7 +240,7 @@ def check_image_type(image, type="numpy"):
         if isinstance(image, str):
             image = Image.open(image)
         elif isinstance(image, np.ndarray):
-            image = Image.fromarray(image)
+            image = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
         elif isinstance(image, PIL.Image.Image):
             image = image.copy()
         else:

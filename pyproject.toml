@@ -16,7 +16,7 @@ dependencies = [
     "GroundingDINO @ https://github.com/qwertyroiro/segment_tools/releases/download/whl/groundingdino-0.1.0-cp310-cp310-linux_x86_64.whl",
     "clip @ https://github.com/qwertyroiro/segment_tools/releases/download/whl/clip-1.0-py3-none-any.whl",
     "segment_anything @ git+https://github.com/facebookresearch/segment-anything.git@6fdee8f2727f4506cfbbe553e23b895e27956588",
-    "transformers == 4.37.1",
+    "transformers==4.47.0",
     "numpy == 1.26.4",
     "cityscapesscripts @ git+https://github.com/mcordts/cityscapesScripts.git@a7ac7b4062d1a80ed5e22d2ea2179c886801c77d",
     "einops == 0.4.1",
@@ -28,7 +28,7 @@ dependencies = [
     "natten @ https://github.com/qwertyroiro/segment_tools/releases/download/whl/natten-0.15.1+torch210cu121-cp310-cp310-linux_x86_64.whl",
     "lvis == 0.5.3",
     "boto3 == 1.34.140",
-    "supervision == 0.19.0",
+    "supervision==0.25.0",
     "depth_pro @ git+https://github.com/apple/ml-depth-pro.git@b2cd0d51daa95e49277a9f642f7fd736b7f9e91d",
     "Cython == 3.0.11",
     "onnxruntime-gpu == 1.19.2",
@@ -36,6 +36,8 @@ dependencies = [
     "nvidia-cudnn-cu12 == 9.1.0.70",
     "SAM-2 @ git+https://github.com/qwertyroiro/sam2.git@96fe05789d67441051e0c3f51a987c5a4d5541f5",
     "gradio_rangeslider == 0.0.8",
+    "flash-attn @ https://github.com/Dao-AILab/flash-attention/releases/download/v2.7.1.post1/flash_attn-2.7.1.post1+cu12torch2.1cxx11abiFALSE-cp310-cp310-linux_x86_64.whl",
+    "timm==1.0.12"
 ]
 
 [tool.setuptools]

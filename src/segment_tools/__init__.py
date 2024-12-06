@@ -11,4 +11,5 @@ from .grit_module import *
 from .depthpro_module import *
 from .insightface_module import *
 from .sam2_module import *
+from .florence_module import *
 from .utils import *
