@@ -353,6 +353,14 @@ sam2 = st.SAM2(model_size="base") # tiny, small, base, large
 sam2.run_video_gradio(server_port=7860)
 ```
 
+### 10. Florence-2
+```python
+florence = st.Florence2()
+result = florence.run(image) # If no_image is True, no image will be output.
+if result is not None:
+    image, bbox, label = result["image"], result["bbox"], result["label"]
+```
+
 ### Additional Notes
 - The `image` and `ann` (annotations) are obtained from the `result` dictionary, which is the output from the segmentation models.
 - If `result` is `None`, it indicates that the process was not successful. This could be due to various reasons such as incorrect input data or model limitations. It is important to handle this case in your code to avoid errors.
