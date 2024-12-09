@@ -38,11 +38,11 @@ class Florence2:
         result = self.processor.post_process_generation(generated_text, task=task_prompt, image_size=(image.width, image.height))
 
         if no_image:
-            return {"image": None, "bbox": result['<DENSE_REGION_CAPTION>']['bboxes'], "label": result['<DENSE_REGION_CAPTION>']['labels']}
+            return {"image": None, "bbox": result[task_prompt]['bboxes'], "label": result[task_prompt]['labels']}
         else:
             detections = sv.Detections.from_lmm(sv.LMM.FLORENCE_2, result, resolution_wh=image.size)
             out_image = self.bounding_box_annotator.annotate(image.copy(), detections)
             out_image = self.label_annotator.annotate(out_image, detections)
             out_image = check_image_type(out_image)
-            return {"image": out_image, "bbox": result['<DENSE_REGION_CAPTION>']['bboxes'], "label": result['<DENSE_REGION_CAPTION>']['labels']}
+            return {"image": out_image, "bbox": result[task_prompt]['bboxes'], "label": result[task_prompt]['labels']}
         return result
