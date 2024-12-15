@@ -91,6 +91,8 @@ class SAM2:
         if writer.isOpened():
             writer.release()
             print("FourCC 'avc1' is supported by cv2.VideoWriter.")
+            if os.path.exists(test_file):
+                os.remove(test_file)
             return fourcc_avc1
         
 
@@ -99,11 +101,112 @@ class SAM2:
         writer = cv2.VideoWriter(test_file, fourcc_mp4v, 30, (640, 480))
         if writer.isOpened():
             writer.release()
+            if os.path.exists(test_file):
+                os.remove(test_file)
             print("FourCC 'mp4v' is supported by cv2.VideoWriter.")
             return fourcc_mp4v
         
+        if os.path.exists(test_file):
+            os.remove(test_file)
+        
         # If neither works, raise an error
         raise RuntimeError("Neither 'avc1' nor 'mp4v' is supported by cv2.VideoWriter.")
+
+    def run_frames(
+        self,
+        frames,
+        points=None,
+        labels=None,
+        bbox=None,
+        mask=None,
+        temp_dir="temp_sam2_video_to_frames",
+        output_dir="sam2_processed_video",
+        fps=30,
+        video_name="output.mp4",
+        no_video=False,
+    ):
+        # フレームをtempフォルダに保存
+        self.extract_frames_to_dir(frames, temp_dir)
+        
+        state = self.video_predictor.init_state(temp_dir)
+        width = frames[0].shape[1]
+        height = frames[0].shape[0]
+        
+        if points is not None and labels is not None:
+            _, out_obj_ids, out_mask_logits = self.video_predictor.add_new_points_or_box(
+                inference_state=state,
+                frame_idx=0,
+                obj_id=1,
+                points=points,
+                labels=labels,
+            )
+        elif bbox is not None:
+            bbox = np.array(bbox)
+            _, out_obj_ids, out_mask_logits = self.video_predictor.add_new_points_or_box(
+                inference_state=state,
+                frame_idx=0,
+                obj_id=1,
+                box=bbox,
+            )
+        elif mask is not None:
+            if mask.ndim == 3:
+                for idx, mask_ in enumerate(mask):
+                    _, out_obj_ids, out_mask_logits = self.video_predictor.add_new_mask(
+                        inference_state=state,
+                        frame_idx=0,
+                        obj_id=idx + 1,
+                        mask=mask_,
+                    )
+            else:     
+                _, out_obj_ids, out_mask_logits = self.video_predictor.add_new_mask(
+                    inference_state=state,
+                    frame_idx=0,
+                    obj_id=1,
+                    mask=mask,
+                )
+        else:
+            raise ValueError("No input given")
+        
+        video_segments = {} # frame_idx: {obj_id: mask}
+        for out_frame_idx, out_obj_ids, out_mask_logits in self.video_predictor.propagate_in_video(state):
+            video_segments[out_frame_idx] = {
+                out_obj_id: (out_mask_logits[i] > 0.0).cpu().numpy()
+                for i, out_obj_id in enumerate(out_obj_ids)
+            }
+            
+        output_file = None
+        if not no_video:
+            fps = int(fps)
+            fourcc = self.get_fourcc()
+
+            os.makedirs(output_dir, exist_ok=True)
+
+            output_file = os.path.join(output_dir, video_name)
+            out = cv2.VideoWriter(output_file, fourcc, fps, (width, height))
+            for idx, segments in tqdm(video_segments.items()):
+                object_ids = list(segments.keys())
+                masks = list(segments.values())
+                masks = np.concatenate(masks, axis=0)
+                detections = sv.Detections(
+                    xyxy=sv.mask_to_xyxy(masks),  # (n, 4)
+                    mask=masks, # (n, h, w)
+                    class_id=np.array(object_ids, dtype=np.int32),
+                )
+                row_frame = frames[idx]
+                mask_annotator = sv.MaskAnnotator()
+                output_seg_image = mask_annotator.annotate(scene=row_frame, detections=detections)
+                out.write(output_seg_image)
+            out.release()
+        
+        video_segments_reshaped = np.zeros((len(frames), height, width))
+        for idx, segments in tqdm(video_segments.items()):
+            object_ids = list(segments.keys())
+            masks = list(segments.values())
+            masks = np.concatenate(masks, axis=0)
+            for i, object_id in enumerate(object_ids):
+                video_segments_reshaped[idx, :, :] += object_id * masks[i]
+                
+        return {"video": output_file, "masks": video_segments_reshaped}
 
     def run_video(
         self,
@@ -200,6 +303,7 @@ class SAM2:
             output_seg_image = mask_annotator.annotate(scene=row_frame, detections=detections)
             out.write(output_seg_image)
         out.release()
+        cap.release()
         
         video_segments_reshaped = np.zeros((end_frame - start_frame, height, width))
         for idx, segments in video_segments.items():
@@ -237,6 +341,17 @@ class SAM2:
             command = f"ffmpeg -i {video} -vf 'select=between(n\,{int(start_frame)}\,{int(end_frame)})' -vsync vfr -q:v 2 {temp_dir}/%05d.jpg"
             subprocess.run(command, shell=True, stdout=subprocess.DEVNULL)
             print("Video frames extracted")
+            
+    def extract_frames_to_dir(self, frames, temp_dir):
+        # tempフォルダが存在する場合、削除する
+        if os.path.exists(temp_dir):
+            shutil.rmtree(temp_dir)
+        # 空のtempフォルダを作成する
+        os.makedirs(temp_dir, exist_ok=True)
+
+        for idx, frame in enumerate(frames):
+            cv2.imwrite(f"{temp_dir}/{str(idx).zfill(5)}.jpg", frame)
+        print("Frames extracted")
 
     def run_gradio(self, server_port=7860):
         self.points = np.empty((0, 2), dtype=np.float32)
