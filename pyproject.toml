@@ -34,7 +34,7 @@ dependencies = [
     "onnxruntime-gpu == 1.19.2",
     "insightface == 0.7.3",
     "nvidia-cudnn-cu12 == 9.1.0.70",
-    "SAM-2 @ git+https://github.com/qwertyroiro/sam2.git@96fe05789d67441051e0c3f51a987c5a4d5541f5",
+    "SAM-2 @ https://github.com/qwertyroiro/segment_tools/releases/download/whl/SAM_2-1.0-py3-none-any.whl",
     "gradio_rangeslider == 0.0.8",
     "flash-attn @ https://github.com/Dao-AILab/flash-attention/releases/download/v2.7.1.post1/flash_attn-2.7.1.post1+cu12torch2.1cxx11abiFALSE-cp310-cp310-linux_x86_64.whl",
     "timm==1.0.12"
