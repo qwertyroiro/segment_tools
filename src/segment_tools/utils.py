@@ -250,7 +250,7 @@ def check_image_type(image, type="numpy"):
     
     return image
     
-def calc_bboxes(masks):
+def calc_bboxes(masks, abs=False):
     """
     セグメンテーションマスクからバウンディングボックスを計算する関数
     
@@ -279,12 +279,20 @@ def calc_bboxes(masks):
             x_min, x_max = np.where(cols)[0][[0, -1]]
 
             # バウンディングボックスの中心座標、幅、高さを計算して格納
-            bounding_boxes[i] = [
-                (x_min + x_max) / (2 * W),  # center_x: 幅で割って相対位置に変換
-                (y_min + y_max) / (2 * H),  # center_y: 高さで割って相対位置に変換
-                (x_max - x_min + 1) / W,    # width: 幅を計算し相対位置に変換
-                (y_max - y_min + 1) / H      # height: 高さを計算し相対位置に変換
-            ]
+            if abs:
+                bounding_boxes[i] = [
+                    (x_min + x_max) / 2,  # center_x: 幅で割って相対位置に変換
+                    (y_min + y_max) / 2,  # center_y: 高さで割って相対位置に変換
+                    (x_max - x_min + 1),    # width: 幅を計算し相対位置に変換
+                    (y_max - y_min + 1)      # height: 高さを計算し相対位置に変換
+                ]
+            else:
+                bounding_boxes[i] = [
+                    (x_min + x_max) / (2 * W),  # center_x: 幅で割って相対位置に変換
+                    (y_min + y_max) / (2 * H),  # center_y: 高さで割って相対位置に変換
+                    (x_max - x_min + 1) / W,    # width: 幅を計算し相対位置に変換
+                    (y_max - y_min + 1) / H      # height: 高さを計算し相対位置に変換
+                ]
 
         return bounding_boxes  # 計算したバウンディングボックスを返す
     
@@ -294,8 +302,8 @@ def calc_bboxes(masks):
     
     # masksがリストでない場合は、単一のマスクに対して計算を行う
     return calc_single_mask(masks)
-
-def draw_bboxes(image, bboxes, color=(0, 255, 0), thickness=2, point_radius=5):
+    
+def draw_bboxes(image, bboxes, color=(0, 255, 0), thickness=2, point_radius=5, abs=False):
     """
     画像に複数のバウンディングボックスを描画する関数
     
@@ -312,16 +320,23 @@ def draw_bboxes(image, bboxes, color=(0, 255, 0), thickness=2, point_radius=5):
     for bbox in bboxes:
         x_center, y_center, box_width, box_height = bbox
 
-        # 中心座標を画像のピクセル座標に変換
-        x_center = int(x_center * width)
-        y_center = int(y_center * height)
+        if abs:
+            # 中心座標を画像のピクセル座標に変換
+            x_center = int(x_center)
+            y_center = int(y_center)
+            # 幅と高さを画像のピクセル座標に変換
+            box_width = int(box_width)
+            box_height = int(box_height)
+        else:
+            # 中心座標を画像のピクセル座標に変換
+            x_center = int(x_center * width)
+            y_center = int(y_center * height)
+            # 幅と高さを画像のピクセル座標に変換
+            box_width = int(box_width * width)
+            box_height = int(box_height * height)
 
         # 中心点を描画
         cv2.circle(image, (x_center, y_center), point_radius, color, -1)
-
-        # 幅と高さを画像のピクセル座標に変換
-        box_width = int(box_width * width)
-        box_height = int(box_height * height)
 
         # バウンディングボックスの左上と右下の座標を計算
         x1 = int(x_center - box_width / 2)
