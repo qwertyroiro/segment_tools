@@ -348,7 +348,7 @@ def draw_bboxes(image, bboxes, color=(0, 255, 0), thickness=2, point_radius=5, a
         cv2.rectangle(image, (x1, y1), (x2, y2), color, thickness)
         
         # バウンディングボックスの左上にidxを描画
-        cv2.putText(image, str(idx), (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+        cv2.putText(image, str(idx), (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
 
     # OpenCV形式(BGR)からPIL形式(RGB)に変換
     image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
