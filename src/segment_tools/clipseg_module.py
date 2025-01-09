@@ -48,7 +48,7 @@ class CLIPSeg:
         # 確率をsigmoidにかける(正規化?)
         output = torch.sigmoid(preds)
         # torchからnumpyへ
-        output_np = output.cpu().numpy()
+        output_np = output.detach().cpu().numpy().squeeze()
         # 0-255へ
         output_np = Image.fromarray((output_np * 255).astype(np.uint8))
         # 元の画像サイズへ
@@ -63,6 +63,7 @@ class CLIPSeg:
         image = np.array(image)
         # マスクの描画
         if masks.shape[0] == 0:
+            print("No mask found.")
             return None
         drawed_mask = draw_multi_mask(masks, image, text, color=color)
 
