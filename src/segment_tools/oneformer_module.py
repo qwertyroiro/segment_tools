@@ -113,8 +113,10 @@ def setup_modules(dataset, model_path, backbone):
 def panoptic_run(img, predictor, metadata, no_image=False):
     
     if not no_image:
+        # img:numpy img_にcopy
+        img_ = np.copy(img)
         visualizer = Visualizer(
-            img[:, :, ::-1], metadata=metadata, instance_mode=ColorMode.IMAGE
+            img_[:, :, ::-1], metadata=metadata, instance_mode=ColorMode.IMAGE
         )
     predictions = predictor(img, "panoptic")
     panoptic_seg, segments_info = predictions["panoptic_seg"]
