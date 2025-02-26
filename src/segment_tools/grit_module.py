@@ -47,6 +47,9 @@ class GRiT:
 
         self.cfg = setup_cfg(weight_path=weight_path)
         self.demo = VisualizationDemo(self.cfg)
+        
+    def __call__(self, image):
+        return self.run(image)
 
     def run(self, image):
         image = check_image_type(image, "numpy")

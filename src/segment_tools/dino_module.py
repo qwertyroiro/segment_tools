@@ -12,6 +12,7 @@ import numpy as np
 import torch
 from huggingface_hub import hf_hub_download
 from .utils import check_image_type
+import cv2
 
 class DINO:
     def __init__(
@@ -24,8 +25,11 @@ class DINO:
         self.groundingdino_model = self.__load_model_hf(
             ckpt_repo_id, ckpt_filenmae, ckpt_config_filename, self.device
         )
+        
+    def __call__(self, image, text, xyxy_bbox=False, abs_bbox=False):
+        return self.run(image, text, xyxy_bbox, abs_bbox)
 
-    def run(self, image, text):
+    def run(self, image, text, xyxy_bbox, abs_bbox):
         """DINOを用いた画像のゼロショット物体検出
 
         Args:
@@ -45,6 +49,21 @@ class DINO:
 
         # RGB to BGR
         annotated_frame = annotated_frame[:, :, ::-1]
+
+        if xyxy_bbox:
+            # detected_boxesはbbox中央のxyと幅高さの情報を持っているので、xyxy形式に変換
+            detected_boxes[:, 0] -= detected_boxes[:, 2] / 2
+            detected_boxes[:, 1] -= detected_boxes[:, 3] / 2
+            detected_boxes[:, 2] += detected_boxes[:, 0]
+            detected_boxes[:, 3] += detected_boxes[:, 1]
+            
+        if abs_bbox:
+            # bounding boxの座標を絶対座標に変換
+            height, width, _ = annotated_frame.shape
+            detected_boxes[:, 0] *= width
+            detected_boxes[:, 1] *= height
+            detected_boxes[:, 2] *= width
+            detected_boxes[:, 3] *= height
 
         return {"image": annotated_frame, "bbox": detected_boxes}
     

@@ -45,6 +45,9 @@ class DINOSeg:
         self.sam_predictor = SamPredictor(
             sam_model_registry[sam_checkpoint](checkpoint=sam_checkpoint_path).to(self.device)
         )
+        
+    def __call__(self, image, text):
+        return self.run(image, text)
 
     def run(self, image, text):
         """dinoを用いた画像のセグメンテーション

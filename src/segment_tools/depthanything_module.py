@@ -21,6 +21,9 @@ class Depth_Anything:
         self.depth_anything = DepthAnything.from_pretrained(
             "LiheYoung/depth_anything_{:}14".format(encoder)
         ).to(self.device).eval()
+        
+    def __call__(self, image, no_image=False):
+        return self.run(image, no_image)
 
     def run(self, image, no_image=False):
         """画像から深度マップを生成する

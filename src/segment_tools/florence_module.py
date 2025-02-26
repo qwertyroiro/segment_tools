@@ -20,6 +20,9 @@ class Florence2:
         self.bounding_box_annotator = sv.BoundingBoxAnnotator(color_lookup = sv.ColorLookup.INDEX)
         self.label_annotator = sv.LabelAnnotator(color_lookup = sv.ColorLookup.INDEX)
         
+    def __call__(self, image, task_prompt="<DENSE_REGION_CAPTION>", no_image=False, text_input=None):
+        return self.run(image, task_prompt, no_image, text_input)
+        
     def run(self, image, task_prompt="<DENSE_REGION_CAPTION>", no_image=False, text_input=None):
         image = check_image_type(image, "pil")
         

@@ -16,6 +16,7 @@ import gradio as gr
 from gradio_rangeslider import RangeSlider
 import matplotlib.pyplot as plt
 from tqdm import tqdm
+import tempfile
 
 sam_pt_config_dict = {
     "tiny": ["sam2.1_hiera_tiny.pt", "configs/sam2.1/sam2.1_hiera_t.yaml"],
@@ -44,8 +45,8 @@ class SAM2:
     def run(
         self,
         image,
-        point=None,
-        point_label=None,
+        points=None,
+        labels=None,
         bbox=None,
         mask=None,
         multimask_output=False,
@@ -53,8 +54,8 @@ class SAM2:
         image = check_image_type(image)
         self.image_predictor.set_image(image)
         masks, scores, logits = self.image_predictor.predict(
-            point_coords=point,
-            point_labels=point_label,
+            point_coords=points,
+            point_labels=labels,
             box=bbox,
             mask_input=mask,
             multimask_output=multimask_output,
@@ -82,33 +83,27 @@ class SAM2:
         Returns:
             int: FourCC code for 'avc1' or 'mp4v'.
         """
-        # Test file path (temporary)
-        test_file = "temp_check_fourcc.mp4"
-        
-        # Try 'avc1'
-        fourcc_avc1 = cv2.VideoWriter_fourcc(*'avc1')
-        writer = cv2.VideoWriter(test_file, fourcc_avc1, 30, (640, 480))
-        if writer.isOpened():
-            writer.release()
-            print("FourCC 'avc1' is supported by cv2.VideoWriter.")
-            if os.path.exists(test_file):
-                os.remove(test_file)
-            return fourcc_avc1
-        
 
-        # Fallback to 'mp4v'
-        fourcc_mp4v = cv2.VideoWriter_fourcc(*'mp4v')
-        writer = cv2.VideoWriter(test_file, fourcc_mp4v, 30, (640, 480))
-        if writer.isOpened():
-            writer.release()
-            if os.path.exists(test_file):
-                os.remove(test_file)
-            print("FourCC 'mp4v' is supported by cv2.VideoWriter.")
-            return fourcc_mp4v
-        
-        if os.path.exists(test_file):
-            os.remove(test_file)
-        
+        # Create a temporary directory
+        with tempfile.TemporaryDirectory() as temp_dir:
+            test_file = os.path.join(temp_dir, "temp_check_fourcc.mp4")
+            
+            # Try 'avc1'
+            fourcc_avc1 = cv2.VideoWriter_fourcc(*'avc1')
+            writer = cv2.VideoWriter(test_file, fourcc_avc1, 30, (640, 480))
+            if writer.isOpened():
+                writer.release()
+                print("FourCC 'avc1' is supported by cv2.VideoWriter.")
+                return fourcc_avc1
+
+            # Fallback to 'mp4v'
+            fourcc_mp4v = cv2.VideoWriter_fourcc(*'mp4v')
+            writer = cv2.VideoWriter(test_file, fourcc_mp4v, 30, (640, 480))
+            if writer.isOpened():
+                writer.release()
+                print("FourCC 'mp4v' is supported by cv2.VideoWriter.")
+                return fourcc_mp4v
+
         # If neither works, raise an error
         raise RuntimeError("Neither 'avc1' nor 'mp4v' is supported by cv2.VideoWriter.")
 
@@ -119,60 +114,61 @@ class SAM2:
         labels=None,
         bbox=None,
         mask=None,
-        temp_dir="temp_sam2_video_to_frames",
         output_dir="sam2_processed_video",
         fps=30,
         video_name="output.mp4",
         no_video=False,
     ):
         # フレームをtempフォルダに保存
-        self.extract_frames_to_dir(frames, temp_dir)
         
-        state = self.video_predictor.init_state(temp_dir)
-        width = frames[0].shape[1]
-        height = frames[0].shape[0]
-        
-        if points is not None and labels is not None:
-            _, out_obj_ids, out_mask_logits = self.video_predictor.add_new_points_or_box(
-                inference_state=state,
-                frame_idx=0,
-                obj_id=1,
-                points=points,
-                labels=labels,
-            )
-        elif bbox is not None:
-            bbox = np.array(bbox)
-            _, out_obj_ids, out_mask_logits = self.video_predictor.add_new_points_or_box(
-                inference_state=state,
-                frame_idx=0,
-                obj_id=1,
-                box=bbox,
-            )
-        elif mask is not None:
-            if mask.ndim == 3:
-                for idx, mask_ in enumerate(mask):
-                    _, out_obj_ids, out_mask_logits = self.video_predictor.add_new_mask(
-                        inference_state=state,
-                        frame_idx=0,
-                        obj_id=idx + 1,
-                        mask=mask_,
-                    )
-            else:     
-                _, out_obj_ids, out_mask_logits = self.video_predictor.add_new_mask(
+        with tempfile.TemporaryDirectory() as temp_dir:
+            self.extract_frames_to_dir(frames, temp_dir)
+            
+            state = self.video_predictor.init_state(temp_dir)
+            width = frames[0].shape[1]
+            height = frames[0].shape[0]
+            
+            if points is not None and labels is not None:
+                _, out_obj_ids, out_mask_logits = self.video_predictor.add_new_points_or_box(
                     inference_state=state,
                     frame_idx=0,
                     obj_id=1,
-                    mask=mask,
+                    points=points,
+                    labels=labels,
                 )
-        else:
-            raise ValueError("No input given")
-        
-        video_segments = {} # frame_idx: {obj_id: mask}
-        for out_frame_idx, out_obj_ids, out_mask_logits in self.video_predictor.propagate_in_video(state):
-            video_segments[out_frame_idx] = {
-                out_obj_id: (out_mask_logits[i] > 0.0).cpu().numpy()
-                for i, out_obj_id in enumerate(out_obj_ids)
-            }
+            elif bbox is not None:
+                bbox = np.array(bbox)
+                _, out_obj_ids, out_mask_logits = self.video_predictor.add_new_points_or_box(
+                    inference_state=state,
+                    frame_idx=0,
+                    obj_id=1,
+                    box=bbox,
+                )
+            elif mask is not None:
+                if mask.ndim == 3:
+                    for idx, mask_ in enumerate(mask):
+                        _, out_obj_ids, out_mask_logits = self.video_predictor.add_new_mask(
+                            inference_state=state,
+                            frame_idx=0,
+                            obj_id=idx + 1,
+                            mask=mask_,
+                        )
+                else:     
+                    _, out_obj_ids, out_mask_logits = self.video_predictor.add_new_mask(
+                        inference_state=state,
+                        frame_idx=0,
+                        obj_id=1,
+                        mask=mask,
+                    )
+            else:
+                raise ValueError("No input given")
+            
+            video_segments = {} # frame_idx: {obj_id: mask}
+            for out_frame_idx, out_obj_ids, out_mask_logits in self.video_predictor.propagate_in_video(state):
+                video_segments[out_frame_idx] = {
+                    out_obj_id: (out_mask_logits[i] > 0.0).cpu().numpy()
+                    for i, out_obj_id in enumerate(out_obj_ids)
+                }
             
         output_file = None
         if not no_video:
@@ -217,7 +213,6 @@ class SAM2:
         labels=None,
         bbox=None,
         mask=None,
-        temp_dir="temp_sam2_video_to_frames",
         output_dir="sam2_processed_video",
     ):
         # videoのパスが存在しない場合、エラーを出力
@@ -230,52 +225,53 @@ class SAM2:
             end_frame = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
             cap.release()
 
-        # videoからフレームを抽出
-        self.extract_video_to_dir(video, start_frame, end_frame, temp_dir)
-        
-        state = self.video_predictor.init_state(temp_dir)
-        
-        if points is not None and labels is not None:
-            _, out_obj_ids, out_mask_logits = self.video_predictor.add_new_points_or_box(
-                inference_state=state,
-                frame_idx=0,
-                obj_id=1,
-                points=points,
-                labels=labels,
-            )
-        elif bbox is not None:
-            bbox = np.array(bbox)
-            _, out_obj_ids, out_mask_logits = self.video_predictor.add_new_points_or_box(
-                inference_state=state,
-                frame_idx=0,
-                obj_id=1,
-                box=bbox,
-            )
-        elif mask is not None:
-            if mask.ndim == 3:
-                for idx, mask_ in enumerate(mask):
-                    _, out_obj_ids, out_mask_logits = self.video_predictor.add_new_mask(
-                        inference_state=state,
-                        frame_idx=0,
-                        obj_id=idx + 1,
-                        mask=mask_,
-                    )
-            else:     
-                _, out_obj_ids, out_mask_logits = self.video_predictor.add_new_mask(
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # videoからフレームを抽出
+            self.extract_video_to_dir(video, start_frame, end_frame, temp_dir)
+            
+            state = self.video_predictor.init_state(temp_dir)
+            
+            if points is not None and labels is not None:
+                _, out_obj_ids, out_mask_logits = self.video_predictor.add_new_points_or_box(
                     inference_state=state,
                     frame_idx=0,
                     obj_id=1,
-                    mask=mask,
+                    points=points,
+                    labels=labels,
                 )
-        else:
-            raise ValueError("No input given")
-        
-        video_segments = {} # frame_idx: {obj_id: mask}
-        for out_frame_idx, out_obj_ids, out_mask_logits in self.video_predictor.propagate_in_video(state):
-            video_segments[out_frame_idx] = {
-                out_obj_id: (out_mask_logits[i] > 0.0).cpu().numpy()
-                for i, out_obj_id in enumerate(out_obj_ids)
-            }
+            elif bbox is not None:
+                bbox = np.array(bbox)
+                _, out_obj_ids, out_mask_logits = self.video_predictor.add_new_points_or_box(
+                    inference_state=state,
+                    frame_idx=0,
+                    obj_id=1,
+                    box=bbox,
+                )
+            elif mask is not None:
+                if mask.ndim == 3:
+                    for idx, mask_ in enumerate(mask):
+                        _, out_obj_ids, out_mask_logits = self.video_predictor.add_new_mask(
+                            inference_state=state,
+                            frame_idx=0,
+                            obj_id=idx + 1,
+                            mask=mask_,
+                        )
+                else:     
+                    _, out_obj_ids, out_mask_logits = self.video_predictor.add_new_mask(
+                        inference_state=state,
+                        frame_idx=0,
+                        obj_id=1,
+                        mask=mask,
+                    )
+            else:
+                raise ValueError("No input given")
+            
+            video_segments = {} # frame_idx: {obj_id: mask}
+            for out_frame_idx, out_obj_ids, out_mask_logits in self.video_predictor.propagate_in_video(state):
+                video_segments[out_frame_idx] = {
+                    out_obj_id: (out_mask_logits[i] > 0.0).cpu().numpy()
+                    for i, out_obj_id in enumerate(out_obj_ids)
+                }
             
         cap = cv2.VideoCapture(video)
         # slider_minからslider_maxまでのフレームを取得
@@ -319,11 +315,6 @@ class SAM2:
         self, video, start_frame, end_frame, temp_dir
     ):
         start_frame, end_frame = int(start_frame), int(end_frame)
-        # tempフォルダが存在する場合、削除する
-        if os.path.exists(temp_dir):
-            shutil.rmtree(temp_dir)
-        # 空のtempフォルダを作成する
-        os.makedirs(temp_dir, exist_ok=True)
 
         # ffmpegコマンドを使えるか確認し、使えない場合はcv2を使用
         if shutil.which("ffmpeg") is None:
@@ -343,12 +334,6 @@ class SAM2:
             print("Video frames extracted")
             
     def extract_frames_to_dir(self, frames, temp_dir):
-        # tempフォルダが存在する場合、削除する
-        if os.path.exists(temp_dir):
-            shutil.rmtree(temp_dir)
-        # 空のtempフォルダを作成する
-        os.makedirs(temp_dir, exist_ok=True)
-
         for idx, frame in enumerate(frames):
             cv2.imwrite(f"{temp_dir}/{str(idx).zfill(5)}.jpg", frame)
         print("Frames extracted")

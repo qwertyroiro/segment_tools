@@ -65,6 +65,9 @@ class XMem:
         frame_torch, _ = image_to_torch(frame, device=self.device)
         prediction = self.processor.step(frame_torch, mask_torch)
         return torch_prob_to_numpy_mask(prediction)
+    
+    def __call__(self, video_path, mask, output_video_path="output_video.mp4", no_video=False, visualize_every=1, start_frame=0, end_frame=None):
+        return self.run(video_path, mask, output_video_path, no_video, visualize_every, start_frame, end_frame)
 
     def run(self, video_path, mask, output_video_path="output_video.mp4", no_video=False, visualize_every=1, start_frame=0, end_frame=None):
         """

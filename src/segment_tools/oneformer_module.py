@@ -225,6 +225,9 @@ class OneFormer:
                 
         else:
             raise ValueError("dataset is not supported")
+        
+    def __call__(self, image, prompt=None, color="random", alpha=0.5, task="panoptic", panoptic_mask=False, no_image=False):
+        return self.run(image, prompt, color, alpha, task, panoptic_mask, no_image)
                 
     def run(self, image, prompt=None, color="random", alpha=0.5, task="panoptic", panoptic_mask=False, no_image=False):
         image = check_image_type(image)

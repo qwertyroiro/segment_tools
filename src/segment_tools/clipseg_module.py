@@ -12,6 +12,9 @@ class CLIPSeg:
         self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
         self.processor = CLIPSegProcessor.from_pretrained(model_name)
         self.model = CLIPSegForImageSegmentation.from_pretrained(model_name).to(self.device)
+        
+    def __call__(self, image, text, threshold=100, color="random"):
+        return self.run(image, text, threshold, color)
 
     def run(self, image, text, threshold=100, color="random"):
         """clipsegを用いた画像のセグメンテーション

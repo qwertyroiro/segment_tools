@@ -141,6 +141,9 @@ class DINOv2_depth:
         load_checkpoint(self.model, head_checkpoint_url, map_location="cpu")
         self.model.eval()
         self.model.cuda()
+        
+    def __call__(self, image):
+        return self.run(image)
 
     def run(self, image):
         """画像から深度マップを生成する

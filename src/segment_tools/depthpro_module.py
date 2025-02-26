@@ -41,6 +41,9 @@ class Depth_Pro:
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model, self.transform = depth_pro.create_model_and_transforms(config=DEFAULT_MONODEPTH_CONFIG_DICT, device=self.device)
         self.model.eval()
+    
+    def __call__(self, image):
+        return self.run(image)
 
     def run(self, image):
         image = check_image_type(image)
