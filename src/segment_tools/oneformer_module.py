@@ -231,6 +231,9 @@ class OneFormer:
                 
     def run(self, image, prompt=None, color="random", alpha=0.5, task="panoptic", panoptic_mask=False, no_image=False):
         image = check_image_type(image)
+        # もしimageの次元が3以上(RGBAなど)の場合、RGBに変換
+        if image.shape[-1] > 3:
+            image = image[:, :, :3]
         out, panoptic_seg, segments_info = TASK_INFER[task](image, self.predictor, self.metadata, no_image=no_image)
 
         try:
